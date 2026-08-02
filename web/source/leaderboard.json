@@ -4,6 +4,7 @@
       "id": "s3-backup-v1",
       "title": "叙界 S3 备份能力",
       "summary": "为 Scriverse 增加数据库与图片的 S3 备份能力，覆盖多目标同步、定时任务、快照保留与失败反馈。",
+      "weight": 1.0,
       "baseRepository": "musnows/Scriverse",
       "baseRepositoryUrl": "https://github.com/musnows/Scriverse",
       "baseVersion": "v0.6.6",

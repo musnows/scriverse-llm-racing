@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=65">
+    <link rel="stylesheet" href="/styles.css?v=66">
   </head>
   <body>
     <div class="app-shell">
@@ -78,8 +78,8 @@
             <div class="model-overall-chart-heading">
               <div>
                 <p class="section-kicker">效率与质量</p>
-                <h3 id="model-overall-chart-title">平均耗时与用例通过率</h3>
-                <p class="section-description">横轴为模型在已测试需求中的平均耗时，纵轴为通过用例数占全部用例的比例。点击散点或图例可查看该模型已测试的需求。</p>
+                <h3 id="model-overall-chart-title">加权平均耗时与用例通过率</h3>
+                <p class="section-description">横轴为模型在已测试需求中的加权平均耗时，纵轴为通过用例数占全部用例的比例。点击散点或图例可查看该模型已测试的需求。</p>
               </div>
               <p id="model-overall-chart-note" class="count-label"></p>
             </div>
@@ -206,6 +206,11 @@
                 <article class="requirement-meta-card">
                   <p class="requirement-meta-card__label">验收数据库</p>
                   <a id="requirement-database" class="requirement-meta-card__value" target="_blank" rel="noreferrer"></a>
+                </article>
+                <article class="requirement-meta-card requirement-meta-card--weight">
+                  <p class="requirement-meta-card__label">需求权重</p>
+                  <strong id="requirement-weight" class="requirement-meta-card__value"></strong>
+                  <span id="requirement-weight-note" class="requirement-meta-card__note">相对系数，1.0 为基准</span>
                 </article>
               </div>
 
@@ -381,6 +386,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=65"></script>
+    <script src="/app.js?v=66"></script>
   </body>
 </html>

@@ -136,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=15";
+const leaderboardDataUrl = "/source/leaderboard.json?v=16";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -257,7 +257,7 @@ function getOverallRatingData() {
     agent: leaderboardData?.agents.find((entry) => entry.modelId === model.id),
     test: testRanking.get(model.id) ?? null,
     testedRequirementCount: getTestedRequirementCount(model.id),
-    averageDurationSeconds: getAverageDurationSeconds(model.id),
+    weightedAverageDurationSeconds: getWeightedAverageDurationSeconds(model.id),
     rating: ratingState.allValues.get(model.id) ?? null,
   }));
 
@@ -269,22 +269,44 @@ function getOverallRatingData() {
   return ranking;
 }
 
-function getAverageDurationSeconds(modelId) {
+function getRequirementWeight(requirement) {
+  const weight = Number(requirement?.weight);
+  return Number.isFinite(weight) && weight > 0 ? weight : 1;
+}
+
+function formatRequirementWeight(weight) {
+  const formatted = Number(weight).toFixed(2).replace(/0$/, "");
+  return formatted.endsWith(".") ? `${formatted}0` : formatted;
+}
+
+function getWeightedAverageDurationSeconds(modelId) {
   if (!leaderboardData) {
     return null;
   }
   const requirements = leaderboardData.requirements ?? [];
   const hasPerRequirementResults = requirements.some((requirement) => getRequirementModelEntries(requirement));
-  const entries = hasPerRequirementResults
-    ? requirements.flatMap((requirement) => getRequirementModelEntries(requirement) ?? [])
+  const durationRecords = hasPerRequirementResults
+    ? requirements.flatMap((requirement) => (getRequirementModelEntries(requirement) ?? [])
       .filter((entry) => (entry.modelId ?? entry.id) === modelId)
-    : leaderboardData.models.filter((entry) => entry.modelId === modelId);
-  const durations = entries
-    .map((entry) => Number(entry.durationSeconds))
-    .filter((durationSeconds) => Number.isFinite(durationSeconds) && durationSeconds > 0);
-  return durations.length > 0
-    ? durations.reduce((total, durationSeconds) => total + durationSeconds, 0) / durations.length
-    : null;
+      .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })))
+    : leaderboardData.models
+      .filter((entry) => entry.modelId === modelId)
+      .map((entry) => ({ entry, weight: getRequirementWeight(requirements[0]) }));
+  const validRecords = durationRecords
+    .map(({ entry, weight }) => ({
+      durationSeconds: Number(entry.durationSeconds),
+      weight,
+    }))
+    .filter(({ durationSeconds }) => Number.isFinite(durationSeconds) && durationSeconds > 0);
+  if (validRecords.length === 0) {
+    return null;
+  }
+  const totalWeight = validRecords.reduce((total, record) => total + record.weight, 0);
+  const weightedDuration = validRecords.reduce(
+    (total, record) => total + record.durationSeconds * record.weight,
+    0,
+  );
+  return totalWeight > 0 ? weightedDuration / totalWeight : null;
 }
 
 const chartSvgNamespace = "http://www.w3.org/2000/svg";
@@ -310,16 +332,16 @@ function formatChartDuration(durationSeconds) {
 function createModelOverallChartData(ranking) {
   return ranking
     .map((entry, index) => {
-      const averageDurationSeconds = Number(entry.averageDurationSeconds);
+      const weightedAverageDurationSeconds = Number(entry.weightedAverageDurationSeconds);
       const testCaseCount = Number(entry.test?.testCaseCount);
       const passCount = Number(entry.test?.passCount);
-      if (!Number.isFinite(averageDurationSeconds) || averageDurationSeconds <= 0 || !Number.isFinite(testCaseCount) || testCaseCount <= 0) {
+      if (!Number.isFinite(weightedAverageDurationSeconds) || weightedAverageDurationSeconds <= 0 || !Number.isFinite(testCaseCount) || testCaseCount <= 0) {
         return null;
       }
       const passRate = Math.max(0, Math.min(100, (passCount / testCaseCount) * 100));
       return {
         entry,
-        averageDurationSeconds,
+        weightedAverageDurationSeconds,
         passRate,
         color: chartPointColors[index % chartPointColors.length],
       };
@@ -332,10 +354,10 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChartLegend.replaceChildren();
   const chartData = createModelOverallChartData(ranking);
   if (chartData.length === 0) {
-    elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的平均耗时数据" : "正在加载数据";
+    elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
     const empty = document.createElement("p");
     empty.className = "model-overall-chart__empty";
-    empty.textContent = leaderboardData ? "目前没有同时记录平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
+    empty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
     elements.modelOverallChartLegend.append(empty);
     return;
   }
@@ -345,13 +367,13 @@ function renderModelOverallChart(ranking = []) {
   const margin = { top: 24, right: 28, bottom: 68, left: 64 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const maxDurationSeconds = Math.max(60, ...chartData.map((item) => item.averageDurationSeconds)) * 1.12;
+  const maxDurationSeconds = Math.max(60, ...chartData.map((item) => item.weightedAverageDurationSeconds)) * 1.12;
   const xPosition = (durationSeconds) => margin.left + (durationSeconds / maxDurationSeconds) * plotWidth;
   const yPosition = (passRate) => margin.top + ((100 - passRate) / 100) * plotHeight;
 
   elements.modelOverallChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
   elements.modelOverallChart.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  const title = createChartSvgElement("title", { id: "model-overall-chart-svg-title" }, "模型平均耗时与用例通过率散点图");
+  const title = createChartSvgElement("title", { id: "model-overall-chart-svg-title" }, "模型加权平均耗时与用例通过率散点图");
   elements.modelOverallChart.setAttribute("aria-labelledby", title.id);
   elements.modelOverallChart.append(title);
 
@@ -384,7 +406,7 @@ function renderModelOverallChart(ranking = []) {
     labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 25, "text-anchor": "middle" }, formatChartDuration(value)));
   });
   labels.append(
-    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 12, "text-anchor": "middle" }, "平均耗时"),
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 12, "text-anchor": "middle" }, "加权平均耗时"),
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "用例通过率"),
   );
   elements.modelOverallChart.append(labels);
@@ -393,15 +415,15 @@ function renderModelOverallChart(ranking = []) {
   chartData.forEach((item) => {
     const point = createChartSvgElement("circle", {
       class: "model-overall-chart__point",
-      cx: xPosition(item.averageDurationSeconds),
+      cx: xPosition(item.weightedAverageDurationSeconds),
       cy: yPosition(item.passRate),
       r: 8,
       fill: item.color,
       tabindex: 0,
       role: "button",
-      "aria-label": `${item.entry.model.name}，平均耗时 ${formatChartDuration(item.averageDurationSeconds)}，用例通过率 ${item.passRate.toFixed(0)}%`,
+      "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，用例通过率 ${item.passRate.toFixed(0)}%`,
     });
-    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：平均耗时 ${formatChartDuration(item.averageDurationSeconds)}，通过率 ${item.passRate.toFixed(0)}%`);
+    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，通过率 ${item.passRate.toFixed(0)}%`);
     point.append(pointTitle);
     const openDetails = () => openModelOverallDetails(item.entry);
     point.addEventListener("click", openDetails);
@@ -429,12 +451,12 @@ function renderModelOverallChart(ranking = []) {
     const name = document.createElement("strong");
     name.textContent = item.entry.model.name;
     const meta = document.createElement("span");
-    meta.textContent = `平均 ${formatChartDuration(item.averageDurationSeconds)} · ${item.passRate.toFixed(0)}% 通过`;
+    meta.textContent = `加权平均 ${formatChartDuration(item.weightedAverageDurationSeconds)} · ${item.passRate.toFixed(0)}% 通过`;
     identity.append(name, meta);
     button.append(marker, identity);
     elements.modelOverallChartLegend.append(button);
   });
-  elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整耗时与通过率数据`;
+  elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与通过率数据`;
 }
 
 function getRequirementModelEntries(requirement) {
@@ -555,15 +577,15 @@ function createModelOverallRow(entry) {
   duration.className = "model-overall-row__score-block";
   const durationLabel = document.createElement("span");
   durationLabel.className = "model-overall-row__label";
-  durationLabel.textContent = "平均耗时";
+  durationLabel.textContent = "加权平均耗时";
   const durationValue = document.createElement("strong");
   durationValue.className = "model-overall-row__score";
-  durationValue.textContent = entry.averageDurationSeconds === null
+  durationValue.textContent = entry.weightedAverageDurationSeconds === null
     ? "暂无数据"
-    : formatDurationSeconds(entry.averageDurationSeconds);
+    : formatDurationSeconds(entry.weightedAverageDurationSeconds);
   const durationMeta = document.createElement("span");
   durationMeta.className = "model-overall-row__meta";
-  durationMeta.textContent = entry.averageDurationSeconds === null ? "暂无测试记录" : "按已测试需求平均";
+  durationMeta.textContent = entry.weightedAverageDurationSeconds === null ? "暂无测试记录" : "按需求权重计算";
   duration.append(durationLabel, durationValue, durationMeta);
 
   const userScore = document.createElement("div");
@@ -683,6 +705,8 @@ const elements = {
   copyRequirementCommit: document.getElementById("copy-requirement-commit"),
   copyRequirementPrompt: document.getElementById("copy-requirement-prompt"),
   requirementDatabase: document.getElementById("requirement-database"),
+  requirementWeight: document.getElementById("requirement-weight"),
+  requirementWeightNote: document.getElementById("requirement-weight-note"),
   requirementPrompt: document.getElementById("requirement-prompt"),
   agentRosterBody: document.getElementById("agent-roster-body"),
   dialog: document.getElementById("image-dialog"),
@@ -1424,6 +1448,7 @@ function renderRequirementsView() {
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "正在加载测试需求……";
     elements.requirementSummary.textContent = "需求信息来自 source/leaderboard.json。";
+    elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
   }
@@ -1435,6 +1460,7 @@ function renderRequirementsView() {
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "暂无测试需求";
     elements.requirementSummary.textContent = "可以在 leaderboard.json 的 requirements 数组中继续添加需求。";
+    elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
   }
@@ -1451,6 +1477,9 @@ function renderRequirementsView() {
   elements.requirementCommit.textContent = requirement.baseCommit;
   elements.requirementDatabase.href = requirement.evaluationDatabaseUrl ?? "#";
   elements.requirementDatabase.textContent = requirement.evaluationDatabase ?? "未记录";
+  const requirementWeight = getRequirementWeight(requirement);
+  elements.requirementWeight.textContent = formatRequirementWeight(requirementWeight);
+  elements.requirementWeightNote.textContent = "相对系数，1.0 为基准";
   elements.requirementPrompt.textContent = requirement.prompt;
 
   const agentRows = (leaderboardData.agents ?? []).map((agent) => {
