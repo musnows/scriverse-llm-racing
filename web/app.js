@@ -115,11 +115,21 @@ for (const model of models) {
     modelName: model.name,
     sequence: index + 1,
   }));
+  model.imagesByFeature = new Map();
+  model.images.forEach((image) => {
+    image.tags.forEach((tag) => {
+      const items = model.imagesByFeature.get(tag) ?? [];
+      items.push(image);
+      model.imagesByFeature.set(tag, items);
+    });
+  });
 }
 
 const leaderboardDataUrl = "./source/leaderboard.json?v=4";
 let leaderboardData = null;
 let leaderboardLoadError = false;
+let rankingDataCache = null;
+let rankingDataCacheSource = null;
 const ratingState = {
   requirementId: null,
   loading: false,
@@ -130,15 +140,20 @@ const ratingState = {
   allLoaded: false,
   allError: false,
   allValues: new Map(),
+  valuesByRequirement: new Map(),
+  requestsByRequirement: new Map(),
 };
 
 function getRankingData() {
   if (!leaderboardData) {
     return [];
   }
+  if (rankingDataCacheSource === leaderboardData && rankingDataCache) {
+    return rankingDataCache;
+  }
   const testCases = leaderboardData.testCases;
   const scoreByPriority = leaderboardData.scoring.deductionByPriority;
-  return leaderboardData.models
+  rankingDataCache = leaderboardData.models
     .map((entry) => {
       const failedIds = new Set(Object.keys(entry.failures));
       const deductions = testCases.reduce(
@@ -156,6 +171,8 @@ function getRankingData() {
     })
     .sort((left, right) => right.score - left.score || right.passCount - left.passCount)
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
+  rankingDataCacheSource = leaderboardData;
+  return rankingDataCache;
 }
 
 function formatDurationSeconds(durationSeconds) {
@@ -596,39 +613,70 @@ function renderModelRating() {
   elements.modelRating.append(panel);
 }
 
-async function loadRatingsForRequirement(force = false) {
-  if (!state.requirementId || (ratingState.loading && !force)) {
-    return;
+async function requestRatingsForRequirement(requirementId, force = false) {
+  if (!force && ratingState.valuesByRequirement.has(requirementId)) {
+    return ratingState.valuesByRequirement.get(requirementId);
   }
-  if (!force && ratingState.loaded && ratingState.requirementId === state.requirementId) {
-    renderModelRating();
-    return;
+  if (!force && ratingState.requestsByRequirement.has(requirementId)) {
+    return ratingState.requestsByRequirement.get(requirementId);
   }
-  ratingState.requirementId = state.requirementId;
-  ratingState.loading = true;
-  ratingState.error = "";
-  try {
-    const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(state.requirementId)}`), { cache: "no-store" });
+
+  const request = (async () => {
+    const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(requirementId)}`), { cache: "no-store" });
     if (!response.ok) {
       throw new Error("评分服务尚未部署");
     }
     const payload = await response.json();
-    ratingState.values = new Map((payload.data || []).map((item) => [item.modelId, item]));
-    ratingState.loaded = true;
-  } catch {
-    ratingState.values = new Map();
-    ratingState.loaded = false;
-    ratingState.error = "评分服务尚未部署";
+    const values = Array.isArray(payload.data) ? payload.data : [];
+    ratingState.valuesByRequirement.set(requirementId, values);
+    return values;
+  })();
+  ratingState.requestsByRequirement.set(requirementId, request);
+  try {
+    return await request;
   } finally {
-    ratingState.loading = false;
-    const activeElement = document.activeElement;
-    if (activeElement?.classList.contains("rating-form__range")) {
-      const status = elements.modelRating.querySelector(".rating-form__status");
-      if (status) {
-        status.textContent = ratingState.error || "每日每个模型最多 10 次";
+    if (ratingState.requestsByRequirement.get(requirementId) === request) {
+      ratingState.requestsByRequirement.delete(requirementId);
+    }
+  }
+}
+
+async function loadRatingsForRequirement(force = false) {
+  const requirementId = state.requirementId;
+  if (!requirementId) {
+    return;
+  }
+  if (!force && ratingState.loaded && ratingState.requirementId === requirementId) {
+    renderModelRating();
+    return;
+  }
+  ratingState.requirementId = requirementId;
+  ratingState.loading = true;
+  ratingState.error = "";
+  try {
+    const values = await requestRatingsForRequirement(requirementId, force);
+    if (state.requirementId === requirementId) {
+      ratingState.values = new Map(values.map((item) => [item.modelId, item]));
+      ratingState.loaded = true;
+    }
+  } catch {
+    if (state.requirementId === requirementId) {
+      ratingState.values = new Map();
+      ratingState.loaded = false;
+      ratingState.error = "评分服务尚未部署";
+    }
+  } finally {
+    if (state.requirementId === requirementId) {
+      ratingState.loading = false;
+      const activeElement = document.activeElement;
+      if (activeElement?.classList.contains("rating-form__range")) {
+        const status = elements.modelRating.querySelector(".rating-form__status");
+        if (status) {
+          status.textContent = ratingState.error || "每日每个模型最多 10 次";
+        }
+      } else {
+        renderModelRating();
       }
-    } else {
-      renderModelRating();
     }
   }
 }
@@ -649,14 +697,9 @@ async function loadAllRatingsForRequirements(force = false) {
   ratingState.allError = false;
   renderModelOverall();
   try {
-    const responses = await Promise.all(requirements.map(async (requirement) => {
-      const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(requirement.id)}`), { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error("评分服务尚未部署");
-      }
-      const payload = await response.json();
-      return Array.isArray(payload.data) ? payload.data : [];
-    }));
+    const responses = await Promise.all(
+      requirements.map((requirement) => requestRatingsForRequirement(requirement.id, force)),
+    );
     const totals = new Map();
     responses.flat().forEach((item) => {
       const averageStars = Number(item.averageStars);
@@ -702,7 +745,7 @@ function renderModelView() {
 
 function getFeatureItems(featureId, modelId) {
   const model = models.find((item) => item.id === modelId);
-  return model ? model.images.filter((image) => image.tags.includes(featureId)) : [];
+  return model?.imagesByFeature.get(featureId) ?? [];
 }
 
 function getFeatureCount(featureId) {
@@ -1080,7 +1123,7 @@ function renderRequirementsView() {
 
 async function loadLeaderboardData() {
   try {
-    const response = await fetch(leaderboardDataUrl, { cache: "no-store" });
+    const response = await fetch(leaderboardDataUrl, { cache: "no-cache" });
     if (!response.ok) {
       throw new Error(`Leaderboard data request failed: ${response.status}`);
     }
@@ -1089,6 +1132,8 @@ async function loadLeaderboardData() {
       throw new Error("Leaderboard data shape is invalid");
     }
     leaderboardData = payload;
+    rankingDataCache = null;
+    rankingDataCacheSource = null;
     renderGlobalRequirementSelect();
     if (state.view === "home") {
       renderHomeView();
