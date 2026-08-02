@@ -57,6 +57,33 @@ main {
   line-height: 1.5;
 }
 
+.toast {
+  position: fixed;
+  right: clamp(16px, 4vw, 40px);
+  bottom: 24px;
+  z-index: 20;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border: 1px solid #4a4039;
+  border-radius: 8px;
+  color: #f4f4f1;
+  background: #211c19;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.toast--success {
+  border-color: #4c7053;
+  background: #1b2a1e;
+}
+
+.toast--error {
+  border-color: #8d533f;
+  background: #30201b;
+}
+
 .site-footer a {
   color: #989b94;
   text-decoration: none;

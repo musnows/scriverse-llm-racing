@@ -146,7 +146,6 @@ const ratingState = {
   requirementId: null,
   loading: false,
   loaded: false,
-  error: "",
   values: new Map(),
   allLoading: false,
   allLoaded: false,
@@ -784,7 +783,24 @@ const elements = {
   dialogClose: document.getElementById("dialog-close"),
   dialogPrev: document.getElementById("dialog-prev"),
   dialogNext: document.getElementById("dialog-next"),
+  toast: document.getElementById("toast"),
 };
+
+let toastTimer = null;
+
+function showToast(message, tone = "info") {
+  if (!elements.toast) {
+    return;
+  }
+  window.clearTimeout(toastTimer);
+  elements.toast.className = `toast toast--${tone}`;
+  elements.toast.textContent = message;
+  elements.toast.hidden = false;
+  toastTimer = window.setTimeout(() => {
+    elements.toast.hidden = true;
+    elements.toast.textContent = "";
+  }, 3200);
+}
 
 function createScreenshotCard(image, items, index, compact = false) {
   const article = document.createElement("article");
@@ -936,12 +952,9 @@ function renderModelRating() {
   submit.type = "button";
   submit.className = "rating-form__submit";
   submit.textContent = "提交评分";
-  const status = document.createElement("span");
-  status.className = "rating-form__status";
-  status.textContent = ratingState.error;
   submit.addEventListener("click", async () => {
     submit.disabled = true;
-    status.textContent = "提交中……";
+    showToast("正在提交评分", "info");
     try {
       const response = await fetch(apiUrl("/api/ratings/vote"), {
         method: "POST",
@@ -963,17 +976,16 @@ function renderModelRating() {
               ? `今日对该模型的评分次数已达 ${payload.limit} 次上限`
               : "评分服务暂不可用");
       }
-      ratingState.error = "评分已记录";
+      showToast("评分已记录", "success");
       await loadRatingsForRequirement(true);
       await loadAllRatingsForRequirements(true);
     } catch (error) {
-      ratingState.error = error instanceof Error && error.message ? error.message : "评分服务尚未部署";
-      renderModelRating();
+      showToast(error instanceof Error && error.message ? error.message : "评分服务尚未部署", "error");
     } finally {
       submit.disabled = false;
     }
   });
-  form.append(label, input, value, submit, status);
+  form.append(label, input, value, submit);
   panel.append(summary, form);
   elements.modelRating.append(panel);
 }
@@ -1024,7 +1036,6 @@ async function loadRatingsForRequirement(force = false) {
   }
   ratingState.requirementId = requirementId;
   ratingState.loading = true;
-  ratingState.error = "";
   try {
     const values = await requestRatingsForRequirement(requirementId, force);
     if (state.requirementId === requirementId) {
@@ -1035,18 +1046,15 @@ async function loadRatingsForRequirement(force = false) {
     if (state.requirementId === requirementId) {
       ratingState.values = new Map();
       ratingState.loaded = false;
-      ratingState.error = "评分服务尚未部署";
     }
   } finally {
     if (state.requirementId === requirementId) {
       ratingState.loading = false;
       const activeElement = document.activeElement;
       if (activeElement?.classList.contains("rating-form__range")) {
-        const status = elements.modelRating.querySelector(".rating-form__status");
-        if (status) {
-          status.textContent = ratingState.error || "每日每个模型最多 10 次";
-        }
-      } else if (state.view === "leaderboard") {
+        return;
+      }
+      if (state.view === "leaderboard") {
         renderLeaderboard();
       } else {
         renderModelRating();
