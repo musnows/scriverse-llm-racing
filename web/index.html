@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <link rel="stylesheet" href="./styles.css?v=22">
+    <link rel="stylesheet" href="./styles.css?v=38">
   </head>
   <body>
     <div class="app-shell">
@@ -16,25 +16,38 @@
           <h1>叙界真实需求 Agent 评测娱乐榜</h1>
           <p class="page-summary">统一归档多项测试需求、参赛配置、需求排行榜与模型截图。</p>
         </div>
-        <button type="button" id="home-model-overall-entry" class="home-header-overall-entry">
-          <span class="home-header-overall-entry__label">跨需求汇总</span>
-          <strong class="home-header-overall-entry__title">模型总榜</strong>
-          <span class="home-header-overall-entry__action">进入总榜</span>
-        </button>
+        <div class="home-header-entries">
+          <button type="button" id="home-model-overall-entry" class="home-header-overall-entry">
+            <span class="home-header-overall-entry__label">跨需求汇总</span>
+            <strong class="home-header-overall-entry__title">模型总榜</strong>
+            <span class="home-header-overall-entry__action">进入总榜</span>
+          </button>
+          <button type="button" id="home-test-method-entry" class="home-header-overall-entry">
+            <span class="home-header-overall-entry__label">全局说明</span>
+            <strong class="home-header-overall-entry__title">测试方法</strong>
+            <span class="home-header-overall-entry__action">查看方法</span>
+          </button>
+        </div>
         <div class="page-header__controls">
-          <button type="button" id="back-home" class="back-home-button" hidden>返回需求列表</button>
+          <div class="header-view-controls">
+            <button type="button" id="back-home" class="home-icon-button" aria-label="返回主页" title="返回主页" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+            <div class="view-switch" role="tablist" aria-label="汇总维度">
+              <button type="button" class="view-switch__button" role="tab" data-view="model" aria-selected="false">按模型</button>
+              <button type="button" class="view-switch__button" role="tab" data-view="model-overall" aria-selected="false">模型总榜</button>
+              <button type="button" class="view-switch__button" role="tab" data-view="feature" aria-selected="false">按功能</button>
+              <button type="button" class="view-switch__button" role="tab" data-view="leaderboard" aria-selected="false">需求排行榜</button>
+              <button type="button" class="view-switch__button" role="tab" data-view="requirements" aria-selected="false">需求信息</button>
+            </div>
+          </div>
           <div class="global-requirement-switch">
             <label for="global-requirement-select">当前测试需求</label>
             <select id="global-requirement-select" disabled>
               <option value="">正在加载需求……</option>
             </select>
-          </div>
-          <div class="view-switch" role="tablist" aria-label="汇总维度">
-            <button type="button" class="view-switch__button" role="tab" data-view="model" aria-selected="false">按模型</button>
-            <button type="button" class="view-switch__button" role="tab" data-view="model-overall" aria-selected="false">模型总榜</button>
-            <button type="button" class="view-switch__button" role="tab" data-view="feature" aria-selected="false">按功能</button>
-            <button type="button" class="view-switch__button" role="tab" data-view="leaderboard" aria-selected="false">需求排行榜</button>
-            <button type="button" class="view-switch__button" role="tab" data-view="requirements" aria-selected="false">需求信息</button>
           </div>
         </div>
       </header>
@@ -133,11 +146,7 @@
                   <p class="requirement-meta-card__label">基础仓库</p>
                   <a id="requirement-repository" class="requirement-meta-card__value" target="_blank" rel="noreferrer"></a>
                 </article>
-                <article class="requirement-meta-card">
-                  <p class="requirement-meta-card__label">基础版本</p>
-                  <p id="requirement-version" class="requirement-meta-card__value"></p>
-                </article>
-                <article class="requirement-meta-card">
+                <article class="requirement-meta-card requirement-meta-card--commit">
                   <div class="requirement-meta-card__label-row">
                     <p class="requirement-meta-card__label">基础 commit</p>
                     <button type="button" id="copy-requirement-commit" class="copy-button" aria-label="复制基础 commit">复制</button>
@@ -151,9 +160,12 @@
               </div>
 
               <section class="requirement-prompt-block" aria-labelledby="requirement-prompt-title">
-                <div class="requirement-block-heading">
-                  <p class="section-kicker">执行指令</p>
-                  <h3 id="requirement-prompt-title">测试 Prompt</h3>
+                <div class="requirement-block-heading requirement-prompt-heading">
+                  <div>
+                    <p class="section-kicker">执行指令</p>
+                    <h3 id="requirement-prompt-title">测试 Prompt</h3>
+                  </div>
+                  <button type="button" id="copy-requirement-prompt" class="copy-button" aria-label="复制测试 Prompt">复制</button>
                 </div>
                 <pre id="requirement-prompt"></pre>
               </section>
@@ -185,7 +197,7 @@
                 <div>
                   <p class="section-kicker">测试方法</p>
                   <h2 id="test-method-title">统一测试方法</h2>
-                  <p class="section-description">所有参赛 Agent 使用同一套环境约束、提示词与验收标准完成叙界 S3 备份需求。</p>
+                  <p class="section-description">所有参赛 Agent 使用同一套环境约束、提示词与验收标准完成测试需求。</p>
                 </div>
               </div>
 
@@ -193,7 +205,7 @@
                 <article class="test-method-card">
                   <p class="test-method-card__label">测试基线</p>
                   <h3>同一项目与同一任务</h3>
-                  <p>测试基于 Scriverse v0.6.6（commit <code>91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2</code>），所有 Agent 都要完成同一个叙界 S3 备份需求。</p>
+                  <p>测试基于统一的项目版本与需求基线（Scriverse v0.6.6，commit <code>91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2</code>），所有 Agent 都要完成同一项测试需求。</p>
                 </article>
                 <article class="test-method-card">
                   <p class="test-method-card__label">执行环境</p>
@@ -203,13 +215,13 @@
                 <article class="test-method-card">
                   <p class="test-method-card__label">隔离方式</p>
                   <h3>先创建独立 worktree</h3>
-                  <p>每位参赛 Agent 先使用相同的 git-worktree skill 创建 worktree，再在各自工作区内执行后续任务，避免互相污染。</p>
+                  <p>每位参赛 Agent 先使用相同的 <a href="https://github.com/musnows/scriverse-llm-racing/blob/main/data/git-worktree/SKILL.md" target="_blank" rel="noreferrer">git-worktree skill</a> 创建 worktree，再在各自工作区内执行后续任务，避免互相污染。</p>
                 </article>
                 <article class="test-method-card">
                   <p class="test-method-card__label">验收数据</p>
-                  <h3>统一数据库与图片</h3>
-                  <p>使用同一份演示数据库与图片数据进行验收，检查配置保存、对象存储目录、数据库快照、定时任务和失败反馈。</p>
-                  <code class="test-method-card__path">scriverse-demo-db-with-setting-images-20260802.zip</code>
+                  <h3>统一验收数据</h3>
+                  <p>根据当前测试需求准备一致的演示数据与验收环境，检查功能结果、页面反馈、日志记录和实际产物。</p>
+                  <code class="test-method-card__path">测试数据与验收要求随需求归档</code>
                 </article>
               </div>
 
@@ -220,8 +232,8 @@
                 </div>
                 <ol class="test-method-steps">
                   <li><strong>准备工作区：</strong>创建独立 git worktree，确认项目基线、AGENTS.md 和 Agent 运行参数。</li>
-                  <li><strong>执行任务：</strong>先发送统一的首个 prompt，再发送统一的 S3 备份任务 prompt；任务期间 Agent 自行完成决策，不咨询用户。</li>
-                  <li><strong>启动与检查：</strong>启动开发服务，使用统一验收数据检查页面、接口、日志和对象存储中的实际产物。</li>
+                  <li><strong>执行任务：</strong>先发送统一的首个 prompt，再发送当前需求对应的任务 prompt；任务期间 Agent 自行完成决策，不咨询用户。</li>
+                  <li><strong>启动与检查：</strong>启动开发服务，使用统一验收数据检查页面、接口、日志和实际产物。</li>
                   <li><strong>记录结果：</strong>按测试用例逐项记录通过状态、失败等级、截图和最终得分，同时收集用户对结果的打星评分。</li>
                 </ol>
               </section>
@@ -237,20 +249,9 @@
               <section class="test-method-block" aria-labelledby="test-method-task-prompt-title">
                 <div class="requirement-block-heading">
                   <p class="section-kicker">第二步</p>
-                  <h3 id="test-method-task-prompt-title">任务 Prompt</h3>
+                  <h3 id="test-method-task-prompt-title">当前需求 Prompt</h3>
                 </div>
-                <pre class="test-method-prompt">为当前项目加上数据库和图片的 s3 备份能力：
-
-1. 支持配置多个亚马逊 s3 兼容的配置项，作为同步服务器的目标，支持同时开启多个备份目标，依次同步到对应目标中；
-2. 配置项里面需要有子目录的设置能力，同步到给定子目录（没有给定的时候默认桶根目录）下的 /scriverse 子目录中；
-3. 把图片上传到 /scriverse/img 子目录中，若图片已经存在则跳过，不存在上传；
-4. 数据库备份到 /scriverse/db 子目录中，不进行历史备份覆盖，在 db 文件名中加上时间戳后上传，方便用作后续的快照回滚；
-5. 支持选择是否备份图片，不勾选的时候只备份数据库；
-6. 支持选择备份定时任务的触发时间和备份留存个数，超过备份留存个数后，删除最老的数据库备份（不清理图片）；
-7. 设置入口加到整个系统的设置中，不需要支持选择书籍，只支持备份整个系统的数据；
-8. 如果对应 s3 服务请求失败，需要在日志里面完整打印失败的 s3 配置项（ak 和 sk 不打印）和它的请求失败 s3 服务端的返回结果，并 toast 提示前端，禁止静默失败；
-
-在任务执行期间必须自行完成决策，禁止咨询用户任何问题。</pre>
+                <p class="section-description test-method-note">每项测试需求使用对应的统一任务 Prompt。具体内容请在左侧选择需求后，查看「需求信息」中的「测试 Prompt」。</p>
               </section>
 
               <section class="test-method-block" aria-labelledby="test-method-score-title">
@@ -259,9 +260,9 @@
                   <h3 id="test-method-score-title">测试用例与用户评分</h3>
                 </div>
                 <div class="test-method-score-grid">
-                  <p><strong>测试用例评分：</strong>满分 200 分，按问题等级扣分：P00 扣 30 分，P0 扣 10 分，P1 扣 5 分，P2 不扣分。</p>
+                  <p><strong>统一满分：</strong>后续所有需求的测试满分都是 200 分，会根据测试用例数量动态调整扣分策略。</p>
+                  <p><strong>测试用例评分：</strong>根据评测配置动态计算，总分为 200 分，扣分策略会随测试用例数量调整。</p>
                   <p><strong>用户打星评分：</strong>用户可对每个 Agent 的最终结果进行 1—5 星评分，单独展示在排行榜中。</p>
-                  <p><strong>信息安全：</strong>页面只说明使用了已验证的 S3 兼容测试配置，不展示任何访问密钥或 Secret。</p>
                 </div>
               </section>
             </section>
@@ -290,9 +291,12 @@
       </main>
 
       <footer class="site-footer">
-        <span>作者 musnows</span>
-        <span class="site-footer__notice">所有测试仅供参考，无实际对比价值</span>
-        <a href="https://github.com/musnows/scriverse-llm-racing" target="_blank" rel="noreferrer">GitHub · musnows/scriverse-llm-racing</a>
+        <span class="site-footer__notice">所有测试仅供娱乐，排名无实际参考价值</span>
+        <span id="build-updated-at" class="site-footer__updated-at">最近更新时间：读取中</span>
+        <div class="site-footer__right">
+          <span>作者 musnows</span>
+          <a href="https://github.com/musnows/scriverse-llm-racing" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
       </footer>
     </div>
 
@@ -315,6 +319,7 @@
     </dialog>
 
     <script src="./api-config.js?v=1"></script>
-    <script src="./app.js?v=26"></script>
+    <script src="./build-meta.js?v=2"></script>
+    <script src="./app.js?v=32"></script>
   </body>
 </html>

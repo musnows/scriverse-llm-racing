@@ -176,6 +176,26 @@ function formatDurationSeconds(durationSeconds) {
   return parts.join("");
 }
 
+function formatBuildUpdatedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "本地开发";
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date).replaceAll("/", "-");
+}
+
+function renderBuildUpdatedAt() {
+  const source = window.__WEB_UPDATED_AT__ || document.lastModified;
+  elements.buildUpdatedAt.textContent = `最近更新时间：${formatBuildUpdatedAt(source)}`;
+}
+
 function getOverallRatingData() {
   const testRanking = new Map(getRankingData().map((entry) => [entry.modelId, entry]));
   const ranking = models.map((model) => ({
@@ -371,7 +391,10 @@ const elements = {
   modelOverallButton: document.querySelector('[data-view="model-overall"]'),
   homeView: document.getElementById("home-view"),
   requirementList: document.getElementById("requirement-list"),
+  homeHeaderEntries: document.querySelector(".home-header-entries"),
+  buildUpdatedAt: document.getElementById("build-updated-at"),
   homeModelOverallEntry: document.getElementById("home-model-overall-entry"),
+  homeTestMethodEntry: document.getElementById("home-test-method-entry"),
   globalAverageNote: document.getElementById("global-average-note"),
   modelOverallView: document.getElementById("model-overall-view"),
   modelOverallList: document.getElementById("model-overall-list"),
@@ -382,6 +405,7 @@ const elements = {
   modelOverallDialogList: document.getElementById("model-overall-dialog-list"),
   modelOverallDialogClose: document.getElementById("model-overall-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
+  viewSwitch: document.querySelector(".view-switch"),
   globalRequirementSwitch: document.querySelector(".global-requirement-switch"),
   backHome: document.getElementById("back-home"),
   globalRequirementSelect: document.getElementById("global-requirement-select"),
@@ -411,9 +435,9 @@ const elements = {
   requirementTitle: document.getElementById("requirement-title"),
   requirementSummary: document.getElementById("requirement-summary"),
   requirementRepository: document.getElementById("requirement-repository"),
-  requirementVersion: document.getElementById("requirement-version"),
   requirementCommit: document.getElementById("requirement-commit"),
   copyRequirementCommit: document.getElementById("copy-requirement-commit"),
+  copyRequirementPrompt: document.getElementById("copy-requirement-prompt"),
   requirementDatabase: document.getElementById("requirement-database"),
   requirementPrompt: document.getElementById("requirement-prompt"),
   agentRosterBody: document.getElementById("agent-roster-body"),
@@ -912,12 +936,15 @@ function createRequirementCard(requirement) {
   title.textContent = requirement.title;
   const base = document.createElement("span");
   base.className = "requirement-card__base";
-  base.textContent = `${requirement.baseRepository} · ${requirement.baseVersion}`;
+  base.textContent = requirement.baseRepository;
+  const summary = document.createElement("span");
+  summary.className = "requirement-card__summary";
+  summary.textContent = requirement.summary || "统一记录该项测试需求的执行结果与参赛配置。";
   const action = document.createElement("span");
   action.className = "requirement-card__action";
   action.textContent = "进入需求详情";
 
-  card.append(label, title, base, action);
+  card.append(label, title, base, summary, action);
   return card;
 }
 
@@ -1023,7 +1050,6 @@ function renderRequirementsView() {
   elements.requirementSummary.textContent = `基于 ${requirement.baseRepository} ${requirement.baseVersion}，用于记录本轮测试基线与参赛配置。`;
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
   elements.requirementRepository.textContent = requirement.baseRepository;
-  elements.requirementVersion.textContent = requirement.baseVersion;
   elements.requirementCommit.textContent = requirement.baseCommit;
   elements.requirementDatabase.href = requirement.evaluationDatabaseUrl ?? "#";
   elements.requirementDatabase.textContent = requirement.evaluationDatabase ?? "未记录";
@@ -1090,7 +1116,8 @@ async function loadLeaderboardData() {
 }
 
 function setView(view) {
-  if (view !== "home" && view !== "model-overall" && !state.requirementId) {
+  const isGlobalTestMethod = view === "requirements" && state.requirementsTab === "method";
+  if (view !== "home" && view !== "model-overall" && !state.requirementId && !isGlobalTestMethod) {
     view = "home";
   }
   state.view = view;
@@ -1099,6 +1126,7 @@ function setView(view) {
   const isModel = view === "model";
   const isFeature = view === "feature";
   const isRequirements = view === "requirements";
+  const isMethodView = isRequirements && state.requirementsTab === "method";
   elements.homeView.hidden = !isHome;
   elements.modelOverallView.hidden = !isModelOverall;
   elements.modelView.hidden = !isModel;
@@ -1106,13 +1134,18 @@ function setView(view) {
   elements.leaderboardView.hidden = view !== "leaderboard";
   elements.requirementsView.hidden = !isRequirements;
   elements.pageHeaderControls.hidden = isHome;
+  elements.homeHeaderEntries.hidden = !isHome;
   elements.homeModelOverallEntry.hidden = !isHome;
-  elements.globalRequirementSwitch.hidden = isModelOverall;
+  elements.globalRequirementSwitch.hidden = isModelOverall || isMethodView;
+  elements.viewSwitch.hidden = isMethodView;
   elements.modelOverallButton.hidden = Boolean(state.requirementId);
   elements.backHome.hidden = isHome;
-  elements.backHome.textContent = isModelOverall ? "主页" : "返回需求列表";
+  const backHomeLabel = isModelOverall ? "返回主页" : "返回需求列表";
+  elements.backHome.setAttribute("aria-label", backHomeLabel);
+  elements.backHome.title = backHomeLabel;
   elements.viewButtons.forEach((button) => {
-    button.hidden = (isModelOverall && button.dataset.view !== "model-overall")
+    button.hidden = isMethodView
+      || (isModelOverall && button.dataset.view !== "model-overall")
       || (button.dataset.view === "model-overall" && Boolean(state.requirementId));
     button.setAttribute("aria-selected", String(button.dataset.view === view));
   });
@@ -1186,10 +1219,37 @@ async function copyRequirementCommit() {
   }, 1400);
 }
 
+async function copyRequirementPrompt() {
+  const prompt = elements.requirementPrompt.textContent.trim();
+  if (!prompt) {
+    return;
+  }
+
+  const button = elements.copyRequirementPrompt;
+  try {
+    await navigator.clipboard.writeText(prompt);
+    button.textContent = "已复制";
+    button.setAttribute("aria-label", "已复制测试 Prompt");
+  } catch (error) {
+    console.error("Prompt copy failed", error);
+    button.textContent = "复制失败";
+    button.setAttribute("aria-label", "复制测试 Prompt 失败");
+  }
+
+  window.setTimeout(() => {
+    button.textContent = "复制";
+    button.setAttribute("aria-label", "复制测试 Prompt");
+  }, 1400);
+}
+
 elements.viewButtons.forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
 });
 elements.homeModelOverallEntry.addEventListener("click", () => setView("model-overall"));
+elements.homeTestMethodEntry.addEventListener("click", () => {
+  state.requirementsTab = "method";
+  setView("requirements");
+});
 elements.globalRequirementSelect.addEventListener("change", (event) => {
   state.requirementId = event.target.value;
   state.requirementsTab = "requirement";
@@ -1206,6 +1266,7 @@ elements.testMethodTab.addEventListener("click", () => {
   renderRequirementsView();
 });
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
+elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
 elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
 elements.modelOverallDialog.addEventListener("click", (event) => {
   if (event.target === elements.modelOverallDialog) {
@@ -1233,4 +1294,5 @@ document.addEventListener("keydown", (event) => {
 });
 
 setView("home");
+renderBuildUpdatedAt();
 loadLeaderboardData();

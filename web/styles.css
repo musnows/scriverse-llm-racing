@@ -34,7 +34,7 @@ button {
   width: min(1680px, 100%);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 40px clamp(18px, 4vw, 64px) 72px;
+  padding: 40px clamp(18px, 4vw, 64px) 28px;
 }
 
 main {
@@ -59,9 +59,8 @@ main {
 }
 
 .site-footer__notice {
-  flex: 1;
+  flex: 0 0 auto;
   color: #8e8f8a;
-  text-align: center;
 }
 
 .site-footer a:hover {
@@ -72,6 +71,27 @@ main {
 .site-footer a:focus-visible {
   outline: 2px solid #e58b66;
   outline-offset: 3px;
+}
+
+.site-footer__updated-at {
+  flex: 1;
+  min-width: 0;
+  color: #686b66;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.site-footer__right {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 16px;
+}
+
+.site-footer__right a {
+  color: inherit;
 }
 
 .page-header,
@@ -100,24 +120,37 @@ main {
   display: none;
 }
 
-.back-home-button {
-  justify-self: end;
-  padding: 8px 12px;
+.header-view-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-icon-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
   border: 1px solid #3b3d39;
-  border-radius: 8px;
+  border-radius: 9px;
   color: #c8c9c3;
   background: #20211f;
   cursor: pointer;
-  font-size: 12px;
 }
 
-.back-home-button:hover {
+.home-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.home-icon-button:hover {
   border-color: #8d533f;
   color: #fffaf6;
   background: #2a2925;
 }
 
-.back-home-button:focus-visible {
+.home-icon-button:focus-visible {
   outline: 2px solid #e58b66;
   outline-offset: 3px;
 }
@@ -137,19 +170,39 @@ main {
 
 .global-requirement-switch select {
   min-width: 220px;
-  max-width: 100%;
-  padding: 8px 30px 8px 11px;
+  max-width: 320px;
+  padding: 9px 38px 9px 13px;
   border: 1px solid #3b3d39;
-  border-radius: 8px;
+  border-radius: 9px;
   color: #e6e7e1;
-  background: #181917;
+  background-color: #181917;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23d77855' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-position: right 13px center;
+  background-repeat: no-repeat;
+  background-size: 12px 8px;
   font: inherit;
   font-size: 13px;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.global-requirement-switch select:hover {
+  border-color: #8d533f;
+  background-color: #211c19;
+}
+
+.global-requirement-switch select:disabled {
+  color: #777a74;
+  cursor: wait;
+  opacity: 1;
 }
 
 .global-requirement-switch select:focus-visible {
   outline: 2px solid #e58b66;
   outline-offset: 3px;
+  border-color: #b45b3a;
+  box-shadow: 0 0 0 3px rgba(229, 139, 102, 0.12);
 }
 
 .eyebrow,
@@ -211,6 +264,11 @@ h2 {
 
 .view-switch {
   flex: 0 0 auto;
+  height: 38px;
+  padding: 0 5px;
+  border: 1px solid #30322f;
+  border-radius: 12px;
+  background: #181917;
 }
 
 .view-switch__button,
@@ -228,6 +286,16 @@ h2 {
 .tab-button {
   padding: 10px 16px;
   border-radius: 8px;
+}
+
+.view-switch__button {
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.tab-button {
+  height: 38px;
 }
 
 .view-switch__button[aria-selected="true"],
@@ -655,6 +723,15 @@ h2 {
   line-height: 1.7;
 }
 
+.test-method-card a {
+  color: #e58b66;
+  text-decoration: none;
+}
+
+.test-method-card a:hover {
+  text-decoration: underline;
+}
+
 .test-method-card code,
 .test-method-prompt,
 .test-method-card__path {
@@ -697,7 +774,6 @@ h2 {
   margin: 0;
   overflow: auto;
   color: #d6d7d1;
-  background: #10110f;
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -711,6 +787,10 @@ h2 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 22px;
+}
+
+.requirement-meta-card--commit {
+  grid-column: span 2;
 }
 
 .requirement-meta-card,
@@ -778,6 +858,11 @@ h2 {
   white-space: nowrap;
 }
 
+.requirement-meta-card--commit .requirement-meta-card__value {
+  overflow-x: auto;
+  text-overflow: clip;
+}
+
 a.requirement-meta-card__value {
   color: #d99a7e;
   text-decoration: none;
@@ -799,6 +884,13 @@ a.requirement-meta-card__value:hover {
 
 .requirement-block-heading {
   margin-bottom: 12px;
+}
+
+.requirement-prompt-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .requirement-block-heading .section-kicker {
@@ -997,6 +1089,13 @@ a.requirement-meta-card__value:hover {
   transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
+.home-header-entries {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
 .home-header-overall-entry[hidden],
 .global-requirement-switch[hidden] {
   display: none;
@@ -1189,8 +1288,8 @@ a.requirement-meta-card__value:hover {
 .requirement-card {
   display: grid;
   gap: 8px;
-  min-height: 180px;
-  padding: 20px;
+  min-height: 148px;
+  padding: 17px 18px;
   border: 1px solid #30322f;
   border-radius: 12px;
   color: #f4f4f1;
@@ -1227,6 +1326,13 @@ a.requirement-meta-card__value:hover {
   color: #a9aaa5;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
+}
+
+.requirement-card__summary {
+  max-width: 760px;
+  color: #a9aaa5;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .requirement-card__action {
@@ -1487,6 +1593,10 @@ a.requirement-meta-card__value:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .requirement-meta-card--commit {
+    grid-column: auto;
+  }
+
   .test-method-grid,
   .test-method-score-grid {
     grid-template-columns: 1fr;
@@ -1520,9 +1630,27 @@ a.requirement-meta-card__value:hover {
     width: 100%;
   }
 
+  .header-view-controls {
+    width: 100%;
+  }
+
+  .header-view-controls .view-switch {
+    width: auto;
+    min-width: 0;
+    flex: 1;
+  }
+
   .page-header__controls {
     justify-items: stretch;
     width: 100%;
+  }
+
+  .home-header-entries {
+    width: 100%;
+  }
+
+  .home-header-overall-entry {
+    flex: 1;
   }
 
   .global-requirement-switch {
@@ -1580,8 +1708,12 @@ a.requirement-meta-card__value:hover {
     gap: 4px;
   }
 
-  .site-footer__notice {
-    text-align: left;
+  .site-footer__updated-at {
+    width: 100%;
+  }
+
+  .site-footer__right {
+    gap: 12px;
   }
 
   .feature-tabs {
