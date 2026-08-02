@@ -57,8 +57,11 @@ database.exec(`
   CREATE INDEX IF NOT EXISTS votes_rating_totals_idx
     ON votes (requirement_id, model_id);
   CREATE TABLE IF NOT EXISTS request_rate_limits (
-    ip_hash TEXT PRIMARY KEY,
-    last_request_at INTEGER NOT NULL
+    ip_hash TEXT NOT NULL,
+    requirement_id TEXT NOT NULL,
+    model_id INTEGER NOT NULL,
+    last_request_at INTEGER NOT NULL,
+    PRIMARY KEY (ip_hash, requirement_id, model_id)
   );
   CREATE TABLE IF NOT EXISTS catalog_snapshot (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -101,7 +104,28 @@ function migrateVotesTable() {
   `);
 }
 
+function migrateRequestRateLimitsTable() {
+  const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'request_rate_limits'").get();
+  if (!table?.sql || /PRIMARY KEY\s*\(\s*ip_hash\s*,\s*requirement_id\s*,\s*model_id\s*\)/i.test(table.sql)) {
+    return;
+  }
+  database.exec(`
+    BEGIN IMMEDIATE;
+    ALTER TABLE request_rate_limits RENAME TO request_rate_limits_legacy;
+    CREATE TABLE request_rate_limits (
+      ip_hash TEXT NOT NULL,
+      requirement_id TEXT NOT NULL,
+      model_id INTEGER NOT NULL,
+      last_request_at INTEGER NOT NULL,
+      PRIMARY KEY (ip_hash, requirement_id, model_id)
+    );
+    DROP TABLE request_rate_limits_legacy;
+    COMMIT;
+  `);
+}
+
 migrateVotesTable();
+migrateRequestRateLimitsTable();
 
 let catalogSnapshot = null;
 let requirementIds = new Set();
@@ -399,7 +423,7 @@ function hashRateLimitIp(ip) {
   return createHash("sha256").update(`${ipHashSecret}:request-rate-limit:${ip}`).digest("hex");
 }
 
-function takeRequestSlot(ip) {
+function takeRequestSlot(ip, requirementId, modelId) {
   if (requestIntervalMs === 0) {
     return { allowed: true };
   }
@@ -409,8 +433,8 @@ function takeRequestSlot(ip) {
   const previous = database.prepare(`
     SELECT last_request_at
     FROM request_rate_limits
-    WHERE ip_hash = ?
-  `).get(ipHash);
+    WHERE ip_hash = ? AND requirement_id = ? AND model_id = ?
+  `).get(ipHash, requirementId, modelId);
   const lastRequestAt = Number(previous?.last_request_at);
   if (Number.isFinite(lastRequestAt) && now - lastRequestAt < requestIntervalMs) {
     const retryAfterSeconds = Math.max(1, Math.ceil((requestIntervalMs - (now - lastRequestAt)) / 1000));
@@ -418,10 +442,10 @@ function takeRequestSlot(ip) {
   }
 
   database.prepare(`
-    INSERT INTO request_rate_limits (ip_hash, last_request_at)
-    VALUES (?, ?)
-    ON CONFLICT(ip_hash) DO UPDATE SET last_request_at = excluded.last_request_at
-  `).run(ipHash, now);
+    INSERT INTO request_rate_limits (ip_hash, requirement_id, model_id, last_request_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(ip_hash, requirement_id, model_id) DO UPDATE SET last_request_at = excluded.last_request_at
+  `).run(ipHash, requirementId, modelId, now);
   return { allowed: true };
 }
 
@@ -473,21 +497,6 @@ function getRatings(request, response, url) {
 }
 
 async function createVote(request, response) {
-  const requestSlot = takeRequestSlot(request.clientIp);
-  if (!requestSlot.allowed) {
-    logVote(request, "request_rate_limited", 429, null, {
-      intervalMs: requestIntervalMs,
-      retryAfterSeconds: requestSlot.retryAfterSeconds,
-    });
-    sendJson(request, response, {
-      error: "request_rate_limited",
-      retryAfterSeconds: requestSlot.retryAfterSeconds,
-    }, 429, {
-      "Retry-After": String(requestSlot.retryAfterSeconds),
-    });
-    return;
-  }
-
   let body;
   try {
     body = await parseBody(request);
@@ -514,6 +523,21 @@ async function createVote(request, response) {
   if (!safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId)) {
     logVote(request, "invalid_vote", 400, body);
     sendJson(request, response, { error: "invalid_vote" }, 400);
+    return;
+  }
+
+  const requestSlot = takeRequestSlot(request.clientIp, requirementId, modelId);
+  if (!requestSlot.allowed) {
+    logVote(request, "request_rate_limited", 429, body, {
+      intervalMs: requestIntervalMs,
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    });
+    sendJson(request, response, {
+      error: "request_rate_limited",
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    }, 429, {
+      "Retry-After": String(requestSlot.retryAfterSeconds),
+    });
     return;
   }
 

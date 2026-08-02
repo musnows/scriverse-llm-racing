@@ -593,9 +593,11 @@ function renderModelRating() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(payload.error === "daily_limit_reached" && Number.isInteger(payload.limit)
-          ? `今日对该模型的评分次数已达 ${payload.limit} 次上限`
-          : "评分服务暂不可用");
+        throw new Error(payload.error === "request_rate_limited"
+          ? "请求过于频繁"
+          : payload.error === "daily_limit_reached" && Number.isInteger(payload.limit)
+            ? `今日对该模型的评分次数已达 ${payload.limit} 次上限`
+            : "评分服务暂不可用");
       }
       ratingState.error = "评分已记录";
       await loadRatingsForRequirement(true);
