@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title description">
+  <title id="title">叙界大模型比赛</title>
+  <desc id="description">一本展开的书托起奖杯，代表小说创作与大模型竞赛</desc>
+  <rect width="64" height="64" rx="14" fill="#8b3d2c"/>
+  <path d="M7 14h9M4 20h11M48 14h9M49 20h11" fill="none" stroke="#c78a78" stroke-linecap="round" stroke-width="2" opacity=".8"/>
+  <path d="M21 13h22v7c0 8.2-4.5 14.4-11 16.1C25.5 34.4 21 28.2 21 20v-7Z" fill="#f2cb7b"/>
+  <path d="M21 17h-5c0 7 3.2 11.6 8.3 11.9M43 17h5c0 7-3.2 11.6-8.3 11.9" fill="none" stroke="#f2cb7b" stroke-linecap="round" stroke-width="4"/>
+  <path d="M31 35h2v7h-2z" fill="#d9b070"/>
+  <path d="M25 42h14v4H25zM22 46h20v5H22z" fill="#f2cb7b"/>
+  <path d="M9 39.5c8-1.5 15.1.5 23 5v12c-7.9-4.6-15-6.5-23-5.1V39.5Z" fill="#fffaf0"/>
+  <path d="M55 39.5c-8-1.5-15.1.5-23 5v12c7.9-4.6 15-6.5 23-5.1V39.5Z" fill="#fffaf0"/>
+  <path d="M31 44.5h2v12h-2z" fill="#d9b070"/>
+  <path d="M14.5 46c4.2-.3 8 .5 11.7 2.5M49.5 46c-4.2-.3-8 .5-11.7 2.5" fill="none" stroke="#c78a78" stroke-linecap="round" stroke-width="1.8"/>
+  <path d="m48 8.5 1.2 2.9 3.1 1.2-3.1 1.2-1.2 2.9-1.2-2.9-3.1-1.2 3.1-1.2L48 8.5Z" fill="#fffaf0"/>
+</svg>
