@@ -727,6 +727,7 @@ const elements = {
   leaderboardDetailDialogTestCase: document.getElementById("leaderboard-detail-dialog-test-case"),
   leaderboardDetailDialogScenario: document.getElementById("leaderboard-detail-dialog-scenario"),
   leaderboardDetailDialogReasonSection: document.getElementById("leaderboard-detail-dialog-reason-section"),
+  leaderboardDetailDialogReasonTitle: document.getElementById("leaderboard-detail-dialog-reason-title"),
   leaderboardDetailDialogReason: document.getElementById("leaderboard-detail-dialog-reason"),
   leaderboardDetailDialogClose: document.getElementById("leaderboard-detail-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
@@ -1290,13 +1291,13 @@ function createLeaderboardResultCell(entry, testCase) {
   const cell = document.createElement("td");
   cell.className = `leaderboard-result ${failed ? "leaderboard-result--fail" : "leaderboard-result--pass"}`;
 
-  const status = document.createElement(failed ? "button" : "span");
-  status.className = `leaderboard-status${failed ? " leaderboard-status--trigger" : ""}`;
+  const status = document.createElement("button");
+  status.className = "leaderboard-status leaderboard-status--trigger";
   status.textContent = failed ? "未通过" : "通过";
+  status.type = "button";
 
   if (failed) {
     const reason = entry.failures[testCase.id] || "失败原因未记录";
-    status.type = "button";
     status.setAttribute("aria-label", `查看 ${entry.model?.name ?? entry.modelId} ${testCase.id} 失败原因`);
     status.addEventListener("click", () => openLeaderboardDetail({
       label: `${entry.model?.name ?? entry.modelId} · ${testCase.id}`,
@@ -1306,7 +1307,24 @@ function createLeaderboardResultCell(entry, testCase) {
       testCaseId: testCase.id,
       priority: testCase.priority,
       scenario: testCase.scenario,
-      reason,
+      detail: reason,
+      detailTitle: "失败原因",
+      detailFallback: "失败原因未记录",
+    }));
+  } else {
+    const detail = entry.successes?.[testCase.id];
+    status.setAttribute("aria-label", `查看 ${entry.model?.name ?? entry.modelId} ${testCase.id} 成功用例说明`);
+    status.addEventListener("click", () => openLeaderboardDetail({
+      label: `${entry.model?.name ?? entry.modelId} · ${testCase.id} · 通过`,
+      title: "成功用例说明",
+      requirementName: getCurrentRequirement()?.title ?? "当前测试需求",
+      modelName: entry.model?.name ?? entry.modelId,
+      testCaseId: testCase.id,
+      priority: testCase.priority,
+      scenario: testCase.scenario,
+      detail,
+      detailTitle: "成功说明",
+      detailFallback: "无详情",
     }));
   }
 
@@ -1322,7 +1340,9 @@ function openLeaderboardDetail({
   testCaseId,
   priority,
   scenario,
-  reason,
+  detail,
+  detailTitle,
+  detailFallback,
 }) {
   elements.leaderboardDetailDialogLabel.textContent = label;
   elements.leaderboardDetailDialogTitle.textContent = title;
@@ -1330,8 +1350,17 @@ function openLeaderboardDetail({
   elements.leaderboardDetailDialogModel.textContent = modelName;
   elements.leaderboardDetailDialogTestCase.textContent = `${testCaseId} · ${priority}`;
   elements.leaderboardDetailDialogScenario.textContent = scenario;
-  elements.leaderboardDetailDialogReasonSection.hidden = !reason;
-  elements.leaderboardDetailDialogReason.textContent = reason ?? "";
+  const hasStatusDetail = typeof detailTitle === "string" && typeof detailFallback === "string";
+  elements.leaderboardDetailDialogReasonSection.hidden = !hasStatusDetail;
+  if (hasStatusDetail) {
+    elements.leaderboardDetailDialogReasonTitle.textContent = detailTitle;
+    elements.leaderboardDetailDialogReason.textContent = typeof detail === "string" && detail.trim()
+      ? detail
+      : detailFallback;
+  } else {
+    elements.leaderboardDetailDialogReasonTitle.textContent = "";
+    elements.leaderboardDetailDialogReason.textContent = "";
+  }
   elements.leaderboardDetailDialog.showModal();
 }
 
@@ -1357,8 +1386,8 @@ function renderLeaderboard() {
   }
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
-  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“未通过”状态可查看详细失败原因。";
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
+  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明。";
   const visibleEntries = rankingData.slice(0, 3);
   const hiddenEntries = rankingData.slice(3);
   elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
