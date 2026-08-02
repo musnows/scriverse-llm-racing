@@ -58,6 +58,12 @@ main {
   text-decoration: none;
 }
 
+.site-footer__notice {
+  flex: 1;
+  color: #8e8f8a;
+  text-align: center;
+}
+
 .site-footer a:hover {
   color: #e58b66;
   text-decoration: underline;
@@ -324,6 +330,14 @@ h2 {
   color: #c7c8c2;
 }
 
+.rating-form__value {
+  display: inline-block;
+  flex: 0 0 38px;
+  width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .rating-form__range {
   width: 82px;
   height: 4px;
@@ -562,6 +576,12 @@ h2 {
   gap: 4px;
 }
 
+.requirements-nav__divider {
+  height: 1px;
+  margin: 14px 0;
+  background: #30322f;
+}
+
 .requirement-tab {
   width: 100%;
   padding: 10px 11px;
@@ -591,6 +611,101 @@ h2 {
   margin-top: 0;
 }
 
+.test-method-view {
+  min-width: 0;
+}
+
+.test-method-grid,
+.test-method-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.test-method-card,
+.test-method-block {
+  border: 1px solid #30322f;
+  border-radius: 12px;
+  background: #151614;
+}
+
+.test-method-card {
+  padding: 16px;
+}
+
+.test-method-card__label {
+  margin-bottom: 8px;
+  color: #d77855;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.test-method-card h3,
+.test-method-block h3 {
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.test-method-card p:last-of-type,
+.test-method-score-grid p {
+  margin-bottom: 0;
+  color: #b5b6b0;
+  line-height: 1.7;
+}
+
+.test-method-card code,
+.test-method-prompt,
+.test-method-card__path {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.test-method-card__path {
+  display: block;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+  color: #e58b66;
+  font-size: 12px;
+}
+
+.test-method-block {
+  margin-bottom: 22px;
+  padding: 18px;
+}
+
+.test-method-block .requirement-block-heading {
+  margin-bottom: 14px;
+}
+
+.test-method-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+  color: #b5b6b0;
+  line-height: 1.7;
+}
+
+.test-method-steps strong,
+.test-method-score-grid strong {
+  color: #e8e8e2;
+}
+
+.test-method-prompt {
+  max-height: 360px;
+  margin: 0;
+  overflow: auto;
+  color: #d6d7d1;
+  background: #10110f;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.test-method-score-grid {
+  margin-bottom: 0;
+}
+
 .requirement-meta-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -615,6 +730,40 @@ h2 {
   margin: 0 0 8px;
   color: #8e8f8a;
   font-size: 11px;
+}
+
+.requirement-meta-card__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.requirement-meta-card__label-row .requirement-meta-card__label {
+  margin: 0;
+}
+
+.copy-button {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border: 1px solid #4a4039;
+  border-radius: 5px;
+  color: #c9a28e;
+  background: #211b18;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.copy-button:hover {
+  border-color: #a6644b;
+  color: #fffaf6;
+  background: #34231d;
+}
+
+.copy-button:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
 }
 
 .requirement-meta-card__value {
@@ -831,6 +980,204 @@ a.requirement-meta-card__value:hover {
 
 .home-heading {
   margin-top: 0;
+}
+
+.home-header-overall-entry {
+  display: grid;
+  gap: 3px;
+  flex: 0 0 auto;
+  min-width: 150px;
+  padding: 10px 14px;
+  border: 1px solid #704330;
+  border-radius: 9px;
+  color: #f4f4f1;
+  background: linear-gradient(110deg, #211b18, #171816 62%);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.home-header-overall-entry[hidden],
+.global-requirement-switch[hidden] {
+  display: none;
+}
+
+.home-header-overall-entry:hover {
+  border-color: #b45b3a;
+  background: linear-gradient(110deg, #2c211b, #1a1b19 62%);
+  transform: translateY(-2px);
+}
+
+.home-header-overall-entry:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 3px;
+}
+
+.home-header-overall-entry__label {
+  color: #d77855;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.home-header-overall-entry__title {
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.home-header-overall-entry__action {
+  color: #e0a084;
+  font-size: 11px;
+}
+
+.model-overall-heading {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.model-overall-heading .section-description {
+  margin-bottom: 0;
+}
+
+.model-overall-list {
+  display: grid;
+  gap: 10px;
+}
+
+.model-overall-row {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.25fr) minmax(130px, .75fr) minmax(160px, .95fr) minmax(150px, .85fr) minmax(200px, 1fr);
+  gap: 18px;
+  min-width: 0;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid #30322f;
+  border-radius: 9px;
+  color: #f4f4f1;
+  background: #151614;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.model-overall-row:hover {
+  border-color: #8d533f;
+  background: #1a1b19;
+}
+
+.model-overall-row:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 3px;
+}
+
+.model-overall-row__identity,
+.model-overall-row__score-block {
+  display: grid;
+  gap: 4px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.model-overall-row__rank,
+.model-overall-row__label {
+  color: #d77855;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.model-overall-row__name,
+.model-overall-row__tool,
+.model-overall-row__score,
+.model-overall-row__meta {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-overall-row__name {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.model-overall-row__tool,
+.model-overall-row__meta {
+  color: #969791;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.model-overall-row__score {
+  margin-top: 2px;
+  color: #fffaf6;
+  font-size: 23px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.model-overall-row__stars {
+  color: #e6a36f;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.model-overall-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3b3d39;
+  border-radius: 14px;
+  color: #f4f4f1;
+  background: #111210;
+}
+
+.model-overall-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.model-overall-dialog__meta,
+.model-overall-dialog__empty {
+  margin: 0;
+  padding: 16px 18px 0;
+  color: #969791;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.model-overall-dialog__list {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px 18px;
+}
+
+.model-overall-dialog__item {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #30322f;
+  border-radius: 8px;
+  color: #f4f4f1;
+  background: #181917;
+  cursor: pointer;
+  text-align: left;
+}
+
+.model-overall-dialog__item:hover {
+  border-color: #8d533f;
+  background: #211f1b;
+}
+
+.model-overall-dialog__item:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
+}
+
+.model-overall-dialog__item span {
+  color: #969791;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
 }
 
 .requirement-list {
@@ -1139,6 +1486,11 @@ a.requirement-meta-card__value:hover {
   .requirement-meta-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .test-method-grid,
+  .test-method-score-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1192,12 +1544,29 @@ a.requirement-meta-card__value:hover {
     grid-template-columns: 1fr;
   }
 
+  .model-overall-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .feature-layout {
     grid-template-columns: 1fr;
   }
 
   .requirements-layout {
     grid-template-columns: 1fr;
+  }
+
+  .requirements-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .requirements-nav > .feature-nav__label {
+    margin-bottom: 0;
+    flex: 0 0 auto;
   }
 
   .feature-nav {
@@ -1209,6 +1578,10 @@ a.requirement-meta-card__value:hover {
     align-items: flex-start;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .site-footer__notice {
+    text-align: left;
   }
 
   .feature-tabs {
@@ -1223,6 +1596,13 @@ a.requirement-meta-card__value:hover {
     gap: 6px;
     max-width: 100%;
     overflow-x: auto;
+  }
+
+  .requirements-nav__divider {
+    width: 1px;
+    height: 28px;
+    margin: 0 4px;
+    flex: 0 0 auto;
   }
 
   .requirement-tab {

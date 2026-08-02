@@ -117,7 +117,7 @@ for (const model of models) {
   }));
 }
 
-const leaderboardDataUrl = "./source/leaderboard.json?v=3";
+const leaderboardDataUrl = "./source/leaderboard.json?v=4";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 const ratingState = {
@@ -126,6 +126,10 @@ const ratingState = {
   loaded: false,
   error: "",
   values: new Map(),
+  allLoading: false,
+  allLoaded: false,
+  allError: false,
+  allValues: new Map(),
 };
 
 function getRankingData() {
@@ -154,21 +158,231 @@ function getRankingData() {
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
+function formatDurationSeconds(durationSeconds) {
+  const totalSeconds = Math.max(0, Math.round(Number(durationSeconds) || 0));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes}m`);
+  }
+  if (seconds > 0 || parts.length === 0) {
+    parts.push(`${seconds}s`);
+  }
+  return parts.join("");
+}
+
+function getOverallRatingData() {
+  const testRanking = new Map(getRankingData().map((entry) => [entry.modelId, entry]));
+  const ranking = models.map((model) => ({
+    model,
+    agent: leaderboardData?.agents.find((entry) => entry.modelId === model.id),
+    test: testRanking.get(model.id) ?? null,
+    testedRequirementCount: getTestedRequirementCount(model.id),
+    averageDurationSeconds: testRanking.get(model.id)?.durationSeconds ?? null,
+    rating: ratingState.allValues.get(model.id) ?? null,
+  }));
+
+  ranking.sort((left, right) => {
+    return (left.test?.rank ?? Number.MAX_SAFE_INTEGER) - (right.test?.rank ?? Number.MAX_SAFE_INTEGER)
+      || left.model.name.localeCompare(right.model.name);
+  });
+
+  return ranking;
+}
+
+function getRequirementModelEntries(requirement) {
+  return [
+    requirement.models,
+    requirement.results,
+    requirement.evaluations,
+    requirement.modelResults,
+  ].find(Array.isArray);
+}
+
+function getTestedRequirements(modelId) {
+  const requirements = leaderboardData?.requirements ?? [];
+  const hasPerRequirementResults = requirements.some((requirement) => getRequirementModelEntries(requirement));
+  if (!hasPerRequirementResults) {
+    return requirements.length > 0 && leaderboardData.models.some((entry) => entry.modelId === modelId) ? requirements : [];
+  }
+
+  return requirements.filter((requirement) => {
+    const entries = getRequirementModelEntries(requirement) ?? [];
+    return entries.some((entry) => (entry.modelId ?? entry.id) === modelId);
+  });
+}
+
+function getTestedRequirementCount(modelId) {
+  return getTestedRequirements(modelId).length;
+}
+
+function openModelOverallDetails(entry) {
+  const requirements = getTestedRequirements(entry.model.id);
+  elements.modelOverallDialogModel.textContent = entry.model.name;
+  elements.modelOverallDialogMeta.textContent = `工具：${entry.agent?.software || entry.model.tool} · 已测试 ${requirements.length} / ${leaderboardData.requirements.length}`;
+  elements.modelOverallDialogList.replaceChildren();
+
+  if (requirements.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "model-overall-dialog__empty";
+    empty.textContent = "暂无已测试需求记录";
+    elements.modelOverallDialogList.append(empty);
+  } else {
+    requirements.forEach((requirement) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "model-overall-dialog__item";
+      const title = document.createElement("strong");
+      title.textContent = requirement.title;
+      const meta = document.createElement("span");
+      meta.textContent = `${requirement.baseRepository} · ${requirement.baseVersion}`;
+      button.append(title, meta);
+      button.addEventListener("click", () => {
+        state.modelId = entry.model.id;
+        state.requirementId = requirement.id;
+        elements.modelOverallDialog.close();
+        renderGlobalRequirementSelect();
+        setView("model");
+      });
+      elements.modelOverallDialogList.append(button);
+    });
+  }
+
+  elements.modelOverallDialog.showModal();
+}
+
+function createModelOverallRow(entry) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "model-overall-row";
+  row.setAttribute("aria-label", `查看 ${entry.model.name} 已测试的需求`);
+  row.addEventListener("click", () => openModelOverallDetails(entry));
+
+  const identity = document.createElement("div");
+  identity.className = "model-overall-row__identity";
+  const rank = document.createElement("span");
+  rank.className = "model-overall-row__rank";
+  rank.textContent = entry.test ? `第 ${String(entry.test.rank).padStart(2, "0")} 名` : "未纳入测试";
+  const name = document.createElement("strong");
+  name.className = "model-overall-row__name";
+  name.textContent = entry.model.name;
+  const tool = document.createElement("span");
+  tool.className = "model-overall-row__tool";
+  tool.textContent = `工具：${entry.agent?.software || entry.model.tool}`;
+  identity.append(rank, name, tool);
+
+  const testedRequirements = document.createElement("div");
+  testedRequirements.className = "model-overall-row__score-block";
+  const testedLabel = document.createElement("span");
+  testedLabel.className = "model-overall-row__label";
+  testedLabel.textContent = "已测试需求数量";
+  const testedValue = document.createElement("strong");
+  testedValue.className = "model-overall-row__score";
+  testedValue.textContent = String(entry.testedRequirementCount);
+  const testedMeta = document.createElement("span");
+  testedMeta.className = "model-overall-row__meta";
+  testedMeta.textContent = `${entry.testedRequirementCount} / ${leaderboardData.requirements.length}`;
+  testedRequirements.append(testedLabel, testedValue, testedMeta);
+
+  const testScore = document.createElement("div");
+  testScore.className = "model-overall-row__score-block";
+  const testLabel = document.createElement("span");
+  testLabel.className = "model-overall-row__label";
+  testLabel.textContent = "测试用例评分";
+  const testValue = document.createElement("strong");
+  testValue.className = "model-overall-row__score";
+  testValue.textContent = entry.test ? `${entry.test.score} / ${leaderboardData.scoring.initial}` : "暂无数据";
+  const testMeta = document.createElement("span");
+  testMeta.className = "model-overall-row__meta";
+  testMeta.textContent = entry.test
+    ? `${entry.test.passCount} / ${leaderboardData.testCases.length} 个用例通过`
+    : "暂无测试记录";
+  testScore.append(testLabel, testValue, testMeta);
+
+  const duration = document.createElement("div");
+  duration.className = "model-overall-row__score-block";
+  const durationLabel = document.createElement("span");
+  durationLabel.className = "model-overall-row__label";
+  durationLabel.textContent = "平均耗时";
+  const durationValue = document.createElement("strong");
+  durationValue.className = "model-overall-row__score";
+  durationValue.textContent = entry.averageDurationSeconds === null
+    ? "暂无数据"
+    : formatDurationSeconds(entry.averageDurationSeconds);
+  const durationMeta = document.createElement("span");
+  durationMeta.className = "model-overall-row__meta";
+  durationMeta.textContent = entry.averageDurationSeconds === null ? "暂无测试记录" : "按已测试需求平均";
+  duration.append(durationLabel, durationValue, durationMeta);
+
+  const userScore = document.createElement("div");
+  userScore.className = "model-overall-row__score-block";
+  const userLabel = document.createElement("span");
+  userLabel.className = "model-overall-row__label";
+  userLabel.textContent = "用户打星评分";
+  const userValue = document.createElement("strong");
+  userValue.className = "model-overall-row__score";
+  userValue.textContent = entry.rating ? `${entry.rating.averageStars.toFixed(2)} / 5` : "暂无评分";
+  const userStars = document.createElement("span");
+  userStars.className = "model-overall-row__stars";
+  userStars.textContent = entry.rating ? formatRatingStars(entry.rating.averageStars) : "☆☆☆☆☆";
+  const userMeta = document.createElement("span");
+  userMeta.className = "model-overall-row__meta";
+  userMeta.textContent = entry.rating ? `${entry.rating.voteCount} 次评分` : "等待用户评分数据";
+  userScore.append(userLabel, userValue, userStars, userMeta);
+
+  row.append(identity, testedRequirements, testScore, duration, userScore);
+  return row;
+}
+
+function renderModelOverall() {
+  elements.modelOverallList.replaceChildren();
+  if (!leaderboardData) {
+    elements.modelOverallNote.textContent = "正在加载";
+    return;
+  }
+
+  const ranking = getOverallRatingData();
+  ranking.forEach((entry) => elements.modelOverallList.append(createModelOverallRow(entry)));
+  const ratedCount = ranking.filter((entry) => entry.rating).length;
+  elements.modelOverallNote.textContent = ratingState.allLoading
+    ? "正在加载评分"
+    : ratingState.allError
+      ? "评分服务尚未部署"
+      : `${ranking.length} 个参赛模型 · ${ratedCount} 个已有用户评分`;
+}
+
 const state = {
   view: "home",
   modelId: models[0].id,
   featureId: features[0].id,
   requirementId: null,
+  requirementsTab: "requirement",
   dialogItems: [],
   dialogIndex: 0,
 };
 
 const elements = {
   viewButtons: [...document.querySelectorAll("[data-view]")],
+  modelOverallButton: document.querySelector('[data-view="model-overall"]'),
   homeView: document.getElementById("home-view"),
   requirementList: document.getElementById("requirement-list"),
+  homeModelOverallEntry: document.getElementById("home-model-overall-entry"),
   globalAverageNote: document.getElementById("global-average-note"),
+  modelOverallView: document.getElementById("model-overall-view"),
+  modelOverallList: document.getElementById("model-overall-list"),
+  modelOverallNote: document.getElementById("model-overall-note"),
+  modelOverallDialog: document.getElementById("model-overall-dialog"),
+  modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
+  modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),
+  modelOverallDialogList: document.getElementById("model-overall-dialog-list"),
+  modelOverallDialogClose: document.getElementById("model-overall-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
+  globalRequirementSwitch: document.querySelector(".global-requirement-switch"),
   backHome: document.getElementById("back-home"),
   globalRequirementSelect: document.getElementById("global-requirement-select"),
   modelView: document.getElementById("model-view"),
@@ -191,11 +405,15 @@ const elements = {
   leaderboardBody: document.getElementById("leaderboard-body"),
   requirementsView: document.getElementById("requirements-view"),
   requirementTabs: document.getElementById("requirement-tabs"),
+  testMethodTab: document.getElementById("test-method-tab"),
+  requirementDetailView: document.getElementById("requirement-detail-view"),
+  testMethodView: document.getElementById("test-method-view"),
   requirementTitle: document.getElementById("requirement-title"),
   requirementSummary: document.getElementById("requirement-summary"),
   requirementRepository: document.getElementById("requirement-repository"),
   requirementVersion: document.getElementById("requirement-version"),
   requirementCommit: document.getElementById("requirement-commit"),
+  copyRequirementCommit: document.getElementById("copy-requirement-commit"),
   requirementDatabase: document.getElementById("requirement-database"),
   requirementPrompt: document.getElementById("requirement-prompt"),
   agentRosterBody: document.getElementById("agent-roster-body"),
@@ -341,6 +559,7 @@ function renderModelRating() {
       }
       ratingState.error = "评分已记录";
       await loadRatingsForRequirement(true);
+      await loadAllRatingsForRequirements(true);
     } catch (error) {
       ratingState.error = error instanceof Error && error.message ? error.message : "评分服务尚未部署";
       renderModelRating();
@@ -387,6 +606,59 @@ async function loadRatingsForRequirement(force = false) {
     } else {
       renderModelRating();
     }
+  }
+}
+
+async function loadAllRatingsForRequirements(force = false) {
+  if (!leaderboardData || ratingState.allLoading || (ratingState.allLoaded && !force)) {
+    return;
+  }
+
+  const requirements = leaderboardData.requirements ?? [];
+  if (requirements.length === 0) {
+    ratingState.allLoaded = true;
+    renderModelOverall();
+    return;
+  }
+
+  ratingState.allLoading = true;
+  ratingState.allError = false;
+  renderModelOverall();
+  try {
+    const responses = await Promise.all(requirements.map(async (requirement) => {
+      const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(requirement.id)}`), { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("评分服务尚未部署");
+      }
+      const payload = await response.json();
+      return Array.isArray(payload.data) ? payload.data : [];
+    }));
+    const totals = new Map();
+    responses.flat().forEach((item) => {
+      const averageStars = Number(item.averageStars);
+      const voteCount = Number(item.voteCount);
+      if (!item.modelId || !Number.isFinite(averageStars) || !Number.isFinite(voteCount) || voteCount <= 0) {
+        return;
+      }
+      const current = totals.get(item.modelId) ?? { totalStars: 0, voteCount: 0 };
+      current.totalStars += averageStars * voteCount;
+      current.voteCount += voteCount;
+      totals.set(item.modelId, current);
+    });
+    ratingState.allValues = new Map(
+      [...totals.entries()].map(([modelId, total]) => [modelId, {
+        averageStars: total.totalStars / total.voteCount,
+        voteCount: total.voteCount,
+      }]),
+    );
+  } catch (error) {
+    console.error("Overall ratings load failed", error);
+    ratingState.allValues = new Map();
+    ratingState.allError = true;
+  } finally {
+    ratingState.allLoading = false;
+    ratingState.allLoaded = true;
+    renderModelOverall();
   }
 }
 
@@ -509,7 +781,7 @@ function createLeaderboardSummaryCard(entry) {
   const failureCount = Object.keys(entry.failures).length;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
-  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${entry.duration}`;
+  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${formatDurationSeconds(entry.durationSeconds)}`;
 
   card.append(rank, name, agent, context, score, meta);
   return card;
@@ -705,19 +977,26 @@ function renderRequirementTabs(requirements) {
     button.className = "requirement-tab";
     button.role = "tab";
     button.textContent = requirement.title;
-    button.setAttribute("aria-selected", String(requirement.id === state.requirementId));
+    button.setAttribute("aria-selected", String(state.requirementsTab === "requirement" && requirement.id === state.requirementId));
     button.addEventListener("click", () => {
+      state.requirementsTab = "requirement";
       state.requirementId = requirement.id;
       renderGlobalRequirementSelect();
       renderRequirementsView();
     });
     elements.requirementTabs.append(button);
   }
+  elements.testMethodTab.setAttribute("aria-selected", String(state.requirementsTab === "method"));
 }
 
 function renderRequirementsView() {
+  const showMethod = state.requirementsTab === "method";
+  elements.requirementDetailView.hidden = showMethod;
+  elements.testMethodView.hidden = !showMethod;
+
   if (!leaderboardData) {
     elements.requirementTabs.replaceChildren();
+    elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "正在加载测试需求……";
     elements.requirementSummary.textContent = "需求信息来自 source/leaderboard.json。";
     elements.agentRosterBody.replaceChildren();
@@ -728,6 +1007,7 @@ function renderRequirementsView() {
   const requirement = requirements.find((item) => item.id === state.requirementId) ?? requirements[0];
   if (!requirement) {
     elements.requirementTabs.replaceChildren();
+    elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "暂无测试需求";
     elements.requirementSummary.textContent = "可以在 leaderboard.json 的 requirements 数组中继续添加需求。";
     elements.agentRosterBody.replaceChildren();
@@ -736,6 +1016,9 @@ function renderRequirementsView() {
 
   state.requirementId = requirement.id;
   renderRequirementTabs(requirements);
+  if (showMethod) {
+    return;
+  }
   elements.requirementTitle.textContent = requirement.title;
   elements.requirementSummary.textContent = `基于 ${requirement.baseRepository} ${requirement.baseVersion}，用于记录本轮测试基线与参赛配置。`;
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
@@ -784,14 +1067,15 @@ async function loadLeaderboardData() {
     if (state.view === "home") {
       renderHomeView();
     }
+    if (state.view === "model-overall") {
+      renderModelOverall();
+      loadAllRatingsForRequirements();
+    }
     if (state.view === "leaderboard") {
       renderLeaderboard();
     }
     if (state.view === "requirements") {
       renderRequirementsView();
-    }
-    if (state.view === "home") {
-      renderHomeView();
     }
   } catch (error) {
     leaderboardLoadError = true;
@@ -806,26 +1090,37 @@ async function loadLeaderboardData() {
 }
 
 function setView(view) {
-  if (view !== "home" && !state.requirementId) {
+  if (view !== "home" && view !== "model-overall" && !state.requirementId) {
     view = "home";
   }
   state.view = view;
   const isHome = view === "home";
+  const isModelOverall = view === "model-overall";
   const isModel = view === "model";
   const isFeature = view === "feature";
   const isRequirements = view === "requirements";
   elements.homeView.hidden = !isHome;
+  elements.modelOverallView.hidden = !isModelOverall;
   elements.modelView.hidden = !isModel;
   elements.featureView.hidden = !isFeature;
   elements.leaderboardView.hidden = view !== "leaderboard";
   elements.requirementsView.hidden = !isRequirements;
   elements.pageHeaderControls.hidden = isHome;
+  elements.homeModelOverallEntry.hidden = !isHome;
+  elements.globalRequirementSwitch.hidden = isModelOverall;
+  elements.modelOverallButton.hidden = Boolean(state.requirementId);
   elements.backHome.hidden = isHome;
+  elements.backHome.textContent = isModelOverall ? "主页" : "返回需求列表";
   elements.viewButtons.forEach((button) => {
+    button.hidden = (isModelOverall && button.dataset.view !== "model-overall")
+      || (button.dataset.view === "model-overall" && Boolean(state.requirementId));
     button.setAttribute("aria-selected", String(button.dataset.view === view));
   });
   if (isHome) {
     renderHomeView();
+  } else if (isModelOverall) {
+    renderModelOverall();
+    loadAllRatingsForRequirements();
   } else if (isModel) {
     renderModelView();
   } else if (isFeature) {
@@ -868,17 +1163,54 @@ function moveDialog(offset) {
   renderDialog();
 }
 
+async function copyRequirementCommit() {
+  const commit = elements.requirementCommit.textContent.trim();
+  if (!commit) {
+    return;
+  }
+
+  const button = elements.copyRequirementCommit;
+  try {
+    await navigator.clipboard.writeText(commit);
+    button.textContent = "已复制";
+    button.setAttribute("aria-label", "已复制基础 commit");
+  } catch (error) {
+    console.error("Commit copy failed", error);
+    button.textContent = "复制失败";
+    button.setAttribute("aria-label", "复制基础 commit 失败");
+  }
+
+  window.setTimeout(() => {
+    button.textContent = "复制";
+    button.setAttribute("aria-label", "复制基础 commit");
+  }, 1400);
+}
+
 elements.viewButtons.forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
 });
+elements.homeModelOverallEntry.addEventListener("click", () => setView("model-overall"));
 elements.globalRequirementSelect.addEventListener("change", (event) => {
   state.requirementId = event.target.value;
+  state.requirementsTab = "requirement";
   setView(state.view);
 });
 elements.backHome.addEventListener("click", () => {
   state.requirementId = null;
+  state.requirementsTab = "requirement";
   renderGlobalRequirementSelect();
   setView("home");
+});
+elements.testMethodTab.addEventListener("click", () => {
+  state.requirementsTab = "method";
+  renderRequirementsView();
+});
+elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
+elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
+elements.modelOverallDialog.addEventListener("click", (event) => {
+  if (event.target === elements.modelOverallDialog) {
+    elements.modelOverallDialog.close();
+  }
 });
 elements.dialogClose.addEventListener("click", () => elements.dialog.close());
 elements.dialogPrev.addEventListener("click", () => moveDialog(-1));
