@@ -1085,6 +1085,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__rank {
+  text-align: center;
   color: #d77855;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
@@ -1109,13 +1110,16 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-card__context {
   margin-bottom: 12px;
+  text-align: center;
 }
 
 .leaderboard-card__score {
   color: #fffaf6;
-  font-size: 27px;
+  font-size: 21px;
   font-weight: 650;
   letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .leaderboard-card__meta,
