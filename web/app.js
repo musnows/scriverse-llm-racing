@@ -584,6 +584,7 @@ function renderModelRating() {
     try {
       const response = await fetch(apiUrl("/api/ratings/vote"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           requirementId: state.requirementId,
@@ -595,9 +596,11 @@ function renderModelRating() {
       if (!response.ok) {
         throw new Error(payload.error === "request_rate_limited"
           ? "请求过于频繁"
-          : payload.error === "daily_limit_reached" && Number.isInteger(payload.limit)
-            ? `今日对该模型的评分次数已达 ${payload.limit} 次上限`
-            : "评分服务暂不可用");
+          : payload.error === "already_rated"
+            ? "该模型已评分"
+            : payload.error === "daily_limit_reached" && Number.isInteger(payload.limit)
+              ? `今日对该模型的评分次数已达 ${payload.limit} 次上限`
+              : "评分服务暂不可用");
       }
       ratingState.error = "评分已记录";
       await loadRatingsForRequirement(true);
@@ -623,7 +626,10 @@ async function requestRatingsForRequirement(requirementId, force = false) {
   }
 
   const request = (async () => {
-    const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(requirementId)}`), { cache: "no-store" });
+    const response = await fetch(apiUrl(`/api/ratings?requirementId=${encodeURIComponent(requirementId)}`), {
+      cache: "no-store",
+      credentials: "include",
+    });
     if (!response.ok) {
       throw new Error("评分服务尚未部署");
     }

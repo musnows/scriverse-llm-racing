@@ -74,6 +74,8 @@ node server.mjs
 
 评分使用稳定的数字 `modelId` 标识具体模型，不按厂商或工具归类。当前模型 ID 为：`1` Doubao-Seed-2.1-Turbo、`2` Qwen3.8-Max-Preview、`3` LongCat-2.0、`4` Hy3。后续新增模型或模型版本必须追加新的数字 ID，不能修改、删除或复用旧 ID。
 
+后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。
+
 也可以直接使用 Docker 镜像运行后端：
 
 ```bash

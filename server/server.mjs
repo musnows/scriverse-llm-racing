@@ -13,6 +13,8 @@ const maxVotesPerDay = Number.isFinite(configuredVoteLimit) ? Math.max(5, config
 const configuredRequestInterval = Number.parseInt(process.env.REQUEST_INTERVAL_MS || "300000", 10);
 const requestIntervalMs = Number.isFinite(configuredRequestInterval) ? Math.max(0, configuredRequestInterval) : 300_000;
 const ipHashSecret = process.env.IP_HASH_SECRET || "change-this-secret";
+const visitorCookieName = "scriverse_visitor_id";
+const visitorCookieMaxAge = 315_360_000;
 const trustProxy = process.env.TRUST_PROXY === "true";
 const catalogUrl = String(process.env.CATALOG_URL || "").trim();
 const configuredCatalogSyncInterval = Number.parseInt(process.env.CATALOG_SYNC_INTERVAL_MS || "600000", 10);
@@ -62,6 +64,14 @@ database.exec(`
     model_id INTEGER NOT NULL,
     last_request_at INTEGER NOT NULL,
     PRIMARY KEY (ip_hash, requirement_id, model_id)
+  );
+  CREATE TABLE IF NOT EXISTS visitor_ratings (
+    visitor_id_hash TEXT NOT NULL,
+    requirement_id TEXT NOT NULL,
+    model_id INTEGER NOT NULL,
+    vote_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (visitor_id_hash, requirement_id, model_id)
   );
   CREATE TABLE IF NOT EXISTS catalog_snapshot (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -153,15 +163,45 @@ function getCorsOrigin(request) {
   return configured === "*" || configured === origin ? configured : "null";
 }
 
-function responseHeaders(request, contentType = "application/json; charset=utf-8") {
+function getCookieValue(request, name) {
+  const cookieHeader = request.headers.cookie;
+  if (typeof cookieHeader !== "string") {
+    return null;
+  }
+  const cookie = cookieHeader.split(";").map((item) => item.trim()).find((item) => item.startsWith(`${name}=`));
+  return cookie ? cookie.slice(name.length + 1) : null;
+}
+
+function initializeVisitorCookie(request) {
+  const existingId = getCookieValue(request, visitorCookieName);
+  if (typeof existingId === "string" && /^[A-Za-z0-9_-]{36,64}$/.test(existingId)) {
+    return { id: existingId, setCookie: null };
+  }
+  const id = randomUUID();
+  const secureAttribute = process.env.COOKIE_SECURE === "false" ? "" : "; Secure";
   return {
+    id,
+    setCookie: `${visitorCookieName}=${id}; Max-Age=${visitorCookieMaxAge}; Path=/; HttpOnly; SameSite=None${secureAttribute}`,
+  };
+}
+
+function responseHeaders(request, contentType = "application/json; charset=utf-8") {
+  const corsOrigin = getCorsOrigin(request);
+  const headers = {
     "Content-Type": contentType,
     "Cache-Control": "no-store",
-    "Access-Control-Allow-Origin": getCorsOrigin(request),
+    "Access-Control-Allow-Origin": corsOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",
   };
+  if (corsOrigin !== "*" && corsOrigin !== "null") {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+  if (request.visitorCookieToSet) {
+    headers["Set-Cookie"] = request.visitorCookieToSet;
+  }
+  return headers;
 }
 
 function sendJson(request, response, payload, status = 200, headers = {}) {
@@ -349,8 +389,12 @@ function attachRequestLogging(request, response, url) {
   const requestId = randomUUID();
   const startedAt = process.hrtime.bigint();
   const { ip, remoteIp } = getRequestIp(request);
+  const visitorCookie = initializeVisitorCookie(request);
   request.requestId = requestId;
   request.clientIp = ip;
+  request.visitorId = visitorCookie.id;
+  request.visitorIdHash = hashVisitorId(visitorCookie.id);
+  request.visitorCookieToSet = visitorCookie.setCookie;
   let completed = false;
 
   logEvent("http_request_started", {
@@ -423,6 +467,10 @@ function hashRateLimitIp(ip) {
   return createHash("sha256").update(`${ipHashSecret}:request-rate-limit:${ip}`).digest("hex");
 }
 
+function hashVisitorId(visitorId) {
+  return createHash("sha256").update(`${ipHashSecret}:visitor:${visitorId}`).digest("hex");
+}
+
 function takeRequestSlot(ip, requirementId, modelId) {
   if (requestIntervalMs === 0) {
     return { allowed: true };
@@ -447,6 +495,59 @@ function takeRequestSlot(ip, requirementId, modelId) {
     ON CONFLICT(ip_hash, requirement_id, model_id) DO UPDATE SET last_request_at = excluded.last_request_at
   `).run(ipHash, requirementId, modelId, now);
   return { allowed: true };
+}
+
+function recordVote({ voteId, requirementId, modelId, starsHalf, day, ipHash, visitorIdHash, createdAt }) {
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    const existingRating = database.prepare(`
+      SELECT vote_id
+      FROM visitor_ratings
+      WHERE visitor_id_hash = ? AND requirement_id = ? AND model_id = ?
+    `).get(visitorIdHash, requirementId, modelId);
+    if (existingRating) {
+      database.exec("ROLLBACK");
+      return { type: "already_rated" };
+    }
+
+    const result = database.prepare(`
+      INSERT INTO votes (id, requirement_id, model_id, stars_half, day, ip_hash, created_at)
+      SELECT ?, ?, ?, ?, ?, ?, ?
+      WHERE (
+        SELECT COUNT(*)
+        FROM votes
+        WHERE day = ? AND requirement_id = ? AND model_id = ? AND ip_hash = ?
+      ) < ?
+    `).run(
+      voteId,
+      requirementId,
+      modelId,
+      starsHalf,
+      day,
+      ipHash,
+      createdAt,
+      day,
+      requirementId,
+      modelId,
+      ipHash,
+      Number.isFinite(maxVotesPerDay) && maxVotesPerDay > 0 ? maxVotesPerDay : 10,
+    );
+
+    if (Number(result.changes) !== 1) {
+      database.exec("ROLLBACK");
+      return { type: "daily_limit_reached" };
+    }
+
+    database.prepare(`
+      INSERT INTO visitor_ratings (visitor_id_hash, requirement_id, model_id, vote_id, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(visitorIdHash, requirementId, modelId, voteId, createdAt);
+    database.exec("COMMIT");
+    return { type: "accepted" };
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 function parseBody(request) {
@@ -544,30 +645,24 @@ async function createVote(request, response) {
   const day = getDailyKey();
   const ipHash = hashIp(request.clientIp, day);
   const voteId = randomUUID();
-  const result = database.prepare(`
-    INSERT INTO votes (id, requirement_id, model_id, stars_half, day, ip_hash, created_at)
-    SELECT ?, ?, ?, ?, ?, ?, ?
-    WHERE (
-      SELECT COUNT(*)
-      FROM votes
-      WHERE day = ? AND requirement_id = ? AND model_id = ? AND ip_hash = ?
-    ) < ?
-  `).run(
+  const createdAt = new Date().toISOString();
+  const result = recordVote({
     voteId,
     requirementId,
     modelId,
     starsHalf,
     day,
     ipHash,
-    new Date().toISOString(),
-    day,
-    requirementId,
-    modelId,
-    ipHash,
-    Number.isFinite(maxVotesPerDay) && maxVotesPerDay > 0 ? maxVotesPerDay : 10,
-  );
+    visitorIdHash: request.visitorIdHash,
+    createdAt,
+  });
 
-  if (Number(result.changes) !== 1) {
+  if (result.type === "already_rated") {
+    logVote(request, "already_rated", 409, body);
+    sendJson(request, response, { error: "already_rated" }, 409);
+    return;
+  }
+  if (result.type === "daily_limit_reached") {
     logVote(request, "daily_limit_reached", 429, body, { limit: maxVotesPerDay });
     sendJson(request, response, { error: "daily_limit_reached", limit: maxVotesPerDay }, 429);
     return;
