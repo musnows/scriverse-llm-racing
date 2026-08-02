@@ -136,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=19";
+const leaderboardDataUrl = "/source/leaderboard.json?v=20";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -754,6 +754,7 @@ const elements = {
   leaderboardView: document.getElementById("leaderboard-view"),
   leaderboardRequirement: document.getElementById("leaderboard-requirement"),
   leaderboardDescription: document.getElementById("leaderboard-description"),
+  leaderboardTestCount: document.getElementById("leaderboard-test-count"),
   leaderboardSummary: document.getElementById("leaderboard-summary"),
   leaderboardNote: document.getElementById("leaderboard-note"),
   leaderboardTable: document.querySelector(".leaderboard-table"),
@@ -1346,6 +1347,9 @@ function renderLeaderboard() {
   elements.leaderboardRequirement.textContent = currentRequirement
     ? `最终测试结果：${currentRequirement.title}`
     : "最终测试结果";
+  elements.leaderboardTestCount.textContent = currentRequirement
+    ? `${testCases.length} 个测试用例`
+    : "测试用例数量读取中";
 
   if (!leaderboardData) {
     const message = document.createElement("p");
@@ -1357,7 +1361,7 @@ function renderLeaderboard() {
   }
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。P2 用例状态按各模型记录展示，但不计入得分扣分。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“未通过”状态可查看详细失败原因。";
   const visibleEntries = rankingData.slice(0, 3);
   const hiddenEntries = rankingData.slice(3);
