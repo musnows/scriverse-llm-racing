@@ -478,6 +478,9 @@ function renderModelOverallChart(ranking = []) {
 }
 
 function getRequirementModelEntries(requirement) {
+  if (!requirement) {
+    return undefined;
+  }
   return [
     requirement.models,
     requirement.results,
@@ -887,7 +890,7 @@ function renderModelContentTabs() {
     button.setAttribute("aria-selected", String(state.modelContentTab === tabId));
     button.addEventListener("click", () => {
       state.modelContentTab = tabId;
-      renderModelView();
+      setView("model");
     });
     elements.modelContentTabs.append(button);
   });
@@ -1765,7 +1768,8 @@ function getRoutePath() {
     return `/req/${requirementPath}/info`;
   }
   if (state.view === "model") {
-    return `/req/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
+    const modelPath = `/req/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
+    return state.modelContentTab === "unexpected" ? `${modelPath}?tab=unexpected` : modelPath;
   }
   if (state.view === "feature") {
     return `/req/${requirementPath}/feature/${encodeURIComponent(state.featureId)}`;
@@ -1775,7 +1779,8 @@ function getRoutePath() {
 
 function updateBrowserRoute({ replace = false } = {}) {
   const nextPath = getRoutePath();
-  if (window.location.pathname === nextPath) {
+  const currentPath = `${window.location.pathname}${window.location.search}`;
+  if (currentPath === nextPath) {
     return;
   }
   const method = replace ? "replaceState" : "pushState";
@@ -1820,6 +1825,9 @@ function parseBrowserRoute() {
       view: "model",
       requirementId,
       modelId: Number.isSafeInteger(modelId) ? modelId : models[0].id,
+      modelContentTab: new URLSearchParams(window.location.search).get("tab") === "unexpected"
+        ? "unexpected"
+        : "screenshots",
     };
   }
   if (parts[2] === "feature" && parts[3]) {
@@ -1834,6 +1842,7 @@ function applyBrowserRoute() {
   state.requirementId = route.requirementId ?? null;
   state.requirementsTab = route.requirementsTab ?? "requirement";
   state.modelId = route.modelId ?? models[0].id;
+  state.modelContentTab = route.modelContentTab ?? "screenshots";
   state.featureId = route.featureId ?? features[0].id;
   setView(state.view, { updateRoute: false });
 }
