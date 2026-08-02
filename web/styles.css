@@ -1442,9 +1442,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-table-wrap {
-  display: inline-block;
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
   overflow-x: auto;
   border: 1px solid #30322f;
   border-radius: 12px;
@@ -1453,8 +1451,9 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-table {
   display: grid;
-  width: max-content;
-  grid-template-columns: minmax(168px, max-content) repeat(var(--leaderboard-model-count, 1), minmax(140px, max-content));
+  width: 100%;
+  min-width: max-content;
+  grid-template-columns: minmax(168px, max-content) repeat(var(--leaderboard-model-count, 1), minmax(140px, 1fr));
 }
 
 .leaderboard-table thead,
@@ -1465,6 +1464,7 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-table th,
 .leaderboard-table td {
+  min-width: 0;
   padding: 13px 14px;
   border-bottom: 1px solid #292b28;
   vertical-align: top;
@@ -1480,12 +1480,14 @@ a.requirement-meta-card__value:hover {
 .leaderboard-test {
   width: 168px;
   min-width: 168px;
+  border-right: 1px solid #292b28;
 }
 
 .leaderboard-model-header,
 .leaderboard-result {
-  width: 1%;
-  min-width: 140px;
+  width: 100%;
+  min-width: 0;
+  border-left: 1px solid #292b28;
 }
 
 .leaderboard-test-header,
@@ -1531,11 +1533,10 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-model-header__name {
-  overflow: hidden;
   color: #f4f4f1;
   font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .leaderboard-test__identity {
