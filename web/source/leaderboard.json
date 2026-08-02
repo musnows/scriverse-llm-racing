@@ -26,7 +26,7 @@
         { "id": "TC-03", "priority": "P0", "scenario": "新增、修改、启用、停用和保存多个 S3 配置，并携带必要鉴权参数。" },
         { "id": "TC-04", "priority": "P0", "scenario": "S3 备份作为独立模块接入，不影响其他已有功能。" },
         { "id": "TC-05", "priority": "P0", "scenario": "旧数据库能够平滑升级，已有数据完整且迁移可重复执行。" },
-        { "id": "TC-06", "priority": "P0", "scenario": "AK/SK 通过凭证保险库加密，查询不回传 SK，留空修改仍保留凭证。" },
+        { "id": "TC-06", "priority": "P0", "scenario": "SK 必须通过凭证保险库加密且不得明文落库；AK 允许作为标识明文保存。查询配置时不得返回已保存的 SK，修改其他字段且未填写新 SK 时仍须保留原凭证。" },
         { "id": "TC-07", "priority": "P0", "scenario": "多个启用目标按序执行，单目标失败不阻断后续目标并显示明确提示。" },
         { "id": "TC-08", "priority": "P0", "scenario": "分页清理超过 1000 个对象且只删除符合规则的旧数据库快照。" },
         { "id": "TC-09", "priority": "P0", "scenario": "自定义 S3 endpoint 上传时，各目标隔离使用自己的连接配置。" },
@@ -132,7 +132,6 @@
       },
       "failures": {
         "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 结果未检查，随后直接复制主数据库文件；活跃读事务阻塞 checkpoint 时，备份库能够打开但会缺少 WAL 中已经提交的数据。",
-        "TC-06": "Access Key 以普通 TEXT 字段明文落库，只有 Secret Key 通过 CredentialVault 加密。",
         "TC-07": "手动备份失败能够提示，但定时任务失败只记录服务端日志和状态，没有向前端主动显示 Toast 的通知通道。",
         "TC-08": "留存筛选只检查对象 basename，可能把 db/ 下其他子目录中符合快照命名格式的对象一并删除。",
         "TC-18": "S3 服务端错误响应未经当前目标 AK/SK 动态脱敏，可能进入日志、持久化状态、API 响应和 Toast。"
@@ -147,7 +146,6 @@
         "context": "1M"
       },
       "failures": {
-        "TC-06": "Access Key 以 access_key_id 字段明文落库，只有 Secret Key 通过 CredentialVault 加密。",
         "TC-07": "S3 请求没有超时控制，挂起目标会阻断后续目标；同时间创建的配置顺序不稳定，定时失败也没有前端 Toast。",
         "TC-08": "ListObjectsV2 只读取第一页且不处理 continuation token，快照过滤规则过宽，列表或删除失败还会被吞掉并报告成功。",
         "TC-09": "path-style 请求的 SigV4 canonical URI 未包含 bucket，自定义签名验证 endpoint 返回 SignatureDoesNotMatch。",
