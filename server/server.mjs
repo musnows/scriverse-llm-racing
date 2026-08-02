@@ -18,6 +18,24 @@ const catalogSyncIntervalMs = Number.isFinite(configuredCatalogSyncInterval)
   ? Math.max(60_000, configuredCatalogSyncInterval)
   : 600_000;
 
+function logEvent(event, fields = {}, level = "info") {
+  const entry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    event,
+    ...fields,
+  });
+  if (level === "error") {
+    console.error(entry);
+    return;
+  }
+  console.log(entry);
+}
+
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 mkdirSync(resolve(databasePath, ".."), { recursive: true });
 const database = new DatabaseSync(databasePath);
 database.exec("PRAGMA journal_mode = WAL");
@@ -216,9 +234,9 @@ function loadStoredCatalog() {
       throw new Error("stored catalog version does not match payload");
     }
     setCatalogMemory(snapshot);
-    console.log(`Loaded rating catalog version ${snapshot.version} from database`);
+    logEvent("catalog_loaded", { version: snapshot.version, source: "database" });
   } catch (error) {
-    console.error("Stored rating catalog is invalid", error);
+    logEvent("catalog_load_failed", { error: getErrorMessage(error) }, "error");
   }
 }
 
@@ -249,22 +267,26 @@ async function syncCatalog() {
     try {
       const payload = await readRemoteCatalog();
       if (payload === null) {
-        console.log("Rating catalog not modified");
+        logEvent("catalog_sync_skipped", { reason: "not_modified" });
         return;
       }
       const incomingVersion = getCatalogVersion(payload);
       if (catalogSnapshot && incomingVersion === catalogSnapshot.version) {
-        console.log(`Rating catalog version ${incomingVersion} unchanged`);
+        logEvent("catalog_sync_skipped", { reason: "version_unchanged", version: incomingVersion });
         return;
       }
       if (catalogSnapshot && incomingVersion < catalogSnapshot.version) {
-        console.error(`Rating catalog version ${incomingVersion} is older than ${catalogSnapshot.version}`);
+        logEvent("catalog_sync_rejected", {
+          reason: "older_version",
+          version: incomingVersion,
+          currentVersion: catalogSnapshot.version,
+        }, "error");
         return;
       }
       const snapshot = applyCatalogSnapshot(payload);
-      console.log(`Rating catalog updated to version ${snapshot.version}`);
+      logEvent("catalog_synced", { version: snapshot.version });
     } catch (error) {
-      console.error("Rating catalog sync failed", error);
+      logEvent("catalog_sync_failed", { error: getErrorMessage(error) }, "error");
     } finally {
       catalogSyncInFlight = null;
     }
@@ -284,6 +306,79 @@ function getClientIp(request) {
     }
   }
   return request.socket.remoteAddress || "unknown";
+}
+
+function getRequestIp(request) {
+  return {
+    ip: getClientIp(request),
+    remoteIp: request.socket.remoteAddress || "unknown",
+  };
+}
+
+function attachRequestLogging(request, response, url) {
+  const requestId = randomUUID();
+  const startedAt = process.hrtime.bigint();
+  const { ip, remoteIp } = getRequestIp(request);
+  request.requestId = requestId;
+  request.clientIp = ip;
+  let completed = false;
+
+  logEvent("http_request_started", {
+    requestId,
+    method: request.method,
+    path: url.pathname,
+    ip,
+    remoteIp,
+    userAgent: request.headers["user-agent"] || null,
+    contentLength: request.headers["content-length"] || null,
+  });
+
+  const logCompletion = () => {
+    if (completed) {
+      return;
+    }
+    completed = true;
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    logEvent("http_request_completed", {
+      requestId,
+      method: request.method,
+      path: url.pathname,
+      ip,
+      remoteIp,
+      status: response.statusCode,
+      durationMs: Number(durationMs.toFixed(2)),
+      clientDisconnected: !response.writableEnded,
+    });
+  };
+
+  response.once("finish", logCompletion);
+  response.once("close", logCompletion);
+}
+
+function getVoteLogFields(body) {
+  const fields = {};
+  if (typeof body?.requirementId === "string") {
+    fields.requirementId = body.requirementId.slice(0, 80);
+  }
+  if (Number.isSafeInteger(body?.modelId)) {
+    fields.modelId = body.modelId;
+  }
+  if (Number.isInteger(body?.starsHalf) && body.starsHalf >= 0 && body.starsHalf <= 10) {
+    fields.starsHalf = body.starsHalf;
+    fields.stars = body.starsHalf / 2;
+  }
+  return fields;
+}
+
+function logVote(request, result, status, body, fields = {}) {
+  logEvent("rating_vote", {
+    requestId: request.requestId,
+    ip: request.clientIp,
+    result,
+    status,
+    ...getVoteLogFields(body),
+    ...fields,
+  }, result === "accepted" ? "info" : "warn");
 }
 
 function getDailyKey() {
@@ -346,6 +441,7 @@ async function createVote(request, response) {
   try {
     body = await parseBody(request);
   } catch {
+    logVote(request, "invalid_json", 400, null);
     sendJson(request, response, { error: "invalid_json" }, 400);
     return;
   }
@@ -355,20 +451,23 @@ async function createVote(request, response) {
   const starsHalf = body?.starsHalf;
   const allowedModels = requirementModelIds.get(requirementId);
   if (!Number.isInteger(starsHalf) || starsHalf < 0 || starsHalf > 10) {
+    logVote(request, "invalid_vote", 400, body);
     sendJson(request, response, { error: "invalid_vote" }, 400);
     return;
   }
   if (!catalogSnapshot) {
+    logVote(request, "catalog_not_ready", 503, body);
     sendJson(request, response, { error: "catalog_not_ready" }, 503);
     return;
   }
   if (!safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId)) {
+    logVote(request, "invalid_vote", 400, body);
     sendJson(request, response, { error: "invalid_vote" }, 400);
     return;
   }
 
   const day = getDailyKey();
-  const ipHash = hashIp(getClientIp(request), day);
+  const ipHash = hashIp(request.clientIp, day);
   const voteId = randomUUID();
   const result = database.prepare(`
     INSERT INTO votes (id, requirement_id, model_id, stars_half, day, ip_hash, created_at)
@@ -394,9 +493,11 @@ async function createVote(request, response) {
   );
 
   if (Number(result.changes) !== 1) {
+    logVote(request, "daily_limit_reached", 429, body, { limit: maxVotesPerDay });
     sendJson(request, response, { error: "daily_limit_reached", limit: maxVotesPerDay }, 429);
     return;
   }
+  logVote(request, "accepted", 201, body, { voteId });
   sendJson(request, response, { data: { voteId, requirementId, modelId, starsHalf } }, 201);
 }
 
@@ -425,6 +526,7 @@ function serveStatic(request, response, url) {
 
 const server = createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+  attachRequestLogging(request, response, url);
   if (request.method === "OPTIONS") {
     response.writeHead(204, responseHeaders(request));
     response.end();
@@ -449,7 +551,13 @@ const server = createServer(async (request, response) => {
     }
     serveStatic(request, response, url);
   } catch (error) {
-    console.error("Rating server request failed", error);
+    logEvent("http_request_failed", {
+      requestId: request.requestId,
+      ip: request.clientIp,
+      method: request.method,
+      path: url.pathname,
+      error: getErrorMessage(error),
+    }, "error");
     if (!response.headersSent) {
       sendJson(request, response, { error: "internal_error" }, 500);
     } else {
@@ -466,7 +574,7 @@ async function startServer() {
   }, catalogSyncIntervalMs);
   catalogSyncTimer.unref?.();
   server.listen(port, "0.0.0.0", () => {
-    console.log(`Rating server listening on http://0.0.0.0:${port}`);
+    logEvent("server_started", { host: "0.0.0.0", port });
   });
 }
 
