@@ -497,15 +497,18 @@ function takeRequestSlot(ip, requirementId, modelId) {
   return { allowed: true };
 }
 
+function hasVisitorRated(visitorIdHash, requirementId, modelId) {
+  return Boolean(database.prepare(`
+    SELECT vote_id
+    FROM visitor_ratings
+    WHERE visitor_id_hash = ? AND requirement_id = ? AND model_id = ?
+  `).get(visitorIdHash, requirementId, modelId));
+}
+
 function recordVote({ voteId, requirementId, modelId, starsHalf, day, ipHash, visitorIdHash, createdAt }) {
   database.exec("BEGIN IMMEDIATE");
   try {
-    const existingRating = database.prepare(`
-      SELECT vote_id
-      FROM visitor_ratings
-      WHERE visitor_id_hash = ? AND requirement_id = ? AND model_id = ?
-    `).get(visitorIdHash, requirementId, modelId);
-    if (existingRating) {
+    if (hasVisitorRated(visitorIdHash, requirementId, modelId)) {
       database.exec("ROLLBACK");
       return { type: "already_rated" };
     }
@@ -624,6 +627,12 @@ async function createVote(request, response) {
   if (!safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId)) {
     logVote(request, "invalid_vote", 400, body);
     sendJson(request, response, { error: "invalid_vote" }, 400);
+    return;
+  }
+
+  if (hasVisitorRated(request.visitorIdHash, requirementId, modelId)) {
+    logVote(request, "already_rated", 409, body);
+    sendJson(request, response, { error: "already_rated" }, 409);
     return;
   }
 
