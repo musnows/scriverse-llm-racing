@@ -27,6 +27,7 @@ docker run -d \
   --restart unless-stopped \
   -p 13250:13250 \
   -e IP_HASH_SECRET='替换为一段随机长字符串' \
+  -e REQUEST_INTERVAL_MS=300000 \
   -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
   -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
   -e TRUST_PROXY=true \
@@ -75,6 +76,7 @@ PORT=13250 \
 RATING_DB=/var/lib/agent-evaluation/ratings.sqlite \
 IP_HASH_SECRET='替换为一段随机长字符串' \
 MAX_VOTES_PER_DAY=10 \
+REQUEST_INTERVAL_MS=300000 \
 ALLOWED_ORIGIN='https://your-netlify-site.example' \
 node server.mjs
 ```
@@ -82,6 +84,8 @@ node server.mjs
 投票数据会写入 `RATING_DB` 指定的 SQLite 文件。后端按“UTC 日期 + 需求 + 模型 + IP 哈希”限制每天投票次数，默认每个模型每天 10 次。
 
 `MAX_VOTES_PER_DAY` 可以改成其他整数，但服务端会强制最低为 5；填写小于 5 或非法值时按 5 次处理。
+
+评分提交接口按来源 IP 限制请求间隔，默认 `REQUEST_INTERVAL_MS=300000`，即同一 IP 每 5 分钟最多提交一次评分；间隔内的请求直接返回 HTTP 429。设置为 `0` 可以关闭这个间隔限制。
 
 ## 评分允许列表同步
 
@@ -132,6 +136,7 @@ ExecStart=/usr/bin/node /opt/agent-evaluation/server.mjs
 Environment=PORT=13250
 Environment=RATING_DB=/var/lib/agent-evaluation/ratings.sqlite
 Environment=MAX_VOTES_PER_DAY=10
+Environment=REQUEST_INTERVAL_MS=300000
 Environment=CATALOG_URL=https://your-netlify-site.example/rating-catalog.json
 Environment=CATALOG_SYNC_INTERVAL_MS=600000
 Environment=ALLOWED_ORIGIN=https://your-netlify-site.example

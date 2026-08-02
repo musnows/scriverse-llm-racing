@@ -60,6 +60,7 @@ cd server
 PORT=13250 \
 RATING_DB=/var/lib/agent-evaluation/ratings.sqlite \
 IP_HASH_SECRET='替换为随机长字符串' \
+REQUEST_INTERVAL_MS=300000 \
 ALLOWED_ORIGIN='https://your-netlify-site.example' \
 CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
 node server.mjs
@@ -81,6 +82,7 @@ docker run -d \
   --restart unless-stopped \
   -p 13250:13250 \
   -e IP_HASH_SECRET='替换为一段随机长字符串' \
+  -e REQUEST_INTERVAL_MS=300000 \
   -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
   -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
   -v /opt/scriverse-llm-racing/data:/var/lib/scriverse-llm-racing \

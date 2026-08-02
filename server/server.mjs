@@ -10,6 +10,8 @@ const port = Number.parseInt(process.env.PORT || "13250", 10);
 const databasePath = resolve(process.env.RATING_DB || join(rootDir, "data", "ratings.sqlite"));
 const configuredVoteLimit = Number.parseInt(process.env.MAX_VOTES_PER_DAY || "10", 10);
 const maxVotesPerDay = Number.isFinite(configuredVoteLimit) ? Math.max(5, configuredVoteLimit) : 10;
+const configuredRequestInterval = Number.parseInt(process.env.REQUEST_INTERVAL_MS || "300000", 10);
+const requestIntervalMs = Number.isFinite(configuredRequestInterval) ? Math.max(0, configuredRequestInterval) : 300_000;
 const ipHashSecret = process.env.IP_HASH_SECRET || "change-this-secret";
 const trustProxy = process.env.TRUST_PROXY === "true";
 const catalogUrl = String(process.env.CATALOG_URL || "").trim();
@@ -54,6 +56,10 @@ database.exec(`
     ON votes (day, requirement_id, model_id, ip_hash);
   CREATE INDEX IF NOT EXISTS votes_rating_totals_idx
     ON votes (requirement_id, model_id);
+  CREATE TABLE IF NOT EXISTS request_rate_limits (
+    ip_hash TEXT PRIMARY KEY,
+    last_request_at INTEGER NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS catalog_snapshot (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     version INTEGER NOT NULL,
@@ -134,9 +140,9 @@ function responseHeaders(request, contentType = "application/json; charset=utf-8
   };
 }
 
-function sendJson(request, response, payload, status = 200) {
+function sendJson(request, response, payload, status = 200, headers = {}) {
   const body = JSON.stringify(payload);
-  response.writeHead(status, responseHeaders(request));
+  response.writeHead(status, { ...responseHeaders(request), ...headers });
   response.end(body);
 }
 
@@ -389,6 +395,36 @@ function hashIp(ip, day) {
   return createHash("sha256").update(`${ipHashSecret}:${day}:${ip}`).digest("hex");
 }
 
+function hashRateLimitIp(ip) {
+  return createHash("sha256").update(`${ipHashSecret}:request-rate-limit:${ip}`).digest("hex");
+}
+
+function takeRequestSlot(ip) {
+  if (requestIntervalMs === 0) {
+    return { allowed: true };
+  }
+
+  const now = Date.now();
+  const ipHash = hashRateLimitIp(ip);
+  const previous = database.prepare(`
+    SELECT last_request_at
+    FROM request_rate_limits
+    WHERE ip_hash = ?
+  `).get(ipHash);
+  const lastRequestAt = Number(previous?.last_request_at);
+  if (Number.isFinite(lastRequestAt) && now - lastRequestAt < requestIntervalMs) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((requestIntervalMs - (now - lastRequestAt)) / 1000));
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  database.prepare(`
+    INSERT INTO request_rate_limits (ip_hash, last_request_at)
+    VALUES (?, ?)
+    ON CONFLICT(ip_hash) DO UPDATE SET last_request_at = excluded.last_request_at
+  `).run(ipHash, now);
+  return { allowed: true };
+}
+
 function parseBody(request) {
   return new Promise((resolveBody, reject) => {
     let body = "";
@@ -437,6 +473,21 @@ function getRatings(request, response, url) {
 }
 
 async function createVote(request, response) {
+  const requestSlot = takeRequestSlot(request.clientIp);
+  if (!requestSlot.allowed) {
+    logVote(request, "request_rate_limited", 429, null, {
+      intervalMs: requestIntervalMs,
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    });
+    sendJson(request, response, {
+      error: "request_rate_limited",
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    }, 429, {
+      "Retry-After": String(requestSlot.retryAfterSeconds),
+    });
+    return;
+  }
+
   let body;
   try {
     body = await parseBody(request);
@@ -534,7 +585,14 @@ const server = createServer(async (request, response) => {
   }
   try {
     if (url.pathname === "/api/rating-config" && request.method === "GET") {
-      sendJson(request, response, { data: { turnstileRequired: false, turnstileSiteKey: null, maxVotesPerDay } });
+      sendJson(request, response, {
+        data: {
+          turnstileRequired: false,
+          turnstileSiteKey: null,
+          maxVotesPerDay,
+          requestIntervalMs,
+        },
+      });
       return;
     }
     if (url.pathname === "/api/ratings" && request.method === "GET") {
@@ -574,7 +632,7 @@ async function startServer() {
   }, catalogSyncIntervalMs);
   catalogSyncTimer.unref?.();
   server.listen(port, "0.0.0.0", () => {
-    logEvent("server_started", { host: "0.0.0.0", port });
+    logEvent("server_started", { host: "0.0.0.0", port, requestIntervalMs });
   });
 }
 

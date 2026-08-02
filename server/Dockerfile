@@ -5,6 +5,7 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=13250 \
     RATING_DB=/var/lib/scriverse-llm-racing/ratings.sqlite \
+    REQUEST_INTERVAL_MS=300000 \
     CATALOG_SYNC_INTERVAL_MS=600000
 
 RUN mkdir -p /var/lib/scriverse-llm-racing \
