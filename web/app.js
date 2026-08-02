@@ -373,9 +373,14 @@ function createModelOverallRow(entry) {
   testValue.textContent = entry.test ? `${entry.test.score} / ${entry.test.maxScore}` : "暂无数据";
   const testMeta = document.createElement("span");
   testMeta.className = "model-overall-row__meta";
-  testMeta.textContent = entry.test
-    ? `${entry.test.passCount} / ${entry.test.testCaseCount} 个用例通过`
-    : "暂无测试记录";
+  if (entry.test) {
+    const passRate = entry.test.testCaseCount > 0
+      ? Math.round((entry.test.passCount / entry.test.testCaseCount) * 100)
+      : 0;
+    testMeta.textContent = `${entry.test.passCount}/${entry.test.testCaseCount} 个用例通过 ${passRate}%`;
+  } else {
+    testMeta.textContent = "暂无测试记录";
+  }
   testScore.append(testLabel, testValue, testMeta);
 
   const duration = document.createElement("div");
