@@ -559,7 +559,7 @@ function renderModelRating() {
   label.textContent = "为此模型评分";
   const input = document.createElement("input");
   input.type = "range";
-  input.min = "1";
+  input.min = "0";
   input.max = "10";
   input.step = "1";
   input.value = "10";
