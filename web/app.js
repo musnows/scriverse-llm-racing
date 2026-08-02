@@ -941,6 +941,15 @@ function createLeaderboardSummaryCard(entry) {
   return card;
 }
 
+function createLeaderboardSummaryList(entries, className = "leaderboard-summary__list") {
+  const list = document.createElement("div");
+  list.className = className;
+  for (const entry of entries) {
+    list.append(createLeaderboardSummaryCard(entry));
+  }
+  return list;
+}
+
 function createLeaderboardResultCell(entry, testCase) {
   const failed = Object.prototype.hasOwnProperty.call(entry.failures, testCase.id);
   const cell = document.createElement("td");
@@ -1015,8 +1024,27 @@ function renderLeaderboard() {
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“未通过”状态可查看详细失败原因。";
-  for (const entry of rankingData) {
-    elements.leaderboardSummary.append(createLeaderboardSummaryCard(entry));
+  const visibleEntries = rankingData.slice(0, 3);
+  const hiddenEntries = rankingData.slice(3);
+  elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
+
+  if (hiddenEntries.length > 0) {
+    const hiddenList = createLeaderboardSummaryList(hiddenEntries, "leaderboard-summary__list leaderboard-summary__list--additional");
+    hiddenList.hidden = true;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "leaderboard-summary__toggle";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.textContent = `展开其余 ${hiddenEntries.length} 个模型`;
+    toggle.addEventListener("click", () => {
+      const expanded = !hiddenList.hidden;
+      hiddenList.hidden = expanded;
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      toggle.textContent = expanded
+        ? `展开其余 ${hiddenEntries.length} 个模型`
+        : `收起其余 ${hiddenEntries.length} 个模型`;
+    });
+    elements.leaderboardSummary.append(toggle, hiddenList);
   }
   elements.leaderboardTable.style.setProperty("--leaderboard-model-count", rankingData.length);
 
