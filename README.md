@@ -61,7 +61,7 @@ node server.mjs
 - `GET /api/ratings?requirementId=s3-backup-v1`
 - `POST /api/ratings/vote`
 
-评分使用稳定的数字 `modelId` 标识具体模型版本，不按厂商或工具归类。当前模型 ID 为：`1` Doubao-Seed-2.1-Turbo、`2` Qwen3.8-Max-Preview、`3` LongCat-2.0、`4` Hy3。后续新增模型版本必须分配新的数字 ID，不能复用旧 ID。
+评分使用稳定的数字 `modelId` 标识具体模型，不按厂商或工具归类。当前模型 ID 为：`1` Doubao-Seed-2.1-Turbo、`2` Qwen3.8-Max-Preview、`3` LongCat-2.0、`4` Hy3。后续新增模型或模型版本必须追加新的数字 ID，不能修改、删除或复用旧 ID。
 
 也可以直接使用 Docker 镜像运行后端：
 

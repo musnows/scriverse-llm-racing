@@ -17,12 +17,6 @@ const configuredCatalogSyncInterval = Number.parseInt(process.env.CATALOG_SYNC_I
 const catalogSyncIntervalMs = Number.isFinite(configuredCatalogSyncInterval)
   ? Math.max(60_000, configuredCatalogSyncInterval)
   : 600_000;
-const legacyModelIdMap = new Map([
-  ["seed", 1],
-  ["qwen", 2],
-  ["longcat", 3],
-  ["hy3", 4],
-]);
 
 mkdirSync(resolve(databasePath, ".."), { recursive: true });
 const database = new DatabaseSync(databasePath);
@@ -49,10 +43,6 @@ database.exec(`
     synced_at TEXT NOT NULL
   );
 `);
-
-for (const [legacyModelId, modelId] of legacyModelIdMap) {
-  database.prepare("UPDATE votes SET model_id = ? WHERE model_id = ?").run(String(modelId), legacyModelId);
-}
 
 let catalogSnapshot = null;
 let requirementIds = new Set();
@@ -105,23 +95,15 @@ function safeModelId(value) {
   return Number.isSafeInteger(value) && value > 0;
 }
 
-function normalizeModelId(value) {
+function parseStoredModelId(value) {
   if (safeModelId(value)) {
     return value;
   }
-  if (typeof value === "string") {
-    const legacyModelId = legacyModelIdMap.get(value);
-    if (legacyModelId) {
-      return legacyModelId;
-    }
-    if (/^[1-9][0-9]{0,8}$/.test(value)) {
-      const numericModelId = Number(value);
-      if (safeModelId(numericModelId)) {
-        return numericModelId;
-      }
-    }
+  if (typeof value !== "string" || !/^[1-9][0-9]{0,8}$/.test(value)) {
+    return null;
   }
-  return null;
+  const numericModelId = Number(value);
+  return safeModelId(numericModelId) ? numericModelId : null;
 }
 
 function getCatalogVersion(payload) {
@@ -316,7 +298,7 @@ function getRatings(request, response, url) {
     GROUP BY model_id
   `).all(requirementId);
   const data = rows.map((row) => ({
-    modelId: normalizeModelId(row.model_id),
+    modelId: parseStoredModelId(row.model_id),
     voteCount: Number(row.vote_count),
     starsHalfSum: Number(row.stars_half_sum),
     averageStars: Number((Number(row.stars_half_sum) / Number(row.vote_count) / 2).toFixed(2)),
@@ -334,7 +316,7 @@ async function createVote(request, response) {
   }
 
   const requirementId = body?.requirementId;
-  const modelId = normalizeModelId(body?.modelId);
+  const modelId = body?.modelId;
   const starsHalf = Number(body?.starsHalf);
   const allowedModels = requirementModelIds.get(requirementId);
   if (!catalogSnapshot || !safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId) || !Number.isInteger(starsHalf) || starsHalf < 1 || starsHalf > 10) {

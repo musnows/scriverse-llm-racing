@@ -30,8 +30,9 @@
   - `web/rating-catalog.json`
   - `web/source/leaderboard.json`
 - 新增需求或可评分模型时，前后端 catalog 必须同步，且 catalog `version` 必须递增。
-- `modelId` 必须使用正整数，并且对应具体模型版本，不得使用厂商、工具或模型系列别名。
-- 已分配的 `modelId` 永不复用；模型版本发生变化时分配新的数字 ID，旧模型和旧评分记录继续保留。
+- 每个具体模型独立使用一个 `modelId` 正整数，不得按厂商、工具或模型系列共用 ID；同一厂家的不同模型必须使用不同 ID。
+- 新增模型或新模型版本只能追加新的 `modelId`，已分配的 ID 禁止修改、删除或复用。
+- 后端只接受 catalog 中声明的数字 `modelId`，不保留旧字符串 ID 或旧客户端兼容逻辑。
 
 ## data 数据归档
 
