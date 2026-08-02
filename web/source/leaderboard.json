@@ -1,0 +1,142 @@
+{
+  "scoring": {
+    "initial": 200,
+    "deductionByPriority": {
+      "P00": 30,
+      "P0": 10,
+      "P1": 5,
+      "P2": 0
+    }
+  },
+  "requirements": [
+    {
+      "id": "s3-backup-v1",
+      "title": "叙界 S3 备份能力",
+      "baseRepository": "musnows/Scriverse",
+      "baseRepositoryUrl": "https://github.com/musnows/Scriverse",
+      "baseVersion": "v0.6.6",
+      "baseCommit": "91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2",
+      "prompt": "为当前项目加上数据库和图片的 s3 备份能力：\n\n1. 支持配置多个亚马逊 s3 兼容的配置项，作为同步服务器的目标，支持同时开启多个备份目标，依次同步到对应目标中；\n2. 配置项里面需要有子目录的设置能力，同步到给定子目录（没有给定的时候默认桶根目录）下的 /scriverse 子目录中；\n3. 把图片上传到 /scriverse/img 子目录中，若图片已经存在则跳过，不存在上传；\n4. 数据库备份到 /scriverse/db 子目录中，不进行历史备份覆盖，在 db 文件名中加上时间戳后上传，方便用作后续的快照回滚；\n5. 支持选择是否备份图片，不勾选的时候只备份数据库；\n6. 支持选择备份定时任务的触发时间和备份留存个数，超过备份留存个数后，删除最老的数据库备份（不清理图片）；\n7. 设置入口加到整个系统的设置中，不需要支持选择书籍，只支持备份整个系统的数据；\n8. 如果对应 s3 服务请求失败，需要在日志里面完整打印失败的 s3 配置项（ak 和 sk 不打印）和它的请求失败 s3 服务端的返回结果，并 toast 提示前端，禁止静默失败。\n\n在任务执行期间必须自行完成决策，禁止咨询用户任何问题。",
+      "evaluationDatabase": "scriverse-demo-db-with-setting-images-20260802.zip",
+      "evaluationDatabaseUrl": "https://github.com/musnows/scriverse-llm-racing/blob/main/assets/scriverse-demo-db-with-setting-images-20260802-20260802064922-i9j1c2w.zip"
+    }
+  ],
+  "testCases": [
+    { "id": "TC-01", "priority": "P00", "scenario": "设置页面存在 S3 配置入口。" },
+    { "id": "TC-02", "priority": "P00", "scenario": "在数据写入时执行数据库备份，下载后数据库可正常打开且数据完整。" },
+    { "id": "TC-03", "priority": "P0", "scenario": "新增、修改、启用、停用和保存多个 S3 配置，并携带必要鉴权参数。" },
+    { "id": "TC-04", "priority": "P0", "scenario": "S3 备份作为独立模块接入，不影响其他已有功能。" },
+    { "id": "TC-05", "priority": "P0", "scenario": "旧数据库能够平滑升级，已有数据完整且迁移可重复执行。" },
+    { "id": "TC-06", "priority": "P0", "scenario": "AK/SK 通过凭证保险库加密，查询不回传 SK，留空修改仍保留凭证。" },
+    { "id": "TC-07", "priority": "P0", "scenario": "多个启用目标按序执行，单目标失败不阻断后续目标并显示明确提示。" },
+    { "id": "TC-08", "priority": "P0", "scenario": "分页清理超过 1000 个对象且只删除符合规则的旧数据库快照。" },
+    { "id": "TC-09", "priority": "P0", "scenario": "自定义 S3 endpoint 上传时，各目标隔离使用自己的连接配置。" },
+    { "id": "TC-10", "priority": "P1", "scenario": "独立图片备份开关关闭后只上传数据库，不产生图片上传请求。" },
+    { "id": "TC-11", "priority": "P1", "scenario": "设置两分钟后的定时任务并完成一次 S3 同步。" },
+    { "id": "TC-12", "priority": "P1", "scenario": "保存定时配置后按用户选择的触发时间持续自动执行。" },
+    { "id": "TC-13", "priority": "P1", "scenario": "增量同步跳过已存在图片，并为每次数据库备份生成时间戳快照。" },
+    { "id": "TC-14", "priority": "P1", "scenario": "UI 与全局样式一致，无明显错乱、溢出、遮挡或不可操作控件。" },
+    { "id": "TC-15", "priority": "P1", "scenario": "按 AGENTS.md 更新静态资源缓存版本并加载更新后的资源。" },
+    { "id": "TC-16", "priority": "P1", "scenario": "服务重启后定时配置恢复，重复初始化不会注册重复任务。" },
+    { "id": "TC-17", "priority": "P1", "scenario": "远端图片存在性检查失败时应判定同步失败，不得误认为图片不存在。" },
+    { "id": "TC-18", "priority": "P1", "scenario": "AK/SK 不出现在普通日志、错误日志、Toast 或审计记录中。" },
+    { "id": "TC-19", "priority": "P2", "scenario": "S3 设置页面遇到重启或会话失效时正常重定向到登录页面。" },
+    { "id": "TC-20", "priority": "P2", "scenario": "按 AGENTS.md 完成测试和独立 Git commit，提交信息符合 Angular 规范。" }
+  ],
+  "models": [
+    {
+      "modelId": "hy3",
+      "duration": "44m58s",
+      "agent": {
+        "software": "WorkBuddy",
+        "version": "5.3.8",
+        "context": "192K"
+      },
+      "failures": {
+        "TC-07": "",
+        "TC-08": "",
+        "TC-13": "",
+        "TC-15": "",
+        "TC-18": "SK 泄漏风险。"
+      }
+    },
+    {
+      "modelId": "qwen",
+      "duration": "21min",
+      "agent": {
+        "software": "QoderCN IDE, Quest",
+        "version": "1.9.1",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "",
+        "TC-07": "",
+        "TC-08": "",
+        "TC-14": "390px 窄屏溢出或样式一致性问题。",
+        "TC-16": ""
+      }
+    },
+    {
+      "modelId": "longcat",
+      "duration": "45m47s",
+      "agent": {
+        "software": "CatPaw",
+        "version": "2026.0729.1946",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "备份 100% 失败，数据库备份无法通过完整性验证。",
+        "TC-03": "编辑时隐藏 AK/SK 仍必填，UI 无法保存。",
+        "TC-06": "编辑时隐藏 AK/SK 仍必填，UI 无法保存。",
+        "TC-07": "无超时容错、顺序不稳且无主动 Toast。",
+        "TC-08": "不分页且无严格命名过滤。",
+        "TC-09": "二进制 payload hash 签名错误，virtual host/path style 构造错误。",
+        "TC-11": "只能设置整数小时，无法验证两分钟后触发。",
+        "TC-13": "严格 endpoint 拒收二进制上传。",
+        "TC-14": "390px 窄屏溢出、CSS 变量缺失。",
+        "TC-15": "",
+        "TC-17": "HEAD 403/429/500 全部误判为不存在。",
+        "TC-18": "响应正文可能带入 AK/SK。",
+        "TC-20": "未按要求完成独立 Git commit 与 Angular 规范提交。"
+      }
+    },
+    {
+      "modelId": "seed",
+      "duration": "32min",
+      "agent": {
+        "software": "TRAE SOLO",
+        "version": "3.3.83",
+        "context": "200K"
+      },
+      "failures": {
+        "TC-02": "",
+        "TC-06": "",
+        "TC-08": "",
+        "TC-09": "",
+        "TC-10": "未提供独立图片备份开关。",
+        "TC-11": "fetch failed，立即备份与定时备份均未完成。",
+        "TC-13": "",
+        "TC-15": "",
+        "TC-16": "重启后 Toast 不自动关闭。",
+        "TC-17": "",
+        "TC-20": "未按要求完成独立 Git commit 与 Angular 规范提交。"
+      }
+    }
+  ],
+  "agents": [
+    { "modelId": "longcat", "modelName": "LongCat-2.0", "software": "CatPaw", "version": "2026.0729.1946", "context": "1M", "status": "已测试" },
+    { "modelId": "hy3", "modelName": "Hy3", "software": "WorkBuddy", "version": "5.3.8", "context": "192K", "status": "已测试" },
+    { "modelId": "qwen", "modelName": "Qwen3.8-Max-Preview", "software": "QoderCN IDE, Quest", "version": "1.9.1", "context": "1M", "status": "已测试" },
+    { "modelId": "seed", "modelName": "Doubao-Seed-2.1-Turbo", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
+    { "modelName": "Seed-2.1-Pro", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂无测试数据" },
+    { "modelName": "Grok 4.5 High", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
+    { "modelName": "Composer 2.5", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
+    { "modelName": "GPT-5.6 Sol Max", "software": "Codex", "version": "26.727.51351", "context": "373K（设置里手动开）", "status": "暂无测试数据" },
+    { "modelName": "GPT-5.6 Luna Max", "software": "Codex", "version": "26.727.51351", "context": "373K", "status": "暂无测试数据" },
+    { "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
+    { "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
+    { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "未参赛" },
+    { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "未参赛" },
+    { "modelName": "MiniMax", "software": "", "version": "", "context": "", "status": "未参赛", "note": "原文未提供软件版本与上下文。" }
+  ]
+}

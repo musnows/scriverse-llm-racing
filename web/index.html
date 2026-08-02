@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>叙界多 Agent 评测档案</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css?v=10">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">AGENT EVALUATION ARCHIVE</p>
+          <h1>叙界多 Agent 评测档案</h1>
+          <p class="page-summary">统一归档多项测试需求、参赛配置、最终排行榜与模型截图。</p>
+        </div>
+        <div class="page-header__controls">
+          <button type="button" id="back-home" class="back-home-button" hidden>返回需求列表</button>
+          <div class="global-requirement-switch">
+            <label for="global-requirement-select">当前测试需求</label>
+            <select id="global-requirement-select" disabled>
+              <option value="">正在加载需求……</option>
+            </select>
+          </div>
+          <div class="view-switch" role="tablist" aria-label="汇总维度">
+            <button type="button" class="view-switch__button" role="tab" data-view="model" aria-selected="false">按模型</button>
+            <button type="button" class="view-switch__button" role="tab" data-view="feature" aria-selected="false">按功能</button>
+            <button type="button" class="view-switch__button" role="tab" data-view="leaderboard" aria-selected="false">最终排行榜</button>
+            <button type="button" class="view-switch__button" role="tab" data-view="requirements" aria-selected="false">需求信息</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section id="home-view" class="view-panel home-view" aria-label="测试需求列表">
+          <div class="section-heading home-heading">
+            <div>
+              <p class="section-kicker">需求中心</p>
+              <h2>选择测试需求</h2>
+              <p class="section-description">先选择一项需求，再查看该需求绑定的截图、评分与参赛信息。</p>
+            </div>
+          </div>
+          <div id="requirement-list" class="requirement-list"></div>
+          <p id="global-average-note" class="global-average-note" hidden></p>
+        </section>
+
+        <section id="model-view" class="view-panel" aria-label="按模型查看" hidden>
+          <div id="model-tabs" class="tab-strip" role="tablist" aria-label="模型"></div>
+          <div class="section-heading">
+            <div>
+              <p id="model-kicker" class="section-kicker"></p>
+              <h2 id="model-title"></h2>
+            </div>
+            <div class="model-heading-actions">
+              <p id="model-count" class="count-label"></p>
+              <div id="model-rating" class="model-rating" aria-live="polite"></div>
+            </div>
+          </div>
+          <div id="model-gallery" class="model-gallery"></div>
+        </section>
+
+        <section id="leaderboard-view" class="view-panel" aria-label="最终排行榜" hidden>
+          <div class="section-heading leaderboard-heading">
+            <div>
+              <p class="section-kicker">最终测试结果</p>
+              <h2>最终排行榜</h2>
+              <p class="section-description">按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。</p>
+            </div>
+            <p class="count-label">20 个测试用例</p>
+          </div>
+          <div id="leaderboard-summary" class="leaderboard-summary"></div>
+          <p id="leaderboard-note" class="leaderboard-note"></p>
+          <div class="leaderboard-table-wrap">
+            <table class="leaderboard-table">
+              <caption class="sr-only">四个模型的测试用例通过情况与失败原因</caption>
+              <thead id="leaderboard-head"></thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="requirements-view" class="view-panel" aria-label="测试需求" hidden>
+          <div class="requirements-layout">
+            <aside class="requirements-nav" aria-label="测试需求列表">
+              <p class="feature-nav__label">测试需求</p>
+              <div id="requirement-tabs" class="requirement-tabs" role="tablist" aria-orientation="vertical"></div>
+            </aside>
+            <div class="requirements-content">
+              <div class="section-heading requirements-heading">
+                <div>
+                  <p class="section-kicker">测试基线</p>
+                  <h2 id="requirement-title"></h2>
+                  <p id="requirement-summary" class="section-description"></p>
+                </div>
+              </div>
+
+              <div class="requirement-meta-grid">
+                <article class="requirement-meta-card">
+                  <p class="requirement-meta-card__label">基础仓库</p>
+                  <a id="requirement-repository" class="requirement-meta-card__value" target="_blank" rel="noreferrer"></a>
+                </article>
+                <article class="requirement-meta-card">
+                  <p class="requirement-meta-card__label">基础版本</p>
+                  <p id="requirement-version" class="requirement-meta-card__value"></p>
+                </article>
+                <article class="requirement-meta-card">
+                  <p class="requirement-meta-card__label">基础 commit</p>
+                  <code id="requirement-commit" class="requirement-meta-card__value"></code>
+                </article>
+                <article class="requirement-meta-card">
+                  <p class="requirement-meta-card__label">验收数据库</p>
+                  <a id="requirement-database" class="requirement-meta-card__value" target="_blank" rel="noreferrer"></a>
+                </article>
+              </div>
+
+              <section class="requirement-prompt-block" aria-labelledby="requirement-prompt-title">
+                <div class="requirement-block-heading">
+                  <p class="section-kicker">执行指令</p>
+                  <h3 id="requirement-prompt-title">测试 Prompt</h3>
+                </div>
+                <pre id="requirement-prompt"></pre>
+              </section>
+
+              <section class="agent-roster" aria-labelledby="agent-roster-title">
+                <div class="requirement-block-heading">
+                  <p class="section-kicker">参赛配置</p>
+                  <h3 id="agent-roster-title">Agent 软件与版本</h3>
+                </div>
+                <div class="agent-roster-table-wrap">
+                  <table class="agent-roster-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">模型</th>
+                        <th scope="col">软件</th>
+                        <th scope="col">版本</th>
+                        <th scope="col">上下文</th>
+                        <th scope="col">测试状态</th>
+                      </tr>
+                    </thead>
+                    <tbody id="agent-roster-body"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section id="feature-view" class="view-panel" aria-label="按功能查看" hidden>
+          <div class="feature-layout">
+            <aside class="feature-nav" aria-label="功能面板">
+              <p class="feature-nav__label">功能面板</p>
+              <div id="feature-tabs" class="feature-tabs" role="tablist" aria-orientation="vertical"></div>
+            </aside>
+            <div class="feature-content">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">四模型并列</p>
+                  <h2 id="feature-title"></h2>
+                  <p id="feature-description" class="section-description"></p>
+                </div>
+                <p id="feature-count" class="count-label"></p>
+              </div>
+              <div id="feature-comparison" class="comparison-board"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>作者 musnows</span>
+        <a href="https://github.com/musnows/scriverse-llm-racing" target="_blank" rel="noreferrer">GitHub · musnows/scriverse-llm-racing</a>
+      </footer>
+    </div>
+
+    <dialog id="image-dialog" class="image-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-toolbar">
+        <div>
+          <p id="dialog-model" class="dialog-model"></p>
+          <h2 id="dialog-title"></h2>
+        </div>
+        <button type="button" id="dialog-close" class="icon-button" aria-label="关闭大图">关闭</button>
+      </div>
+      <div class="dialog-stage">
+        <img id="dialog-image" alt="">
+      </div>
+      <div class="dialog-footer">
+        <button type="button" id="dialog-prev" class="dialog-nav">上一张</button>
+        <p id="dialog-file" class="dialog-file"></p>
+        <button type="button" id="dialog-next" class="dialog-nav">下一张</button>
+      </div>
+    </dialog>
+
+    <script src="./api-config.js?v=1"></script>
+    <script src="./app.js?v=13"></script>
+  </body>
+</html>
