@@ -1,4 +1,4 @@
-const assetRoot = "./source/assets/";
+const assetRoot = "/source/assets/";
 const apiBase = String(window.__RATING_API_BASE__ || "").trim().replace(/\/+$/, "");
 
 function apiUrl(path) {
@@ -124,7 +124,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "./source/leaderboard.json?v=5";
+const leaderboardDataUrl = "/source/leaderboard.json?v=5";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -516,7 +516,7 @@ function renderModelTabs() {
     button.setAttribute("aria-selected", String(model.id === state.modelId));
     button.addEventListener("click", () => {
       state.modelId = model.id;
-      renderModelView();
+      setView("model");
     });
     elements.modelTabs.append(button);
   }
@@ -769,7 +769,7 @@ function renderFeatureTabs() {
     button.append(name, count);
     button.addEventListener("click", () => {
       state.featureId = feature.id;
-      renderFeatureView();
+      setView("feature");
     });
     elements.featureTabs.append(button);
   }
@@ -1134,18 +1134,26 @@ async function loadLeaderboardData() {
     rankingDataCache = null;
     rankingDataCacheSource = null;
     renderGlobalRequirementSelect();
-    if (state.view === "home") {
-      renderHomeView();
+    let routeNeedsReplacement = false;
+    const requirements = payload.requirements;
+    const currentRequirement = requirements.find((requirement) => requirement.id === state.requirementId);
+    if (state.view !== "home" && state.view !== "model-overall" && !(state.view === "requirements" && state.requirementsTab === "method") && !currentRequirement) {
+      state.view = "home";
+      state.requirementId = null;
+      state.requirementsTab = "requirement";
+      routeNeedsReplacement = true;
     }
-    if (state.view === "model-overall") {
-      renderModelOverall();
-      loadAllRatingsForRequirements();
+    if (state.view === "model" && !models.some((model) => model.id === state.modelId)) {
+      state.modelId = models[0].id;
+      routeNeedsReplacement = true;
     }
-    if (state.view === "leaderboard") {
-      renderLeaderboard();
+    if (state.view === "feature" && !features.some((feature) => feature.id === state.featureId)) {
+      state.featureId = features[0].id;
+      routeNeedsReplacement = true;
     }
-    if (state.view === "requirements") {
-      renderRequirementsView();
+    setView(state.view, { updateRoute: false });
+    if (routeNeedsReplacement) {
+      updateBrowserRoute({ replace: true });
     }
   } catch (error) {
     leaderboardLoadError = true;
@@ -1159,7 +1167,102 @@ async function loadLeaderboardData() {
   }
 }
 
-function setView(view) {
+function getRoutePath() {
+  if (state.view === "home") {
+    return "/";
+  }
+  if (state.view === "model-overall") {
+    return "/model-overall";
+  }
+  if (state.view === "requirements" && state.requirementsTab === "method") {
+    return "/test-method";
+  }
+  if (!state.requirementId) {
+    return "/";
+  }
+
+  const requirementPath = encodeURIComponent(state.requirementId);
+  if (state.view === "leaderboard") {
+    return `/requirements/${requirementPath}/leaderboard`;
+  }
+  if (state.view === "requirements") {
+    return `/requirements/${requirementPath}/info`;
+  }
+  if (state.view === "model") {
+    return `/requirements/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
+  }
+  if (state.view === "feature") {
+    return `/requirements/${requirementPath}/feature/${encodeURIComponent(state.featureId)}`;
+  }
+  return "/";
+}
+
+function updateBrowserRoute({ replace = false } = {}) {
+  const nextPath = getRoutePath();
+  if (window.location.pathname === nextPath) {
+    return;
+  }
+  const method = replace ? "replaceState" : "pushState";
+  window.history[method]({}, "", nextPath);
+}
+
+function decodeRoutePart(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return "";
+  }
+}
+
+function parseBrowserRoute() {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/") {
+    return { view: "home" };
+  }
+  if (path === "/model-overall") {
+    return { view: "model-overall" };
+  }
+  if (path === "/test-method") {
+    return { view: "requirements", requirementsTab: "method" };
+  }
+
+  const parts = path.split("/").filter(Boolean).map(decodeRoutePart);
+  if (parts[0] !== "requirements" || !parts[1]) {
+    return { view: "home" };
+  }
+
+  const requirementId = parts[1];
+  if (!parts[2] || parts[2] === "leaderboard") {
+    return { view: "leaderboard", requirementId };
+  }
+  if (parts[2] === "info") {
+    return { view: "requirements", requirementsTab: "requirement", requirementId };
+  }
+  if (parts[2] === "model" && parts[3]) {
+    const modelId = Number(parts[3]);
+    return {
+      view: "model",
+      requirementId,
+      modelId: Number.isSafeInteger(modelId) ? modelId : models[0].id,
+    };
+  }
+  if (parts[2] === "feature" && parts[3]) {
+    return { view: "feature", requirementId, featureId: parts[3] };
+  }
+  return { view: "home" };
+}
+
+function applyBrowserRoute() {
+  const route = parseBrowserRoute();
+  state.view = route.view;
+  state.requirementId = route.requirementId ?? null;
+  state.requirementsTab = route.requirementsTab ?? "requirement";
+  state.modelId = route.modelId ?? models[0].id;
+  state.featureId = route.featureId ?? features[0].id;
+  setView(state.view, { updateRoute: false });
+}
+
+function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
   const isGlobalTestMethod = view === "requirements" && state.requirementsTab === "method";
   if (view !== "home" && view !== "model-overall" && !state.requirementId && !isGlobalTestMethod) {
     view = "home";
@@ -1206,6 +1309,9 @@ function setView(view) {
     renderRequirementsView();
   } else {
     renderLeaderboard();
+  }
+  if (updateRoute) {
+    updateBrowserRoute({ replace: replaceRoute });
   }
 }
 
@@ -1337,6 +1443,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-setView("home");
+window.addEventListener("popstate", applyBrowserRoute);
+applyBrowserRoute();
 renderBuildUpdatedAt();
 loadLeaderboardData();

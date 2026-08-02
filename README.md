@@ -41,6 +41,16 @@ API_BASE=https://your-api.example.com npm run build
 
 如果前后端同域部署，`API_BASE` 可以留空；如果前端部署在 Netlify、后端独立部署，则必须设置后端完整 URL。
 
+前端支持直接分享路径：
+
+- `/`：需求首页
+- `/model-overall`：模型总榜
+- `/test-method`：全局测试方法
+- `/requirements/s3-backup-v1/leaderboard`：需求排行榜
+- `/requirements/s3-backup-v1/model/1`：指定需求下的模型页面
+- `/requirements/s3-backup-v1/feature/settings`：指定需求下的功能对比页
+- `/requirements/s3-backup-v1/info`：需求信息页
+
 ## 评分后端
 
 后端只使用 Node.js 内置模块，不需要 `npm install`，要求 Node.js 22.5 或更高版本。默认监听 `13250` 端口，可通过 `PORT` 修改。
