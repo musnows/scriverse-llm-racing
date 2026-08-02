@@ -484,6 +484,7 @@ const elements = {
   leaderboardRequirement: document.getElementById("leaderboard-requirement"),
   leaderboardSummary: document.getElementById("leaderboard-summary"),
   leaderboardNote: document.getElementById("leaderboard-note"),
+  leaderboardTable: document.querySelector(".leaderboard-table"),
   leaderboardHead: document.getElementById("leaderboard-head"),
   leaderboardBody: document.getElementById("leaderboard-body"),
   requirementsView: document.getElementById("requirements-view"),
@@ -939,33 +940,22 @@ function createLeaderboardResultCell(entry, testCase) {
   const cell = document.createElement("td");
   cell.className = `leaderboard-result ${failed ? "leaderboard-result--fail" : "leaderboard-result--pass"}`;
 
-  const status = document.createElement("span");
-  status.className = "leaderboard-status";
+  const status = document.createElement(failed ? "button" : "span");
+  status.className = `leaderboard-status${failed ? " leaderboard-status--trigger" : ""}`;
   status.textContent = failed ? "未通过" : "通过";
-  cell.append(status);
 
   if (failed) {
-    const reason = entry.failures[testCase.id];
-    if (reason) {
-      const reasonButton = document.createElement("button");
-      reasonButton.type = "button";
-      reasonButton.className = "leaderboard-reason-trigger";
-      reasonButton.textContent = "查看失败原因";
-      reasonButton.setAttribute("aria-label", `查看 ${entry.model?.name ?? entry.modelId} ${testCase.id} 失败原因`);
-      reasonButton.addEventListener("click", () => openLeaderboardDetail({
-        label: `${entry.model?.name ?? entry.modelId} · ${testCase.id}`,
-        title: "失败原因",
-        content: reason,
-      }));
-      cell.append(reasonButton);
-    } else {
-      const reasonElement = document.createElement("span");
-      reasonElement.className = "leaderboard-reason leaderboard-reason--empty";
-      reasonElement.textContent = "失败原因未记录";
-      cell.append(reasonElement);
-    }
+    const reason = entry.failures[testCase.id] || "失败原因未记录";
+    status.type = "button";
+    status.setAttribute("aria-label", `查看 ${entry.model?.name ?? entry.modelId} ${testCase.id} 失败原因`);
+    status.addEventListener("click", () => openLeaderboardDetail({
+      label: `${entry.model?.name ?? entry.modelId} · ${testCase.id}`,
+      title: "失败原因",
+      content: reason,
+    }));
   }
 
+  cell.append(status);
   return cell;
 }
 
@@ -1002,6 +992,7 @@ function renderLeaderboard() {
   for (const entry of rankingData) {
     elements.leaderboardSummary.append(createLeaderboardSummaryCard(entry));
   }
+  elements.leaderboardTable.style.setProperty("--leaderboard-model-count", rankingData.length);
 
   const headerRow = document.createElement("tr");
   const testHeader = document.createElement("th");
@@ -1042,7 +1033,7 @@ function renderLeaderboard() {
     const scenario = document.createElement("button");
     scenario.type = "button";
     scenario.className = "leaderboard-test__details";
-    scenario.textContent = "查看测试说明";
+    scenario.textContent = "查看说明";
     scenario.setAttribute("aria-label", `查看 ${testCase.id} 测试说明`);
     scenario.addEventListener("click", () => openLeaderboardDetail({
       label: `${testCase.id} · ${testCase.priority}`,

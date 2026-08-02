@@ -1442,6 +1442,9 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-table-wrap {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid #30322f;
   border-radius: 12px;
@@ -1449,10 +1452,15 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-table {
-  width: 100%;
-  min-width: 1120px;
-  border-collapse: collapse;
-  table-layout: fixed;
+  display: grid;
+  width: max-content;
+  grid-template-columns: minmax(168px, max-content) repeat(var(--leaderboard-model-count, 1), minmax(140px, max-content));
+}
+
+.leaderboard-table thead,
+.leaderboard-table tbody,
+.leaderboard-table tr {
+  display: contents;
 }
 
 .leaderboard-table th,
@@ -1470,13 +1478,13 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-test-header,
 .leaderboard-test {
-  width: 280px;
-  min-width: 280px;
+  width: 168px;
+  min-width: 168px;
 }
 
 .leaderboard-model-header,
 .leaderboard-result {
-  width: 140px;
+  width: 1%;
   min-width: 140px;
 }
 
@@ -1552,7 +1560,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-test__details,
-.leaderboard-reason-trigger {
+.leaderboard-status--trigger {
   display: inline-flex;
   align-items: center;
   padding: 4px 7px;
@@ -1567,14 +1575,14 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-test__details:hover,
-.leaderboard-reason-trigger:hover {
+.leaderboard-status--trigger:hover {
   border-color: #8d533f;
   color: #fffaf6;
   background: #211c19;
 }
 
 .leaderboard-test__details:focus-visible,
-.leaderboard-reason-trigger:focus-visible {
+.leaderboard-status--trigger:focus-visible {
   outline: 2px solid #e58b66;
   outline-offset: 2px;
 }
@@ -1587,9 +1595,16 @@ a.requirement-meta-card__value:hover {
   display: inline-block;
   margin-bottom: 6px;
   padding: 3px 7px;
+  border: 0;
   border-radius: 5px;
   font-size: 12px;
   font-weight: 650;
+  font-family: inherit;
+}
+
+.leaderboard-status--trigger {
+  appearance: none;
+  cursor: pointer;
 }
 
 .leaderboard-result--pass {
@@ -1608,17 +1623,6 @@ a.requirement-meta-card__value:hover {
 .leaderboard-result--fail .leaderboard-status {
   color: #f2aa8c;
   background: rgba(169, 79, 48, 0.25);
-}
-
-.leaderboard-reason {
-  display: block;
-  color: #b5b6b0;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.leaderboard-reason--empty {
-  min-height: 18px;
 }
 
 .sr-only {
