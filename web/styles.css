@@ -1274,6 +1274,13 @@ a.requirement-meta-card__value:hover {
   font-size: 12px;
 }
 
+.model-overall-chart__reading-tip {
+  margin: 8px 0 0;
+  color: #e0a084;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .model-overall-chart-layout {
   display: block;
 }
