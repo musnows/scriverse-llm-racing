@@ -1046,12 +1046,13 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-heading {
-  margin-top: 0;
+  margin: 0 0 8px;
 }
 
 .leaderboard-summary {
   display: grid;
   gap: 10px;
+  margin-bottom: 18px;
 }
 
 .leaderboard-summary__list {
@@ -1081,6 +1082,9 @@ a.requirement-meta-card__value:hover {
 .leaderboard-card__context,
 .leaderboard-card__score,
 .leaderboard-card__meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
   margin: 0;
 }
 
@@ -1110,6 +1114,7 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-card__context {
   margin-bottom: 0;
+  justify-content: center;
   text-align: center;
 }
 
@@ -1152,7 +1157,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-note {
-  margin: 18px 0;
+  margin: 0 0 14px;
 }
 
 .leaderboard-loading {
