@@ -171,6 +171,7 @@
         "TC-07": "S3 请求没有超时控制，挂起目标会阻断后续目标；同时间创建的配置顺序不稳定，定时失败也没有前端 Toast。",
         "TC-08": "ListObjectsV2 只读取第一页且不处理 continuation token，快照过滤规则过宽，列表或删除失败还会被吞掉并报告成功。",
         "TC-09": "path-style 请求的 SigV4 canonical URI 未包含 bucket，自定义签名验证 endpoint 返回 SignatureDoesNotMatch。",
+        "TC-11": "两分钟后的定时任务虽已触发，但 path-style 请求的 SigV4 canonical URI 漏掉 bucket 前缀，七牛 S3 返回 SignatureDoesNotMatch（HTTP 403），未能完成 S3 同步。",
         "TC-12": "调度匹配使用正负一分钟窗口，可能提前一分钟执行，并因去重在用户选择的准确时间跳过。",
         "TC-15": "静态资源缓存参数已经修改，但相关系统测试断言未同步，导致五项系统测试失败。",
         "TC-17": "HEAD 返回 403、429 或 5xx 时会被当作图片不存在，随后继续上传并可能把整次同步报告为成功。",
