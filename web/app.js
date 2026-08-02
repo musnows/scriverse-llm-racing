@@ -136,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=21";
+const leaderboardDataUrl = "/source/leaderboard.json?v=22";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -166,6 +166,18 @@ function getRequirementScoring(requirement) {
 
 function getRequirementTestCases(requirement) {
   return requirement?.testCases ?? [];
+}
+
+function getRequirementTestCasesForDisplay(requirement) {
+  const priorityOrder = new Map(
+    Object.keys(getRequirementScoring(requirement).deductionByPriority)
+      .map((priority, index) => [priority, index]),
+  );
+  return [...getRequirementTestCases(requirement)].sort((left, right) => {
+    const priorityDifference = (priorityOrder.get(left.priority) ?? Number.MAX_SAFE_INTEGER)
+      - (priorityOrder.get(right.priority) ?? Number.MAX_SAFE_INTEGER);
+    return priorityDifference || left.id.localeCompare(right.id, undefined, { numeric: true });
+  });
 }
 
 function formatDeductionRules(deductionByPriority = {}) {
@@ -1339,7 +1351,7 @@ function openLeaderboardDetail({
 function renderLeaderboard() {
   const rankingData = getRankingData();
   const currentRequirement = getCurrentRequirement();
-  const testCases = getRequirementTestCases(currentRequirement);
+  const testCases = getRequirementTestCasesForDisplay(currentRequirement);
   const scoring = getRequirementScoring(currentRequirement);
   elements.leaderboardSummary.replaceChildren();
   elements.leaderboardHead.replaceChildren();
