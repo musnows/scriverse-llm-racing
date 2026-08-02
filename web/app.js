@@ -724,7 +724,11 @@ async function loadRatingsForRequirement(force = false) {
     return;
   }
   if (!force && ratingState.loaded && ratingState.requirementId === requirementId) {
-    renderModelRating();
+    if (state.view === "leaderboard") {
+      renderLeaderboard();
+    } else {
+      renderModelRating();
+    }
     return;
   }
   ratingState.requirementId = requirementId;
@@ -751,6 +755,8 @@ async function loadRatingsForRequirement(force = false) {
         if (status) {
           status.textContent = ratingState.error || "每日每个模型最多 10 次";
         }
+      } else if (state.view === "leaderboard") {
+        renderLeaderboard();
       } else {
         renderModelRating();
       }
@@ -1067,7 +1073,18 @@ function renderLeaderboard() {
     name.className = "leaderboard-model-header__name";
     name.textContent = entry.model?.name ?? entry.modelId;
     name.title = name.textContent;
-    modelHeader.append(rank, name);
+    const rating = ratingState.values.get(entry.modelId);
+    const ratingRow = document.createElement("div");
+    ratingRow.className = "leaderboard-model-header__rating";
+    const ratingStars = createRatingStars(rating?.averageStars ?? 0);
+    ratingStars.classList.add("leaderboard-model-header__stars");
+    const ratingText = document.createElement("span");
+    ratingText.className = "leaderboard-model-header__rating-text";
+    ratingText.textContent = rating && rating.voteCount > 0
+      ? `${rating.averageStars.toFixed(2)} / 5 · ${rating.voteCount} 次`
+      : "暂无评分";
+    ratingRow.append(ratingStars, ratingText);
+    modelHeader.append(rank, name, ratingRow);
     headerRow.append(modelHeader);
   }
   elements.leaderboardHead.replaceChildren(headerRow);
@@ -1486,6 +1503,7 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
     renderRequirementsView();
   } else {
     renderLeaderboard();
+    loadRatingsForRequirement();
   }
   if (updateRoute) {
     updateBrowserRoute({ replace: replaceRoute });

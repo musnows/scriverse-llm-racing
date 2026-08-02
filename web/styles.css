@@ -1581,7 +1581,16 @@ a.requirement-meta-card__value:hover {
   font-weight: 600;
 }
 
+.leaderboard-test-header {
+  display: flex;
+  align-items: center;
+}
+
 .leaderboard-model-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -1620,6 +1629,29 @@ a.requirement-meta-card__value:hover {
   font-size: 13px;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.leaderboard-model-header__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #9c9e97;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.leaderboard-model-header__stars {
+  flex: 0 0 auto;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.leaderboard-model-header__rating-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .leaderboard-test__identity {
