@@ -379,9 +379,51 @@ h2 {
 }
 
 .rating-summary__stars {
-  color: #e6a36f;
+  display: inline-flex;
+  align-items: center;
   font-size: 15px;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.rating-stars,
+.rating-star {
+  display: inline-flex;
+}
+
+.rating-stars {
+  align-items: center;
+  line-height: 1;
+}
+
+.rating-star {
+  width: 1em;
+  font-size: inherit;
+  line-height: 1;
+  text-align: center;
+}
+
+.rating-star--full {
+  color: #e6a36f;
+}
+
+.rating-star--empty {
+  color: #a4775b;
+}
+
+.rating-star--half {
+  position: relative;
+  color: #a4775b;
+}
+
+.rating-star--half::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #e6a36f;
+  content: "★";
   white-space: nowrap;
 }
 
@@ -780,6 +822,21 @@ h2 {
 
 .test-method-score-grid {
   margin-bottom: 0;
+}
+
+.test-method-faq-answer {
+  margin: 0;
+  color: #b5b6b0;
+  line-height: 1.7;
+}
+
+.test-method-faq-answer strong {
+  color: #e8e8e2;
+}
+
+.test-method-faq-answer code {
+  color: #e58b66;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 .requirement-meta-grid {

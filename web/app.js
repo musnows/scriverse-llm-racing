@@ -363,9 +363,8 @@ function createModelOverallRow(entry) {
   const userValue = document.createElement("strong");
   userValue.className = "model-overall-row__score";
   userValue.textContent = entry.rating ? `${entry.rating.averageStars.toFixed(2)} / 5` : "暂无评分";
-  const userStars = document.createElement("span");
-  userStars.className = "model-overall-row__stars";
-  userStars.textContent = entry.rating ? formatRatingStars(entry.rating.averageStars) : "☆☆☆☆☆";
+  const userStars = createRatingStars(entry.rating?.averageStars ?? 0);
+  userStars.classList.add("model-overall-row__stars");
   const userMeta = document.createElement("span");
   userMeta.className = "model-overall-row__meta";
   userMeta.textContent = entry.rating ? `${entry.rating.voteCount} 次评分` : "等待用户评分数据";
@@ -523,12 +522,33 @@ function renderModelTabs() {
   }
 }
 
-function formatRatingStars(averageStars) {
+function createRatingStars(averageStars) {
   const value = Math.max(0, Math.min(5, Number(averageStars) || 0));
-  const fullStars = Math.floor(value);
-  const hasHalfStar = value - fullStars >= 0.5;
+  const roundedValue = Math.round(value * 2) / 2;
+  const fullStars = Math.floor(roundedValue);
+  const hasHalfStar = roundedValue - fullStars === 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-  return `${"★".repeat(fullStars)}${hasHalfStar ? "½" : ""}${"☆".repeat(emptyStars)}`;
+  const container = document.createElement("span");
+  container.className = "rating-stars";
+  container.setAttribute("aria-hidden", "true");
+
+  const appendStar = (className, character) => {
+    const star = document.createElement("span");
+    star.className = `rating-star ${className}`;
+    star.textContent = character;
+    container.append(star);
+  };
+
+  for (let index = 0; index < fullStars; index += 1) {
+    appendStar("rating-star--full", "★");
+  }
+  if (hasHalfStar) {
+    appendStar("rating-star--half", "☆");
+  }
+  for (let index = 0; index < emptyStars; index += 1) {
+    appendStar("rating-star--empty", "☆");
+  }
+  return container;
 }
 
 function renderModelRating() {
@@ -543,9 +563,8 @@ function renderModelRating() {
 
   const summary = document.createElement("div");
   summary.className = "rating-summary";
-  const stars = document.createElement("span");
-  stars.className = "rating-summary__stars";
-  stars.textContent = rating ? formatRatingStars(rating.averageStars) : "☆☆☆☆☆";
+  const stars = createRatingStars(rating?.averageStars ?? 0);
+  stars.classList.add("rating-summary__stars");
   const summaryText = document.createElement("span");
   summaryText.className = "rating-summary__text";
   summaryText.textContent = rating && rating.voteCount > 0

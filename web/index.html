@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=41">
+    <link rel="stylesheet" href="/styles.css?v=42">
   </head>
   <body>
     <div class="app-shell">
@@ -266,6 +266,14 @@
                   <p><strong>用户打星评分：</strong>用户可对每个 Agent 的最终结果进行 1—5 星评分，单独展示在排行榜中。</p>
                 </div>
               </section>
+
+              <section class="test-method-block" aria-labelledby="test-method-faq-title">
+                <div class="requirement-block-heading">
+                  <p class="section-kicker">FAQ</p>
+                  <h3 id="test-method-faq-title">为什么不用统一的 harness 工具来测试？</h3>
+                </div>
+                <p class="test-method-faq-answer"><strong>回答：</strong>本测试是以偏向真实环境为出发点开展的。若所有模型都使用相同的 <code>harness</code>，虽然控制了变量，但和真实环境会有偏差（比如很少会有人在非 Claude Code 里面用 Claude 模型，很少有人会在非 WorkBuddy 里面用 Hy3 等等）。此外，网上已有博主制作过在相同 harness 下的多模型测试，可参考其他博主的测试。</p>
+              </section>
             </section>
           </div>
         </section>
@@ -323,6 +331,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=46"></script>
+    <script src="/app.js?v=47"></script>
   </body>
 </html>
