@@ -1051,7 +1051,7 @@ function renderRequirementTabs(requirements) {
       state.requirementsTab = "requirement";
       state.requirementId = requirement.id;
       renderGlobalRequirementSelect();
-      renderRequirementsView();
+      setView("requirements");
     });
     elements.requirementTabs.append(button);
   }
@@ -1307,7 +1307,7 @@ elements.backHome.addEventListener("click", () => {
 });
 elements.testMethodTab.addEventListener("click", () => {
   state.requirementsTab = "method";
-  renderRequirementsView();
+  setView("requirements");
 });
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
