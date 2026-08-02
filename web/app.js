@@ -124,11 +124,12 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=8";
+const leaderboardDataUrl = "/source/leaderboard.json?v=9";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
 let rankingDataCacheSource = null;
+let rankingDataCacheRequirementId = null;
 const ratingState = {
   requirementId: null,
   loading: false,
@@ -143,15 +144,37 @@ const ratingState = {
   requestsByRequirement: new Map(),
 };
 
+function getCurrentRequirement() {
+  const requirements = leaderboardData?.requirements ?? [];
+  return requirements.find((requirement) => requirement.id === state.requirementId) ?? requirements[0] ?? null;
+}
+
+function getRequirementScoring(requirement) {
+  return requirement?.scoring ?? { initial: 200, deductionByPriority: {} };
+}
+
+function getRequirementTestCases(requirement) {
+  return requirement?.testCases ?? [];
+}
+
+function formatDeductionRules(deductionByPriority = {}) {
+  return Object.entries(deductionByPriority)
+    .map(([priority, deduction]) => `${priority} ${Number(deduction) > 0 ? `每项扣 ${deduction} 分` : "不扣分"}`)
+    .join("，");
+}
+
 function getRankingData() {
   if (!leaderboardData) {
     return [];
   }
-  if (rankingDataCacheSource === leaderboardData && rankingDataCache) {
+  const requirement = getCurrentRequirement();
+  const requirementId = requirement?.id ?? null;
+  if (rankingDataCacheSource === leaderboardData && rankingDataCache && rankingDataCacheRequirementId === requirementId) {
     return rankingDataCache;
   }
-  const testCases = leaderboardData.testCases;
-  const scoreByPriority = leaderboardData.scoring.deductionByPriority;
+  const testCases = getRequirementTestCases(requirement);
+  const scoring = getRequirementScoring(requirement);
+  const scoreByPriority = scoring.deductionByPriority;
   rankingDataCache = leaderboardData.models
     .map((entry) => {
       const failedIds = new Set(Object.keys(entry.failures));
@@ -163,7 +186,9 @@ function getRankingData() {
         ...entry,
         model: models.find((model) => model.id === entry.modelId),
         agent: leaderboardData.agents.find((agent) => agent.modelId === entry.modelId) ?? entry.agent,
-        score: leaderboardData.scoring.initial - deductions,
+        score: scoring.initial - deductions,
+        maxScore: scoring.initial,
+        testCaseCount: testCases.length,
         passCount: testCases.length - failedIds.size,
         failureCount: failedIds.size,
       };
@@ -171,6 +196,7 @@ function getRankingData() {
     .sort((left, right) => right.score - left.score || right.passCount - left.passCount)
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
   rankingDataCacheSource = leaderboardData;
+  rankingDataCacheRequirementId = requirementId;
   return rankingDataCache;
 }
 
@@ -332,11 +358,11 @@ function createModelOverallRow(entry) {
   testLabel.textContent = "测试用例评分";
   const testValue = document.createElement("strong");
   testValue.className = "model-overall-row__score";
-  testValue.textContent = entry.test ? `${entry.test.score} / ${leaderboardData.scoring.initial}` : "暂无数据";
+  testValue.textContent = entry.test ? `${entry.test.score} / ${entry.test.maxScore}` : "暂无数据";
   const testMeta = document.createElement("span");
   testMeta.className = "model-overall-row__meta";
   testMeta.textContent = entry.test
-    ? `${entry.test.passCount} / ${leaderboardData.testCases.length} 个用例通过`
+    ? `${entry.test.passCount} / ${entry.test.testCaseCount} 个用例通过`
     : "暂无测试记录";
   testScore.append(testLabel, testValue, testMeta);
 
@@ -869,9 +895,9 @@ function createLeaderboardSummaryCard(entry) {
 
   const score = document.createElement("p");
   score.className = "leaderboard-card__score";
-  score.textContent = `${entry.score} / ${leaderboardData?.scoring.initial ?? 200}`;
+  score.textContent = `${entry.score} / ${entry.maxScore}`;
 
-  const totalCount = leaderboardData?.testCases.length ?? 0;
+  const totalCount = entry.testCaseCount;
   const failureCount = Object.keys(entry.failures).length;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
@@ -910,12 +936,12 @@ function createLeaderboardResultCell(entry, testCase) {
 
 function renderLeaderboard() {
   const rankingData = getRankingData();
-  const testCases = leaderboardData?.testCases ?? [];
+  const currentRequirement = getCurrentRequirement();
+  const testCases = getRequirementTestCases(currentRequirement);
+  const scoring = getRequirementScoring(currentRequirement);
   elements.leaderboardSummary.replaceChildren();
   elements.leaderboardHead.replaceChildren();
   elements.leaderboardBody.replaceChildren();
-  const currentRequirement = leaderboardData?.requirements?.find((requirement) => requirement.id === state.requirementId)
-    ?? leaderboardData?.requirements?.[0];
   elements.leaderboardRequirement.textContent = currentRequirement ? `当前需求：${currentRequirement.title}` : "";
 
   if (!leaderboardData) {
@@ -927,8 +953,8 @@ function renderLeaderboard() {
     return;
   }
 
-  const deductions = leaderboardData.scoring.deductionByPriority;
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${leaderboardData.scoring.initial} 分；P00 每项扣 ${deductions.P00} 分，P0 每项扣 ${deductions.P0} 分，P1 每项扣 ${deductions.P1} 分，P2 不扣分。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
+  const deductionRules = formatDeductionRules(scoring.deductionByPriority);
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
   for (const entry of rankingData) {
     elements.leaderboardSummary.append(createLeaderboardSummaryCard(entry));
   }
@@ -1040,9 +1066,10 @@ function renderHomeView() {
 
   if (requirements.length > 1) {
     const scores = requirements.map(getRequirementAverageScore).filter((score) => score !== null);
+    const initialScore = getRequirementScoring(requirements[0]).initial;
     elements.globalAverageNote.hidden = false;
     elements.globalAverageNote.textContent = scores.length === requirements.length
-      ? `全局平均评分：${(scores.reduce((total, score) => total + score, 0) / scores.length).toFixed(1)} / ${leaderboardData.scoring.initial}`
+      ? `全局平均评分：${(scores.reduce((total, score) => total + score, 0) / scores.length).toFixed(1)} / ${initialScore}`
       : "全局平均评分将在每项需求补齐评分后显示。";
   }
 }
@@ -1158,12 +1185,28 @@ async function loadLeaderboardData() {
       throw new Error(`Leaderboard data request failed: ${response.status}`);
     }
     const payload = await response.json();
-    if (!payload || !Array.isArray(payload.testCases) || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !payload.scoring) {
+    const hasValidRequirementScoring = Array.isArray(payload?.requirements)
+      && payload.requirements.length > 0
+      && payload.requirements.every((requirement) => {
+        const scoring = requirement?.scoring;
+        const deductionByPriority = scoring?.deductionByPriority;
+        return scoring?.initial === 200
+          && deductionByPriority
+          && typeof deductionByPriority === "object"
+          && Array.isArray(requirement.testCases)
+          && requirement.testCases.every((testCase) => (
+            testCase?.id
+            && testCase?.priority
+            && Object.prototype.hasOwnProperty.call(deductionByPriority, testCase.priority)
+          ));
+      });
+    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring) {
       throw new Error("Leaderboard data shape is invalid");
     }
     leaderboardData = payload;
     rankingDataCache = null;
     rankingDataCacheSource = null;
+    rankingDataCacheRequirementId = null;
     renderGlobalRequirementSelect();
     let routeNeedsReplacement = false;
     const requirements = payload.requirements;
