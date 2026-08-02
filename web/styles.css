@@ -717,7 +717,8 @@ h2 {
   outline-offset: 3px;
 }
 
-.requirements-content .section-heading {
+.requirements-content .section-heading,
+.test-method-view .section-heading {
   margin-top: 0;
 }
 
