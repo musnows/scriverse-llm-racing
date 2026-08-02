@@ -1351,6 +1351,52 @@ a.requirement-meta-card__value:hover {
   line-height: 1.55;
 }
 
+.model-content-tabs {
+  margin-top: 14px;
+}
+
+.model-unexpected-cases {
+  margin-top: 22px;
+  padding: 20px;
+  border: 1px solid #30322f;
+  border-radius: 12px;
+  background: #151614;
+}
+
+.model-unexpected-cases__heading {
+  margin-bottom: 16px;
+}
+
+.model-unexpected-cases__heading h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.model-unexpected-cases__heading .section-description {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+
+.model-unexpected-cases__list {
+  margin: 0;
+  padding-left: 22px;
+  color: #d7d8d2;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.model-unexpected-cases__list li + li {
+  margin-top: 8px;
+}
+
+.model-unexpected-cases__empty {
+  margin: 0;
+  color: #969791;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .model-overall-list {
   display: grid;
   gap: 10px;

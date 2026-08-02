@@ -49,6 +49,7 @@
     {
       "modelId": 4,
       "durationSeconds": 2698,
+      "unexpectedCases": [],
       "agent": {
         "software": "WorkBuddy",
         "version": "5.3.8",
@@ -65,6 +66,7 @@
     {
       "modelId": 2,
       "durationSeconds": 1260,
+      "unexpectedCases": [],
       "agent": {
         "software": "QoderCN IDE Quest",
         "version": "1.9.1",
@@ -80,6 +82,7 @@
     {
       "modelId": 3,
       "durationSeconds": 2747,
+      "unexpectedCases": [],
       "agent": {
         "software": "CatPaw",
         "version": "2026.0729.1946",
@@ -104,6 +107,7 @@
     {
       "modelId": 1,
       "durationSeconds": 1920,
+      "unexpectedCases": [],
       "agent": {
         "software": "TRAE SOLO",
         "version": "3.3.83",
@@ -126,6 +130,7 @@
     {
       "modelId": 5,
       "durationSeconds": 4140,
+      "unexpectedCases": [],
       "agent": {
         "software": "Claude Code",
         "version": "2.1.220",
@@ -141,6 +146,7 @@
     {
       "modelId": 6,
       "durationSeconds": 1136,
+      "unexpectedCases": [],
       "agent": {
         "software": "Claude Code",
         "version": "2.1.220",

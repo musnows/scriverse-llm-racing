@@ -136,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=16";
+const leaderboardDataUrl = "/source/leaderboard.json?v=17";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -693,6 +693,7 @@ const state = {
   modelId: models[0].id,
   featureId: features[0].id,
   requirementId: null,
+  modelContentTab: "screenshots",
   requirementsTab: "requirement",
   dialogItems: [],
   dialogIndex: 0,
@@ -737,11 +738,15 @@ const elements = {
   modelView: document.getElementById("model-view"),
   featureView: document.getElementById("feature-view"),
   modelTabs: document.getElementById("model-tabs"),
+  modelContentTabs: document.getElementById("model-content-tabs"),
   modelKicker: document.getElementById("model-kicker"),
   modelTitle: document.getElementById("model-title"),
   modelCount: document.getElementById("model-count"),
   modelRating: document.getElementById("model-rating"),
   modelGallery: document.getElementById("model-gallery"),
+  modelUnexpectedCasesView: document.getElementById("model-unexpected-cases-view"),
+  modelUnexpectedCasesEmpty: document.getElementById("model-unexpected-cases-empty"),
+  modelUnexpectedCasesList: document.getElementById("model-unexpected-cases-list"),
   featureTabs: document.getElementById("feature-tabs"),
   featureTitle: document.getElementById("feature-title"),
   featureDescription: document.getElementById("feature-description"),
@@ -830,10 +835,32 @@ function renderModelTabs() {
     button.setAttribute("aria-selected", String(model.id === state.modelId));
     button.addEventListener("click", () => {
       state.modelId = model.id;
+      state.modelContentTab = "screenshots";
       setView("model");
     });
     elements.modelTabs.append(button);
   }
+}
+
+function renderModelContentTabs() {
+  elements.modelContentTabs.replaceChildren();
+  const tabs = [
+    ["screenshots", "测试截图"],
+    ["unexpected", "意外情况"],
+  ];
+  tabs.forEach(([tabId, label]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "tab-button";
+    button.role = "tab";
+    button.textContent = label;
+    button.setAttribute("aria-selected", String(state.modelContentTab === tabId));
+    button.addEventListener("click", () => {
+      state.modelContentTab = tabId;
+      renderModelView();
+    });
+    elements.modelContentTabs.append(button);
+  });
 }
 
 function createRatingStars(averageStars) {
@@ -1079,11 +1106,19 @@ async function loadAllRatingsForRequirements(force = false) {
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
   renderModelTabs();
+  renderModelContentTabs();
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
   elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
   renderModelRating();
   loadRatingsForRequirement();
+  const showScreenshots = state.modelContentTab === "screenshots";
+  elements.modelGallery.hidden = !showScreenshots;
+  elements.modelUnexpectedCasesView.hidden = showScreenshots;
+  if (!showScreenshots) {
+    renderModelUnexpectedCases(model.id);
+    return;
+  }
   elements.modelGallery.replaceChildren();
   if (model.images.length === 0) {
     const empty = document.createElement("p");
@@ -1094,6 +1129,26 @@ function renderModelView() {
   }
   model.images.forEach((image, index) => {
     elements.modelGallery.append(createScreenshotCard(image, model.images, index));
+  });
+}
+
+function renderModelUnexpectedCases(modelId) {
+  const requirement = getCurrentRequirement();
+  const modelEntry = getRequirementModelEntry(requirement, modelId);
+  const unexpectedCases = Array.isArray(modelEntry?.unexpectedCases)
+    ? modelEntry.unexpectedCases.filter((item) => typeof item === "string" && item.trim())
+    : [];
+  elements.modelUnexpectedCasesList.replaceChildren();
+  elements.modelUnexpectedCasesEmpty.hidden = unexpectedCases.length > 0;
+  elements.modelUnexpectedCasesList.hidden = unexpectedCases.length === 0;
+  if (unexpectedCases.length === 0) {
+    elements.modelUnexpectedCasesEmpty.textContent = "暂无记录";
+    return;
+  }
+  unexpectedCases.forEach((item) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = item;
+    elements.modelUnexpectedCasesList.append(listItem);
   });
 }
 
@@ -1589,7 +1644,12 @@ async function loadLeaderboardData() {
             && Object.prototype.hasOwnProperty.call(deductionByPriority, testCase.priority)
           ));
       });
-    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring) {
+    const hasValidUnexpectedCases = Array.isArray(payload?.models)
+      && payload.models.every((entry) => (
+        entry?.unexpectedCases === undefined
+        || (Array.isArray(entry.unexpectedCases) && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim()))
+      ));
+    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases) {
       throw new Error("Leaderboard data shape is invalid");
     }
     leaderboardData = payload;

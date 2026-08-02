@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=68">
+    <link rel="stylesheet" href="/styles.css?v=69">
   </head>
   <body>
     <div class="app-shell">
@@ -142,6 +142,7 @@
 
         <section id="model-view" class="view-panel" aria-label="按模型查看" hidden>
           <div id="model-tabs" class="tab-strip" role="tablist" aria-label="模型"></div>
+          <div id="model-content-tabs" class="tab-strip model-content-tabs" role="tablist" aria-label="模型测试内容"></div>
           <div class="section-heading">
             <div>
               <p id="model-kicker" class="section-kicker"></p>
@@ -153,6 +154,15 @@
             </div>
           </div>
           <div id="model-gallery" class="model-gallery"></div>
+          <section id="model-unexpected-cases-view" class="model-unexpected-cases" aria-labelledby="model-unexpected-cases-title" hidden>
+            <div class="model-unexpected-cases__heading">
+              <p class="section-kicker">测试记录</p>
+              <h3 id="model-unexpected-cases-title">意外情况</h3>
+              <p class="section-description">记录该模型在当前需求测试过程中出现的未预期行为或其他 badcase。</p>
+            </div>
+            <p id="model-unexpected-cases-empty" class="model-unexpected-cases__empty" hidden></p>
+            <ul id="model-unexpected-cases-list" class="model-unexpected-cases__list"></ul>
+          </section>
         </section>
 
         <section id="leaderboard-view" class="view-panel" aria-label="需求排行榜" hidden>
@@ -387,6 +397,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=68"></script>
+    <script src="/app.js?v=69"></script>
   </body>
 </html>
