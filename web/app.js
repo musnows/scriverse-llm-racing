@@ -930,12 +930,14 @@ function createLeaderboardSummaryCard(entry) {
 
   const totalCount = entry.testCaseCount;
   const failureCount = Object.keys(entry.failures).length;
+  const passCount = totalCount - failureCount;
+  const passRate = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
   const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
     ? "耗时未记录"
     : formatDurationSeconds(entry.durationSeconds);
-  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${durationText}`;
+  meta.textContent = `通过 ${passCount} / ${totalCount} · 通过率 ${passRate}% · ${durationText}`;
 
   card.append(rank, name, agent, context, score, meta);
   return card;

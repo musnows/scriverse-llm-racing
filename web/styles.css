@@ -1109,7 +1109,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__context {
-  margin-bottom: 12px;
+  margin-bottom: 0;
   text-align: center;
 }
 
