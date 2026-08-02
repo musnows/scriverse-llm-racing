@@ -27,7 +27,7 @@ database.exec(`
     id TEXT PRIMARY KEY,
     requirement_id TEXT NOT NULL,
     model_id TEXT NOT NULL,
-    stars_half INTEGER NOT NULL CHECK (stars_half BETWEEN 1 AND 10),
+    stars_half INTEGER NOT NULL CHECK (stars_half BETWEEN 0 AND 10),
     day TEXT NOT NULL,
     ip_hash TEXT NOT NULL,
     created_at TEXT NOT NULL
@@ -43,6 +43,39 @@ database.exec(`
     synced_at TEXT NOT NULL
   );
 `);
+
+function migrateVoteRangeConstraint() {
+  const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'votes'").get();
+  if (!table?.sql || !/BETWEEN\s+1\s+AND\s+10/i.test(table.sql)) {
+    return;
+  }
+  database.exec(`
+    BEGIN IMMEDIATE;
+    DROP INDEX IF EXISTS votes_daily_limit_idx;
+    DROP INDEX IF EXISTS votes_rating_totals_idx;
+    ALTER TABLE votes RENAME TO votes_legacy;
+    CREATE TABLE votes (
+      id TEXT PRIMARY KEY,
+      requirement_id TEXT NOT NULL,
+      model_id TEXT NOT NULL,
+      stars_half INTEGER NOT NULL CHECK (stars_half BETWEEN 0 AND 10),
+      day TEXT NOT NULL,
+      ip_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    INSERT INTO votes (id, requirement_id, model_id, stars_half, day, ip_hash, created_at)
+      SELECT id, requirement_id, model_id, stars_half, day, ip_hash, created_at
+      FROM votes_legacy;
+    DROP TABLE votes_legacy;
+    CREATE INDEX votes_daily_limit_idx
+      ON votes (day, requirement_id, model_id, ip_hash);
+    CREATE INDEX votes_rating_totals_idx
+      ON votes (requirement_id, model_id);
+    COMMIT;
+  `);
+}
+
+migrateVoteRangeConstraint();
 
 let catalogSnapshot = null;
 let requirementIds = new Set();
@@ -317,13 +350,17 @@ async function createVote(request, response) {
 
   const requirementId = body?.requirementId;
   const modelId = body?.modelId;
-  const starsHalf = Number(body?.starsHalf);
+  const starsHalf = body?.starsHalf;
   const allowedModels = requirementModelIds.get(requirementId);
-  if (!catalogSnapshot || !safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId) || !Number.isInteger(starsHalf) || starsHalf < 1 || starsHalf > 10) {
-    if (!catalogSnapshot) {
-      sendJson(request, response, { error: "catalog_not_ready" }, 503);
-      return;
-    }
+  if (!Number.isInteger(starsHalf) || starsHalf < 0 || starsHalf > 10) {
+    sendJson(request, response, { error: "invalid_vote" }, 400);
+    return;
+  }
+  if (!catalogSnapshot) {
+    sendJson(request, response, { error: "catalog_not_ready" }, 503);
+    return;
+  }
+  if (!safeId(requirementId) || !requirementIds.has(requirementId) || !safeModelId(modelId) || !modelIds.has(modelId) || !allowedModels?.has(modelId)) {
     sendJson(request, response, { error: "invalid_vote" }, 400);
     return;
   }
