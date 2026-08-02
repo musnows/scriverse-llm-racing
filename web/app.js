@@ -460,7 +460,12 @@ const elements = {
   leaderboardDetailDialog: document.getElementById("leaderboard-detail-dialog"),
   leaderboardDetailDialogLabel: document.getElementById("leaderboard-detail-dialog-label"),
   leaderboardDetailDialogTitle: document.getElementById("leaderboard-detail-dialog-title"),
-  leaderboardDetailDialogContent: document.getElementById("leaderboard-detail-dialog-content"),
+  leaderboardDetailDialogRequirement: document.getElementById("leaderboard-detail-dialog-requirement"),
+  leaderboardDetailDialogModel: document.getElementById("leaderboard-detail-dialog-model"),
+  leaderboardDetailDialogTestCase: document.getElementById("leaderboard-detail-dialog-test-case"),
+  leaderboardDetailDialogScenario: document.getElementById("leaderboard-detail-dialog-scenario"),
+  leaderboardDetailDialogReasonSection: document.getElementById("leaderboard-detail-dialog-reason-section"),
+  leaderboardDetailDialogReason: document.getElementById("leaderboard-detail-dialog-reason"),
   leaderboardDetailDialogClose: document.getElementById("leaderboard-detail-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
   viewSwitch: document.querySelector(".view-switch"),
@@ -951,7 +956,12 @@ function createLeaderboardResultCell(entry, testCase) {
     status.addEventListener("click", () => openLeaderboardDetail({
       label: `${entry.model?.name ?? entry.modelId} · ${testCase.id}`,
       title: "失败原因",
-      content: reason,
+      requirementName: getCurrentRequirement()?.title ?? "当前测试需求",
+      modelName: entry.model?.name ?? entry.modelId,
+      testCaseId: testCase.id,
+      priority: testCase.priority,
+      scenario: testCase.scenario,
+      reason,
     }));
   }
 
@@ -959,10 +969,24 @@ function createLeaderboardResultCell(entry, testCase) {
   return cell;
 }
 
-function openLeaderboardDetail({ label, title, content }) {
+function openLeaderboardDetail({
+  label,
+  title,
+  requirementName,
+  modelName,
+  testCaseId,
+  priority,
+  scenario,
+  reason,
+}) {
   elements.leaderboardDetailDialogLabel.textContent = label;
   elements.leaderboardDetailDialogTitle.textContent = title;
-  elements.leaderboardDetailDialogContent.textContent = content;
+  elements.leaderboardDetailDialogRequirement.textContent = requirementName;
+  elements.leaderboardDetailDialogModel.textContent = modelName;
+  elements.leaderboardDetailDialogTestCase.textContent = `${testCaseId} · ${priority}`;
+  elements.leaderboardDetailDialogScenario.textContent = scenario;
+  elements.leaderboardDetailDialogReasonSection.hidden = !reason;
+  elements.leaderboardDetailDialogReason.textContent = reason ?? "";
   elements.leaderboardDetailDialog.showModal();
 }
 
@@ -1038,7 +1062,11 @@ function renderLeaderboard() {
     scenario.addEventListener("click", () => openLeaderboardDetail({
       label: `${testCase.id} · ${testCase.priority}`,
       title: "测试用例说明",
-      content: testCase.scenario,
+      requirementName: currentRequirement?.title ?? "当前测试需求",
+      modelName: "全部参赛模型",
+      testCaseId: testCase.id,
+      priority: testCase.priority,
+      scenario: testCase.scenario,
     }));
     testCell.append(identity, scenario);
     row.append(testCell);

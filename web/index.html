@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=55">
+    <link rel="stylesheet" href="/styles.css?v=57">
   </head>
   <body>
     <div class="app-shell">
@@ -98,7 +98,28 @@
             <button type="button" id="leaderboard-detail-dialog-close" class="icon-button" aria-label="关闭排行榜详情">关闭</button>
           </div>
           <div class="leaderboard-detail-dialog__body">
-            <p id="leaderboard-detail-dialog-content"></p>
+            <dl class="leaderboard-detail-dialog__meta">
+              <div>
+                <dt>需求名称</dt>
+                <dd id="leaderboard-detail-dialog-requirement"></dd>
+              </div>
+              <div>
+                <dt>模型</dt>
+                <dd id="leaderboard-detail-dialog-model"></dd>
+              </div>
+              <div>
+                <dt>测试用例</dt>
+                <dd id="leaderboard-detail-dialog-test-case"></dd>
+              </div>
+            </dl>
+            <section class="leaderboard-detail-dialog__section">
+              <h3>用例详情</h3>
+              <p id="leaderboard-detail-dialog-scenario"></p>
+            </section>
+            <section id="leaderboard-detail-dialog-reason-section" class="leaderboard-detail-dialog__section">
+              <h3>失败原因</h3>
+              <p id="leaderboard-detail-dialog-reason"></p>
+            </section>
           </div>
         </dialog>
 
@@ -344,6 +365,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=56"></script>
+    <script src="/app.js?v=57"></script>
   </body>
 </html>

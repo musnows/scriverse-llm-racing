@@ -1340,7 +1340,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-detail-dialog {
-  width: min(680px, calc(100% - 32px));
+  width: min(760px, calc(100% - 32px));
   max-width: none;
   padding: 0;
   overflow: hidden;
@@ -1354,13 +1354,57 @@ a.requirement-meta-card__value:hover {
   background: rgba(0, 0, 0, 0.78);
 }
 
+.leaderboard-detail-dialog .dialog-model {
+  letter-spacing: 0.05em;
+  text-transform: none;
+}
+
 .leaderboard-detail-dialog__body {
+  display: grid;
+  gap: 18px;
   max-height: min(60vh, 520px);
   padding: 20px 18px 22px;
   overflow: auto;
 }
 
-.leaderboard-detail-dialog__body p {
+.leaderboard-detail-dialog__meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.leaderboard-detail-dialog__meta > div {
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid #30322f;
+  border-radius: 8px;
+  background: #151614;
+}
+
+.leaderboard-detail-dialog__meta dt,
+.leaderboard-detail-dialog__section h3 {
+  margin: 0 0 6px;
+  color: #d77855;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.leaderboard-detail-dialog__meta dd {
+  margin: 0;
+  color: #f4f4f1;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.leaderboard-detail-dialog__section {
+  padding-top: 16px;
+  border-top: 1px solid #30322f;
+}
+
+.leaderboard-detail-dialog__section p {
   margin: 0;
   color: #d2d3ce;
   font-size: 14px;
