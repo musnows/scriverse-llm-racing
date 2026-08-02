@@ -1183,16 +1183,16 @@ function getRoutePath() {
 
   const requirementPath = encodeURIComponent(state.requirementId);
   if (state.view === "leaderboard") {
-    return `/requirements/${requirementPath}/leaderboard`;
+    return `/req/${requirementPath}/leaderboard`;
   }
   if (state.view === "requirements") {
-    return `/requirements/${requirementPath}/info`;
+    return `/req/${requirementPath}/info`;
   }
   if (state.view === "model") {
-    return `/requirements/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
+    return `/req/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
   }
   if (state.view === "feature") {
-    return `/requirements/${requirementPath}/feature/${encodeURIComponent(state.featureId)}`;
+    return `/req/${requirementPath}/feature/${encodeURIComponent(state.featureId)}`;
   }
   return "/";
 }
@@ -1227,7 +1227,7 @@ function parseBrowserRoute() {
   }
 
   const parts = path.split("/").filter(Boolean).map(decodeRoutePart);
-  if (parts[0] !== "requirements" || !parts[1]) {
+  if (parts[0] !== "req" || !parts[1]) {
     return { view: "home" };
   }
 
