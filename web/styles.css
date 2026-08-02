@@ -1049,14 +1049,6 @@ a.requirement-meta-card__value:hover {
   margin-top: 0;
 }
 
-.leaderboard-heading__requirement {
-  margin: 8px 0 0;
-  color: #e58b66;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
 .leaderboard-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

@@ -964,7 +964,9 @@ function renderLeaderboard() {
   elements.leaderboardSummary.replaceChildren();
   elements.leaderboardHead.replaceChildren();
   elements.leaderboardBody.replaceChildren();
-  elements.leaderboardRequirement.textContent = currentRequirement ? `当前需求：${currentRequirement.title}` : "";
+  elements.leaderboardRequirement.textContent = currentRequirement
+    ? `最终测试结果：${currentRequirement.title}`
+    : "最终测试结果";
 
   if (!leaderboardData) {
     const message = document.createElement("p");
