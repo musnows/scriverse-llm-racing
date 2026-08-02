@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "s3-backup-v1",
+      "modelIds": [
+        "seed",
+        "qwen",
+        "longcat",
+        "hy3"
+      ]
+    }
+  ]
+}
