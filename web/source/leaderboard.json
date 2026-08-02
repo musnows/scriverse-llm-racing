@@ -121,6 +121,43 @@
         "TC-17": "stopRequested 导致图片循环在首次检查前退出，远端图片存在性检查实际不会执行，也没有覆盖权限、限流和网络异常的回归测试。",
         "TC-20": "未按要求完成独立 Git commit 与 Angular 规范提交。"
       }
+    },
+    {
+      "modelId": 5,
+      "durationSeconds": null,
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.220",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 结果未检查，随后直接复制主数据库文件；活跃读事务阻塞 checkpoint 时，备份库能够打开但会缺少 WAL 中已经提交的数据。",
+        "TC-06": "Access Key 以普通 TEXT 字段明文落库，只有 Secret Key 通过 CredentialVault 加密。",
+        "TC-07": "手动备份失败能够提示，但定时任务失败只记录服务端日志和状态，没有向前端主动显示 Toast 的通知通道。",
+        "TC-08": "留存筛选只检查对象 basename，可能把 db/ 下其他子目录中符合快照命名格式的对象一并删除。",
+        "TC-18": "S3 服务端错误响应未经当前目标 AK/SK 动态脱敏，可能进入日志、持久化状态、API 响应和 Toast。",
+        "TC-20": "相关提交符合 Angular 规范，但全量测试因应用版本来源不一致而失败。"
+      }
+    },
+    {
+      "modelId": 6,
+      "durationSeconds": null,
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.220",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-06": "Access Key 以 access_key_id 字段明文落库，只有 Secret Key 通过 CredentialVault 加密。",
+        "TC-07": "S3 请求没有超时控制，挂起目标会阻断后续目标；同时间创建的配置顺序不稳定，定时失败也没有前端 Toast。",
+        "TC-08": "ListObjectsV2 只读取第一页且不处理 continuation token，快照过滤规则过宽，列表或删除失败还会被吞掉并报告成功。",
+        "TC-09": "path-style 请求的 SigV4 canonical URI 未包含 bucket，自定义签名验证 endpoint 返回 SignatureDoesNotMatch。",
+        "TC-12": "调度匹配使用正负一分钟窗口，可能提前一分钟执行，并因去重在用户选择的准确时间跳过。",
+        "TC-15": "静态资源缓存参数已经修改，但相关系统测试断言未同步，导致五项系统测试失败。",
+        "TC-17": "HEAD 返回 403、429 或 5xx 时会被当作图片不存在，随后继续上传并可能把整次同步报告为成功。",
+        "TC-18": "S3 响应反射的 AK 可进入错误日志、持久化错误状态、API 响应和 Toast。",
+        "TC-20": "原模型没有提交需求实现，后续 commit b5717f4 由 Codex 补交，且全量测试仍未通过。"
+      }
     }
   ],
   "agents": [
@@ -133,8 +170,8 @@
     { "modelName": "Composer 2.5", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
     { "modelName": "GPT-5.6 Sol Max", "software": "Codex", "version": "26.727.51351", "context": "373K（设置里手动开）", "status": "暂无测试数据" },
     { "modelName": "GPT-5.6 Luna Max", "software": "Codex", "version": "26.727.51351", "context": "373K", "status": "暂无测试数据" },
-    { "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
-    { "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
+    { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
+    { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "MiniMax-M3", "software": "", "version": "", "context": "1M", "status": "未参赛" }

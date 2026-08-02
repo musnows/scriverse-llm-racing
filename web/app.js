@@ -91,6 +91,18 @@ const models = [
       ["image-20260802101931-0udpb3d.webp", "最终评分与主要结论", ["review"]],
     ],
   },
+  {
+    id: 5,
+    name: "DeepSeek V4 Flash 0731",
+    tool: "Claude Code",
+    images: [],
+  },
+  {
+    id: 6,
+    name: "DeepSeek V4 Pro Preview",
+    tool: "Claude Code",
+    images: [],
+  },
 ];
 
 const features = [
@@ -124,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=9";
+const leaderboardDataUrl = "/source/leaderboard.json?v=10";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -791,6 +803,13 @@ function renderModelView() {
   renderModelRating();
   loadRatingsForRequirement();
   elements.modelGallery.replaceChildren();
+  if (model.images.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "暂无截图资料";
+    elements.modelGallery.append(empty);
+    return;
+  }
   model.images.forEach((image, index) => {
     elements.modelGallery.append(createScreenshotCard(image, model.images, index));
   });
@@ -901,7 +920,10 @@ function createLeaderboardSummaryCard(entry) {
   const failureCount = Object.keys(entry.failures).length;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
-  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${formatDurationSeconds(entry.durationSeconds)}`;
+  const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
+    ? "耗时未记录"
+    : formatDurationSeconds(entry.durationSeconds);
+  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${durationText}`;
 
   card.append(rank, name, agent, context, score, meta);
   return card;
