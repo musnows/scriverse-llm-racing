@@ -439,6 +439,7 @@ const elements = {
   featureCount: document.getElementById("feature-count"),
   featureComparison: document.getElementById("feature-comparison"),
   leaderboardView: document.getElementById("leaderboard-view"),
+  leaderboardRequirement: document.getElementById("leaderboard-requirement"),
   leaderboardSummary: document.getElementById("leaderboard-summary"),
   leaderboardNote: document.getElementById("leaderboard-note"),
   leaderboardHead: document.getElementById("leaderboard-head"),
@@ -894,6 +895,9 @@ function renderLeaderboard() {
   elements.leaderboardSummary.replaceChildren();
   elements.leaderboardHead.replaceChildren();
   elements.leaderboardBody.replaceChildren();
+  const currentRequirement = leaderboardData?.requirements?.find((requirement) => requirement.id === state.requirementId)
+    ?? leaderboardData?.requirements?.[0];
+  elements.leaderboardRequirement.textContent = currentRequirement ? `当前需求：${currentRequirement.title}` : "";
 
   if (!leaderboardData) {
     const message = document.createElement("p");
