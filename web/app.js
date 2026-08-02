@@ -257,7 +257,7 @@ function getOverallRatingData() {
     agent: leaderboardData?.agents.find((entry) => entry.modelId === model.id),
     test: testRanking.get(model.id) ?? null,
     testedRequirementCount: getTestedRequirementCount(model.id),
-    averageDurationSeconds: testRanking.get(model.id)?.durationSeconds ?? null,
+    averageDurationSeconds: getAverageDurationSeconds(model.id),
     rating: ratingState.allValues.get(model.id) ?? null,
   }));
 
@@ -267,6 +267,174 @@ function getOverallRatingData() {
   });
 
   return ranking;
+}
+
+function getAverageDurationSeconds(modelId) {
+  if (!leaderboardData) {
+    return null;
+  }
+  const requirements = leaderboardData.requirements ?? [];
+  const hasPerRequirementResults = requirements.some((requirement) => getRequirementModelEntries(requirement));
+  const entries = hasPerRequirementResults
+    ? requirements.flatMap((requirement) => getRequirementModelEntries(requirement) ?? [])
+      .filter((entry) => (entry.modelId ?? entry.id) === modelId)
+    : leaderboardData.models.filter((entry) => entry.modelId === modelId);
+  const durations = entries
+    .map((entry) => Number(entry.durationSeconds))
+    .filter((durationSeconds) => Number.isFinite(durationSeconds) && durationSeconds > 0);
+  return durations.length > 0
+    ? durations.reduce((total, durationSeconds) => total + durationSeconds, 0) / durations.length
+    : null;
+}
+
+const chartSvgNamespace = "http://www.w3.org/2000/svg";
+const chartPointColors = ["#e58b66", "#9bc79e", "#8ba9d9", "#dca76a", "#ba91d6", "#70c5bd"];
+
+function createChartSvgElement(tagName, attributes = {}, textContent = "") {
+  const element = document.createElementNS(chartSvgNamespace, tagName);
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, String(value)));
+  if (textContent) {
+    element.textContent = textContent;
+  }
+  return element;
+}
+
+function formatChartDuration(durationSeconds) {
+  const minutes = Number(durationSeconds) / 60;
+  if (minutes >= 60) {
+    return `${(minutes / 60).toFixed(minutes >= 100 ? 0 : 1)} h`;
+  }
+  return `${minutes.toFixed(minutes >= 10 ? 0 : 1)} min`;
+}
+
+function createModelOverallChartData(ranking) {
+  return ranking
+    .map((entry, index) => {
+      const averageDurationSeconds = Number(entry.averageDurationSeconds);
+      const testCaseCount = Number(entry.test?.testCaseCount);
+      const passCount = Number(entry.test?.passCount);
+      if (!Number.isFinite(averageDurationSeconds) || averageDurationSeconds <= 0 || !Number.isFinite(testCaseCount) || testCaseCount <= 0) {
+        return null;
+      }
+      const passRate = Math.max(0, Math.min(100, (passCount / testCaseCount) * 100));
+      return {
+        entry,
+        averageDurationSeconds,
+        passRate,
+        color: chartPointColors[index % chartPointColors.length],
+      };
+    })
+    .filter(Boolean);
+}
+
+function renderModelOverallChart(ranking = []) {
+  elements.modelOverallChart.replaceChildren();
+  elements.modelOverallChartLegend.replaceChildren();
+  const chartData = createModelOverallChartData(ranking);
+  if (chartData.length === 0) {
+    elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的平均耗时数据" : "正在加载数据";
+    const empty = document.createElement("p");
+    empty.className = "model-overall-chart__empty";
+    empty.textContent = leaderboardData ? "目前没有同时记录平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
+    elements.modelOverallChartLegend.append(empty);
+    return;
+  }
+
+  const width = 900;
+  const height = 420;
+  const margin = { top: 24, right: 28, bottom: 68, left: 64 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const maxDurationSeconds = Math.max(60, ...chartData.map((item) => item.averageDurationSeconds)) * 1.12;
+  const xPosition = (durationSeconds) => margin.left + (durationSeconds / maxDurationSeconds) * plotWidth;
+  const yPosition = (passRate) => margin.top + ((100 - passRate) / 100) * plotHeight;
+
+  elements.modelOverallChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  elements.modelOverallChart.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  const title = createChartSvgElement("title", { id: "model-overall-chart-svg-title" }, "模型平均耗时与用例通过率散点图");
+  elements.modelOverallChart.setAttribute("aria-labelledby", title.id);
+  elements.modelOverallChart.append(title);
+
+  const grid = createChartSvgElement("g", { class: "model-overall-chart__grid" });
+  [0, 25, 50, 75, 100].forEach((value) => {
+    const y = yPosition(value);
+    grid.append(createChartSvgElement("line", { x1: margin.left, y1: y, x2: width - margin.right, y2: y }));
+  });
+  const xTickValues = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ratio * maxDurationSeconds);
+  xTickValues.forEach((value) => {
+    const x = xPosition(value);
+    grid.append(createChartSvgElement("line", { x1: x, y1: margin.top, x2: x, y2: margin.top + plotHeight }));
+  });
+  elements.modelOverallChart.append(grid);
+
+  const axes = createChartSvgElement("g", { class: "model-overall-chart__axes" });
+  axes.append(
+    createChartSvgElement("line", { x1: margin.left, y1: margin.top + plotHeight, x2: width - margin.right, y2: margin.top + plotHeight }),
+    createChartSvgElement("line", { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + plotHeight }),
+  );
+  elements.modelOverallChart.append(axes);
+
+  const labels = createChartSvgElement("g", { class: "model-overall-chart__labels" });
+  [0, 25, 50, 75, 100].forEach((value) => {
+    const y = yPosition(value);
+    labels.append(createChartSvgElement("text", { x: margin.left - 12, y: y + 4, "text-anchor": "end" }, `${value}%`));
+  });
+  xTickValues.forEach((value) => {
+    const x = xPosition(value);
+    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 25, "text-anchor": "middle" }, formatChartDuration(value)));
+  });
+  labels.append(
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 12, "text-anchor": "middle" }, "平均耗时"),
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "用例通过率"),
+  );
+  elements.modelOverallChart.append(labels);
+
+  const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
+  chartData.forEach((item) => {
+    const point = createChartSvgElement("circle", {
+      class: "model-overall-chart__point",
+      cx: xPosition(item.averageDurationSeconds),
+      cy: yPosition(item.passRate),
+      r: 8,
+      fill: item.color,
+      tabindex: 0,
+      role: "button",
+      "aria-label": `${item.entry.model.name}，平均耗时 ${formatChartDuration(item.averageDurationSeconds)}，用例通过率 ${item.passRate.toFixed(0)}%`,
+    });
+    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：平均耗时 ${formatChartDuration(item.averageDurationSeconds)}，通过率 ${item.passRate.toFixed(0)}%`);
+    point.append(pointTitle);
+    const openDetails = () => openModelOverallDetails(item.entry);
+    point.addEventListener("click", openDetails);
+    point.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openDetails();
+      }
+    });
+    points.append(point);
+  });
+  elements.modelOverallChart.append(points);
+
+  chartData.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "model-overall-chart__legend-item";
+    button.addEventListener("click", () => openModelOverallDetails(item.entry));
+    const marker = document.createElement("span");
+    marker.className = "model-overall-chart__legend-marker";
+    marker.style.backgroundColor = item.color;
+    marker.setAttribute("aria-hidden", "true");
+    const identity = document.createElement("span");
+    identity.className = "model-overall-chart__legend-identity";
+    const name = document.createElement("strong");
+    name.textContent = item.entry.model.name;
+    const meta = document.createElement("span");
+    meta.textContent = `平均 ${formatChartDuration(item.averageDurationSeconds)} · ${item.passRate.toFixed(0)}% 通过`;
+    identity.append(name, meta);
+    button.append(marker, identity);
+    elements.modelOverallChartLegend.append(button);
+  });
+  elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整耗时与通过率数据`;
 }
 
 function getRequirementModelEntries(requirement) {
@@ -421,10 +589,12 @@ function renderModelOverall() {
   elements.modelOverallList.replaceChildren();
   if (!leaderboardData) {
     elements.modelOverallNote.textContent = "正在加载";
+    renderModelOverallChart();
     return;
   }
 
   const ranking = getOverallRatingData();
+  renderModelOverallChart(ranking);
   ranking.forEach((entry) => elements.modelOverallList.append(createModelOverallRow(entry)));
   const ratedCount = ranking.filter((entry) => entry.rating).length;
   elements.modelOverallNote.textContent = ratingState.allLoading
@@ -457,6 +627,9 @@ const elements = {
   modelOverallView: document.getElementById("model-overall-view"),
   modelOverallList: document.getElementById("model-overall-list"),
   modelOverallNote: document.getElementById("model-overall-note"),
+  modelOverallChart: document.getElementById("model-overall-chart"),
+  modelOverallChartLegend: document.getElementById("model-overall-chart-legend"),
+  modelOverallChartNote: document.getElementById("model-overall-chart-note"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
   modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),

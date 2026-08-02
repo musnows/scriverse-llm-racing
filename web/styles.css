@@ -1237,6 +1237,161 @@ a.requirement-meta-card__value:hover {
   margin-bottom: 0;
 }
 
+.model-overall-chart-card {
+  margin-bottom: 22px;
+  padding: 20px;
+  border: 1px solid #30322f;
+  border-radius: 12px;
+  background: #151614;
+}
+
+.model-overall-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.model-overall-chart-heading h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.model-overall-chart-heading .section-description {
+  max-width: 760px;
+  margin-bottom: 0;
+  font-size: 12px;
+}
+
+.model-overall-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, .28fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.model-overall-chart-shell {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #30322f;
+  border-radius: 9px;
+  background: #111210;
+}
+
+.model-overall-chart {
+  display: block;
+  width: 100%;
+  min-height: 300px;
+  height: auto;
+}
+
+.model-overall-chart__grid line {
+  stroke: #292b28;
+  stroke-width: 1;
+  stroke-dasharray: 3 6;
+}
+
+.model-overall-chart__axes line {
+  stroke: #686b66;
+  stroke-width: 1.2;
+}
+
+.model-overall-chart__labels text {
+  fill: #858880;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.model-overall-chart__labels .model-overall-chart__axis-title {
+  fill: #b8b9b4;
+  font-size: 12px;
+}
+
+.model-overall-chart__point {
+  cursor: pointer;
+  stroke: #fffaf6;
+  stroke-width: 2;
+  transition: r 140ms ease, filter 140ms ease;
+}
+
+.model-overall-chart__point:hover,
+.model-overall-chart__point:focus {
+  r: 11;
+  filter: drop-shadow(0 0 5px rgba(255, 250, 246, .45));
+  outline: none;
+}
+
+.model-overall-chart__legend {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.model-overall-chart__legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #f4f4f1;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.model-overall-chart__legend-item:hover,
+.model-overall-chart__legend-item:focus-visible {
+  border-color: #8d533f;
+  background: #211f1b;
+  outline: none;
+}
+
+.model-overall-chart__legend-marker {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  margin-top: 4px;
+  border: 2px solid #fffaf6;
+  border-radius: 50%;
+}
+
+.model-overall-chart__legend-identity {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.model-overall-chart__legend-identity strong,
+.model-overall-chart__legend-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-overall-chart__legend-identity strong {
+  font-size: 12px;
+}
+
+.model-overall-chart__legend-identity span {
+  color: #969791;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+.model-overall-chart__empty {
+  margin: 0;
+  padding: 14px 10px;
+  color: #969791;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .model-overall-list {
   display: grid;
   gap: 10px;
@@ -1953,6 +2108,19 @@ a.requirement-meta-card__value:hover {
   .model-overall-row {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .model-overall-chart-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .model-overall-chart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .model-overall-chart {
+    min-height: 0;
   }
 
   .feature-layout {
