@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=72">
+    <link rel="stylesheet" href="/styles.css?v=74">
   </head>
   <body>
     <div class="app-shell">
@@ -142,7 +142,6 @@
 
         <section id="model-view" class="view-panel" aria-label="按模型查看" hidden>
           <div id="model-tabs" class="tab-strip" role="tablist" aria-label="模型"></div>
-          <div id="model-content-tabs" class="tab-strip model-content-tabs" role="tablist" aria-label="模型测试内容"></div>
           <div class="section-heading">
             <div>
               <p id="model-kicker" class="section-kicker"></p>
@@ -150,7 +149,10 @@
             </div>
             <div class="model-heading-actions">
               <p id="model-count" class="count-label"></p>
-              <div id="model-rating" class="model-rating" aria-live="polite"></div>
+              <div class="model-rating-row">
+                <div id="model-content-tabs" class="tab-strip model-content-tabs" role="tablist" aria-label="模型测试内容"></div>
+                <div id="model-rating" class="model-rating" aria-live="polite"></div>
+              </div>
             </div>
           </div>
           <div id="model-gallery" class="model-gallery"></div>
