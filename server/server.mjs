@@ -26,7 +26,7 @@ database.exec(`
   CREATE TABLE IF NOT EXISTS votes (
     id TEXT PRIMARY KEY,
     requirement_id TEXT NOT NULL,
-    model_id TEXT NOT NULL,
+    model_id INTEGER NOT NULL,
     stars_half INTEGER NOT NULL CHECK (stars_half BETWEEN 0 AND 10),
     day TEXT NOT NULL,
     ip_hash TEXT NOT NULL,
@@ -44,9 +44,9 @@ database.exec(`
   );
 `);
 
-function migrateVoteRangeConstraint() {
+function migrateVotesTable() {
   const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'votes'").get();
-  if (!table?.sql || !/BETWEEN\s+1\s+AND\s+10/i.test(table.sql)) {
+  if (!table?.sql || (!/BETWEEN\s+1\s+AND\s+10/i.test(table.sql) && !/model_id\s+TEXT/i.test(table.sql))) {
     return;
   }
   database.exec(`
@@ -57,15 +57,17 @@ function migrateVoteRangeConstraint() {
     CREATE TABLE votes (
       id TEXT PRIMARY KEY,
       requirement_id TEXT NOT NULL,
-      model_id TEXT NOT NULL,
+      model_id INTEGER NOT NULL,
       stars_half INTEGER NOT NULL CHECK (stars_half BETWEEN 0 AND 10),
       day TEXT NOT NULL,
       ip_hash TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
     INSERT INTO votes (id, requirement_id, model_id, stars_half, day, ip_hash, created_at)
-      SELECT id, requirement_id, model_id, stars_half, day, ip_hash, created_at
-      FROM votes_legacy;
+      SELECT id, requirement_id, CAST(model_id AS INTEGER), stars_half, day, ip_hash, created_at
+      FROM votes_legacy
+      WHERE CAST(model_id AS REAL) >= 1
+        AND CAST(model_id AS REAL) = CAST(model_id AS INTEGER);
     DROP TABLE votes_legacy;
     CREATE INDEX votes_daily_limit_idx
       ON votes (day, requirement_id, model_id, ip_hash);
@@ -75,7 +77,7 @@ function migrateVoteRangeConstraint() {
   `);
 }
 
-migrateVoteRangeConstraint();
+migrateVotesTable();
 
 let catalogSnapshot = null;
 let requirementIds = new Set();
@@ -132,7 +134,7 @@ function parseStoredModelId(value) {
   if (safeModelId(value)) {
     return value;
   }
-  if (typeof value !== "string" || !/^[1-9][0-9]{0,8}$/.test(value)) {
+  if (typeof value !== "string") {
     return null;
   }
   const numericModelId = Number(value);
