@@ -168,11 +168,13 @@ sudo systemctl status agent-evaluation
 
 ## 前端连接后端
 
-Netlify 部署前端时，在 `web/` 目录执行构建，并将后端地址传给 `API_BASE`：
+Netlify 部署前端时，在 `web/` 目录执行构建，并将后端地址传给 `API_BASE`；如需启用百度统计，同时配置 `BAIDU_STATISTICS_ID`：
 
 ```bash
 cd web
-API_BASE=https://your-api.example.com npm run build
+API_BASE=https://your-api.example.com \
+BAIDU_STATISTICS_ID=your-baidu-statistics-id \
+npm run build
 ```
 
-构建会写入 `api-config.js`，前端随后会请求 `https://your-api.example.com/api/...`。后端的 `ALLOWED_ORIGIN` 必须填写 Netlify 前端的完整 Origin。
+构建会写入 `api-config.js` 和百度统计配置，前端随后会请求 `https://your-api.example.com/api/...`。后端的 `ALLOWED_ORIGIN` 必须填写 Netlify 前端的完整 Origin。
