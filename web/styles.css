@@ -842,7 +842,7 @@ h2 {
 
 .requirement-meta-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 22px;
 }
@@ -862,6 +862,20 @@ h2 {
 .requirement-meta-card {
   min-width: 0;
   padding: 14px;
+}
+
+.requirement-meta-card--weight {
+  padding: 10px 12px;
+}
+
+.requirement-meta-card--weight .requirement-meta-card__label {
+  margin-bottom: 4px;
+}
+
+.requirement-meta-card--weight .requirement-meta-card__note {
+  margin-top: 2px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .requirement-meta-card__note {
