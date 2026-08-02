@@ -1330,7 +1330,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-chart__point:hover,
-.model-overall-chart__point:focus {
+.model-overall-chart__point:focus-visible {
   r: 8;
   filter: drop-shadow(0 0 5px rgba(255, 250, 246, .45));
   outline: none;

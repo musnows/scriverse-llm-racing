@@ -432,7 +432,10 @@ function renderModelOverallChart(ranking = []) {
     });
     const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，通过率 ${item.passRate.toFixed(0)}%`);
     point.append(pointTitle);
-    const openDetails = () => openModelOverallDetails(item.entry);
+    const openDetails = () => {
+      point.blur();
+      openModelOverallDetails(item.entry);
+    };
     point.addEventListener("click", openDetails);
     point.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
