@@ -362,7 +362,7 @@ function renderModelOverallChart(ranking = []) {
 
   const width = 900;
   const height = 420;
-  const margin = { top: 24, right: 28, bottom: 68, left: 64 };
+  const margin = { top: 24, right: 28, bottom: 44, left: 64 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
   const maxDurationSeconds = Math.max(60, ...chartData.map((item) => item.weightedAverageDurationSeconds)) * 1.12;
@@ -401,10 +401,10 @@ function renderModelOverallChart(ranking = []) {
   });
   xTickValues.forEach((value) => {
     const x = xPosition(value);
-    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 42, "text-anchor": "middle" }, formatChartDuration(value)));
+    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 23, "text-anchor": "middle" }, formatChartDuration(value)));
   });
   labels.append(
-    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 12, "text-anchor": "middle" }, "加权平均耗时"),
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 6, "text-anchor": "middle" }, "加权平均耗时"),
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "用例通过率"),
   );
   elements.modelOverallChart.append(labels);
@@ -438,7 +438,7 @@ function renderModelOverallChart(ranking = []) {
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
   chartData.forEach((item) => {
     const pointY = yPosition(item.passRate);
-    const labelY = Math.min(pointY + 24, margin.top + plotHeight + 22);
+    const labelY = Math.min(pointY + 24, margin.top + plotHeight + 10);
     pointLabels.append(createChartSvgElement(
       "text",
       {
