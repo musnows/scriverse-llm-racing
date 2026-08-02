@@ -322,11 +322,18 @@ function createChartSvgElement(tagName, attributes = {}, textContent = "") {
 }
 
 function formatChartDuration(durationSeconds) {
+  if (Number(durationSeconds) <= 0) {
+    return "0 min";
+  }
   const minutes = Number(durationSeconds) / 60;
   if (minutes >= 60) {
     return `${(minutes / 60).toFixed(minutes >= 100 ? 0 : 1)} h`;
   }
   return `${minutes.toFixed(minutes >= 10 ? 0 : 1)} min`;
+}
+
+function formatChartAxisDuration(durationSeconds) {
+  return `${Math.round(Number(durationSeconds) / 60)} min`;
 }
 
 function createModelOverallChartData(ranking) {
@@ -365,7 +372,9 @@ function renderModelOverallChart(ranking = []) {
   const margin = { top: 24, right: 28, bottom: 44, left: 64 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const maxDurationSeconds = Math.max(60, ...chartData.map((item) => item.weightedAverageDurationSeconds)) * 1.12;
+  const durationWithPadding = Math.max(600, ...chartData.map((item) => item.weightedAverageDurationSeconds)) * 1.12;
+  const tickStepSeconds = Math.max(600, Math.ceil((durationWithPadding / 4) / 600) * 600);
+  const maxDurationSeconds = tickStepSeconds * 4;
   const xPosition = (durationSeconds) => margin.left + (durationSeconds / maxDurationSeconds) * plotWidth;
   const yPosition = (passRate) => margin.top + ((100 - passRate) / 100) * plotHeight;
 
@@ -401,7 +410,7 @@ function renderModelOverallChart(ranking = []) {
   });
   xTickValues.forEach((value) => {
     const x = xPosition(value);
-    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 23, "text-anchor": "middle" }, formatChartDuration(value)));
+    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 23, "text-anchor": "middle" }, formatChartAxisDuration(value)));
   });
   labels.append(
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 6, "text-anchor": "middle" }, "加权平均耗时"),
@@ -438,7 +447,7 @@ function renderModelOverallChart(ranking = []) {
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
   chartData.forEach((item) => {
     const pointY = yPosition(item.passRate);
-    const labelY = Math.min(pointY + 24, margin.top + plotHeight + 10);
+    const labelY = Math.min(pointY + 14, margin.top + plotHeight + 10);
     pointLabels.append(createChartSvgElement(
       "text",
       {
