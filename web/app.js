@@ -1,5 +1,4 @@
 const assetRoot = "./source/assets/";
-const assetVersion = "?v=9";
 const apiBase = String(window.__RATING_API_BASE__ || "").trim().replace(/\/+$/, "");
 
 function apiUrl(path) {
@@ -490,7 +489,7 @@ function createScreenshotCard(image, items, index, compact = false) {
   button.addEventListener("click", () => openDialog(items, index));
 
   const img = document.createElement("img");
-  img.src = assetRoot + image.file + assetVersion;
+  img.src = assetRoot + image.file;
   img.alt = `${image.modelName}：${image.title}`;
   img.loading = "lazy";
   img.decoding = "async";
@@ -1224,7 +1223,7 @@ function renderDialog() {
   }
   elements.dialogModel.textContent = `${image.modelName} · ${String(image.sequence).padStart(2, "0")}`;
   elements.dialogTitle.textContent = image.title;
-  elements.dialogImage.src = assetRoot + image.file + assetVersion;
+  elements.dialogImage.src = assetRoot + image.file;
   elements.dialogImage.alt = `${image.modelName}：${image.title}`;
   elements.dialogFile.textContent = image.file;
   const hasMultiple = state.dialogItems.length > 1;
