@@ -1275,10 +1275,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-chart-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(210px, .28fr);
-  gap: 18px;
-  align-items: stretch;
+  display: block;
 }
 
 .model-overall-chart-shell {
@@ -1327,70 +1324,16 @@ a.requirement-meta-card__value:hover {
 
 .model-overall-chart__point:hover,
 .model-overall-chart__point:focus {
-  r: 11;
+  r: 8;
   filter: drop-shadow(0 0 5px rgba(255, 250, 246, .45));
   outline: none;
 }
 
-.model-overall-chart__legend {
-  display: grid;
-  align-content: start;
-  gap: 7px;
-}
-
-.model-overall-chart__legend-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  width: 100%;
-  padding: 9px 10px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #f4f4f1;
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition: border-color 140ms ease, background 140ms ease;
-}
-
-.model-overall-chart__legend-item:hover,
-.model-overall-chart__legend-item:focus-visible {
-  border-color: #8d533f;
-  background: #211f1b;
-  outline: none;
-}
-
-.model-overall-chart__legend-marker {
-  width: 10px;
-  height: 10px;
-  flex: 0 0 10px;
-  margin-top: 4px;
-  border: 2px solid #fffaf6;
-  border-radius: 50%;
-}
-
-.model-overall-chart__legend-identity {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.model-overall-chart__legend-identity strong,
-.model-overall-chart__legend-identity span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.model-overall-chart__legend-identity strong {
-  font-size: 12px;
-}
-
-.model-overall-chart__legend-identity span {
-  color: #969791;
+.model-overall-chart__point-label {
+  fill: #b8b9b4;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 11px;
+  font-size: 9px;
+  pointer-events: none;
 }
 
 .model-overall-chart__empty {
@@ -2122,10 +2065,6 @@ a.requirement-meta-card__value:hover {
   .model-overall-chart-heading {
     flex-direction: column;
     gap: 10px;
-  }
-
-  .model-overall-chart-layout {
-    grid-template-columns: 1fr;
   }
 
   .model-overall-chart {

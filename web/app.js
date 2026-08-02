@@ -351,14 +351,12 @@ function createModelOverallChartData(ranking) {
 
 function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.replaceChildren();
-  elements.modelOverallChartLegend.replaceChildren();
+  elements.modelOverallChartEmpty.hidden = true;
   const chartData = createModelOverallChartData(ranking);
   if (chartData.length === 0) {
     elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
-    const empty = document.createElement("p");
-    empty.className = "model-overall-chart__empty";
-    empty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
-    elements.modelOverallChartLegend.append(empty);
+    elements.modelOverallChartEmpty.hidden = false;
+    elements.modelOverallChartEmpty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
     return;
   }
 
@@ -403,7 +401,7 @@ function renderModelOverallChart(ranking = []) {
   });
   xTickValues.forEach((value) => {
     const x = xPosition(value);
-    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 25, "text-anchor": "middle" }, formatChartDuration(value)));
+    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 42, "text-anchor": "middle" }, formatChartDuration(value)));
   });
   labels.append(
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 12, "text-anchor": "middle" }, "加权平均耗时"),
@@ -417,7 +415,7 @@ function renderModelOverallChart(ranking = []) {
       class: "model-overall-chart__point",
       cx: xPosition(item.weightedAverageDurationSeconds),
       cy: yPosition(item.passRate),
-      r: 8,
+      r: 5,
       fill: item.color,
       tabindex: 0,
       role: "button",
@@ -437,25 +435,22 @@ function renderModelOverallChart(ranking = []) {
   });
   elements.modelOverallChart.append(points);
 
+  const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
   chartData.forEach((item) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "model-overall-chart__legend-item";
-    button.addEventListener("click", () => openModelOverallDetails(item.entry));
-    const marker = document.createElement("span");
-    marker.className = "model-overall-chart__legend-marker";
-    marker.style.backgroundColor = item.color;
-    marker.setAttribute("aria-hidden", "true");
-    const identity = document.createElement("span");
-    identity.className = "model-overall-chart__legend-identity";
-    const name = document.createElement("strong");
-    name.textContent = item.entry.model.name;
-    const meta = document.createElement("span");
-    meta.textContent = `加权平均 ${formatChartDuration(item.weightedAverageDurationSeconds)} · ${item.passRate.toFixed(0)}% 通过`;
-    identity.append(name, meta);
-    button.append(marker, identity);
-    elements.modelOverallChartLegend.append(button);
+    const pointY = yPosition(item.passRate);
+    const labelY = Math.min(pointY + 24, margin.top + plotHeight + 22);
+    pointLabels.append(createChartSvgElement(
+      "text",
+      {
+        class: "model-overall-chart__point-label",
+        x: xPosition(item.weightedAverageDurationSeconds),
+        y: labelY,
+        "text-anchor": "middle",
+      },
+      item.entry.model.name,
+    ));
   });
+  elements.modelOverallChart.append(pointLabels);
   elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与通过率数据`;
 }
 
@@ -650,7 +645,7 @@ const elements = {
   modelOverallList: document.getElementById("model-overall-list"),
   modelOverallNote: document.getElementById("model-overall-note"),
   modelOverallChart: document.getElementById("model-overall-chart"),
-  modelOverallChartLegend: document.getElementById("model-overall-chart-legend"),
+  modelOverallChartEmpty: document.getElementById("model-overall-chart-empty"),
   modelOverallChartNote: document.getElementById("model-overall-chart-note"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
