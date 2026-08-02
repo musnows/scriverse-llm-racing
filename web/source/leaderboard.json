@@ -46,7 +46,7 @@
   ],
   "models": [
     {
-      "modelId": "hy3",
+      "modelId": 4,
       "durationSeconds": 2698,
       "agent": {
         "software": "WorkBuddy",
@@ -62,7 +62,7 @@
       }
     },
     {
-      "modelId": "qwen",
+      "modelId": 2,
       "durationSeconds": 1260,
       "agent": {
         "software": "QoderCN IDE Quest",
@@ -78,7 +78,7 @@
       }
     },
     {
-      "modelId": "longcat",
+      "modelId": 3,
       "durationSeconds": 2747,
       "agent": {
         "software": "CatPaw",
@@ -102,7 +102,7 @@
       }
     },
     {
-      "modelId": "seed",
+      "modelId": 1,
       "durationSeconds": 1920,
       "agent": {
         "software": "TRAE SOLO",
@@ -125,10 +125,10 @@
     }
   ],
   "agents": [
-    { "modelId": "longcat", "modelName": "LongCat-2.0", "software": "CatPaw", "version": "2026.0729.1946", "context": "1M", "status": "已测试" },
-    { "modelId": "hy3", "modelName": "Hy3", "software": "WorkBuddy", "version": "5.3.8", "context": "192K", "status": "已测试" },
-    { "modelId": "qwen", "modelName": "Qwen3.8-Max-Preview", "software": "QoderCN IDE Quest", "version": "1.9.1", "context": "1M", "status": "已测试" },
-    { "modelId": "seed", "modelName": "Doubao-Seed-2.1-Turbo", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
+    { "modelId": 3, "modelName": "LongCat-2.0", "software": "CatPaw", "version": "2026.0729.1946", "context": "1M", "status": "已测试" },
+    { "modelId": 4, "modelName": "Hy3", "software": "WorkBuddy", "version": "5.3.8", "context": "192K", "status": "已测试" },
+    { "modelId": 2, "modelName": "Qwen3.8-Max-Preview", "software": "QoderCN IDE Quest", "version": "1.9.1", "context": "1M", "status": "已测试" },
+    { "modelId": 1, "modelName": "Doubao-Seed-2.1-Turbo", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
     { "modelName": "Seed-2.1-Pro", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂无测试数据" },
     { "modelName": "Grok 4.5 High", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
     { "modelName": "Composer 2.5", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },

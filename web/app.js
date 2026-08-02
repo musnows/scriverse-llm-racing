@@ -8,7 +8,7 @@ function apiUrl(path) {
 
 const models = [
   {
-    id: "seed",
+    id: 1,
     name: "Doubao-Seed-2.1-Turbo",
     tool: "TRAE SOLO",
     images: [
@@ -27,7 +27,7 @@ const models = [
     ],
   },
   {
-    id: "qwen",
+    id: 2,
     name: "Qwen3.8-Max-Preview",
     tool: "QoderCN IDE Quest",
     images: [
@@ -46,7 +46,7 @@ const models = [
     ],
   },
   {
-    id: "longcat",
+    id: 3,
     name: "LongCat-2.0",
     tool: "CatPaw",
     images: [
@@ -66,7 +66,7 @@ const models = [
     ],
   },
   {
-    id: "hy3",
+    id: 4,
     name: "Hy3",
     tool: "WorkBuddy",
     images: [
@@ -124,7 +124,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "./source/leaderboard.json?v=4";
+const leaderboardDataUrl = "./source/leaderboard.json?v=5";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;

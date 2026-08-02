@@ -1,13 +1,13 @@
 {
-  "version": 1,
+  "version": 2,
   "requirements": [
     {
       "id": "s3-backup-v1",
       "modelIds": [
-        "seed",
-        "qwen",
-        "longcat",
-        "hy3"
+        1,
+        2,
+        3,
+        4
       ]
     }
   ]
