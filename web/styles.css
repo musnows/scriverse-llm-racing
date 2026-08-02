@@ -1046,20 +1046,33 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-heading {
-  margin-top: 0;
+  margin: 0 0 8px;
 }
 
 .leaderboard-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.leaderboard-summary__list {
+  display: grid;
+  gap: 10px;
+}
+
+.leaderboard-summary__list[hidden] {
+  display: none;
 }
 
 .leaderboard-card {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.45fr) minmax(190px, 1.25fr) minmax(170px, 1fr) minmax(100px, 0.65fr) minmax(110px, 0.7fr) minmax(220px, 1.3fr);
+  align-items: center;
+  gap: 14px;
   min-width: 0;
-  padding: 16px;
+  padding: 12px 14px;
   border: 1px solid #30322f;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #151614;
 }
 
@@ -1069,22 +1082,23 @@ a.requirement-meta-card__value:hover {
 .leaderboard-card__context,
 .leaderboard-card__score,
 .leaderboard-card__meta {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
   margin: 0;
 }
 
 .leaderboard-card__rank {
-  margin-bottom: 8px;
+  text-align: center;
   color: #d77855;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
 }
 
 .leaderboard-card__name {
-  overflow: hidden;
-  margin-bottom: 8px;
+  overflow-wrap: anywhere;
   font-size: 15px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
 }
 
 .leaderboard-card__agent,
@@ -1099,15 +1113,18 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__context {
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  justify-content: center;
+  text-align: center;
 }
 
 .leaderboard-card__score {
-  margin-bottom: 8px;
   color: #fffaf6;
-  font-size: 27px;
+  font-size: 21px;
   font-weight: 650;
   letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .leaderboard-card__meta,
@@ -1117,8 +1134,30 @@ a.requirement-meta-card__value:hover {
   line-height: 1.55;
 }
 
+.leaderboard-summary__toggle {
+  justify-self: center;
+  padding: 7px 12px;
+  border: 1px solid #3b3d39;
+  border-radius: 7px;
+  color: #d99a7e;
+  background: #151614;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.leaderboard-summary__toggle:hover {
+  border-color: #8d533f;
+  color: #fffaf6;
+  background: #211c19;
+}
+
+.leaderboard-summary__toggle:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
+}
+
 .leaderboard-note {
-  margin: 18px 0;
+  margin: 0 0 14px;
 }
 
 .leaderboard-loading {
@@ -1542,7 +1581,16 @@ a.requirement-meta-card__value:hover {
   font-weight: 600;
 }
 
+.leaderboard-test-header {
+  display: flex;
+  align-items: center;
+}
+
 .leaderboard-model-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -1581,6 +1629,29 @@ a.requirement-meta-card__value:hover {
   font-size: 13px;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.leaderboard-model-header__rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #9c9e97;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.leaderboard-model-header__stars {
+  flex: 0 0 auto;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.leaderboard-model-header__rating-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .leaderboard-test__identity {
@@ -1766,10 +1837,6 @@ a.requirement-meta-card__value:hover {
     grid-template-columns: repeat(2, minmax(230px, 1fr));
   }
 
-  .leaderboard-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .requirement-meta-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1851,6 +1918,36 @@ a.requirement-meta-card__value:hover {
   .comparison-board,
   .leaderboard-summary {
     grid-template-columns: 1fr;
+  }
+
+  .leaderboard-card {
+    grid-template-columns: minmax(64px, 0.4fr) minmax(0, 1.6fr);
+    gap: 8px 12px;
+  }
+
+  .leaderboard-card__rank {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .leaderboard-card__name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .leaderboard-card__agent,
+  .leaderboard-card__context {
+    grid-column: 1 / -1;
+  }
+
+  .leaderboard-card__score {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .leaderboard-card__meta {
+    grid-column: 2;
+    grid-row: 4;
   }
 
   .model-overall-row {

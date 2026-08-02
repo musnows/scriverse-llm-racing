@@ -373,9 +373,14 @@ function createModelOverallRow(entry) {
   testValue.textContent = entry.test ? `${entry.test.score} / ${entry.test.maxScore}` : "暂无数据";
   const testMeta = document.createElement("span");
   testMeta.className = "model-overall-row__meta";
-  testMeta.textContent = entry.test
-    ? `${entry.test.passCount} / ${entry.test.testCaseCount} 个用例通过`
-    : "暂无测试记录";
+  if (entry.test) {
+    const passRate = entry.test.testCaseCount > 0
+      ? Math.round((entry.test.passCount / entry.test.testCaseCount) * 100)
+      : 0;
+    testMeta.textContent = `${entry.test.passCount}/${entry.test.testCaseCount} 个用例通过 ${passRate}%`;
+  } else {
+    testMeta.textContent = "暂无测试记录";
+  }
   testScore.append(testLabel, testValue, testMeta);
 
   const duration = document.createElement("div");
@@ -724,7 +729,11 @@ async function loadRatingsForRequirement(force = false) {
     return;
   }
   if (!force && ratingState.loaded && ratingState.requirementId === requirementId) {
-    renderModelRating();
+    if (state.view === "leaderboard") {
+      renderLeaderboard();
+    } else {
+      renderModelRating();
+    }
     return;
   }
   ratingState.requirementId = requirementId;
@@ -751,6 +760,8 @@ async function loadRatingsForRequirement(force = false) {
         if (status) {
           status.textContent = ratingState.error || "每日每个模型最多 10 次";
         }
+      } else if (state.view === "leaderboard") {
+        renderLeaderboard();
       } else {
         renderModelRating();
       }
@@ -930,15 +941,26 @@ function createLeaderboardSummaryCard(entry) {
 
   const totalCount = entry.testCaseCount;
   const failureCount = Object.keys(entry.failures).length;
+  const passCount = totalCount - failureCount;
+  const passRate = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
   const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
     ? "耗时未记录"
     : formatDurationSeconds(entry.durationSeconds);
-  meta.textContent = `通过 ${totalCount - failureCount} / ${totalCount} · 未通过 ${failureCount} · ${durationText}`;
+  meta.textContent = `通过 ${passCount} / ${totalCount} · 通过率 ${passRate}% · ${durationText}`;
 
   card.append(rank, name, agent, context, score, meta);
   return card;
+}
+
+function createLeaderboardSummaryList(entries, className = "leaderboard-summary__list") {
+  const list = document.createElement("div");
+  list.className = className;
+  for (const entry of entries) {
+    list.append(createLeaderboardSummaryCard(entry));
+  }
+  return list;
 }
 
 function createLeaderboardResultCell(entry, testCase) {
@@ -1015,8 +1037,27 @@ function renderLeaderboard() {
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“未通过”状态可查看详细失败原因。";
-  for (const entry of rankingData) {
-    elements.leaderboardSummary.append(createLeaderboardSummaryCard(entry));
+  const visibleEntries = rankingData.slice(0, 3);
+  const hiddenEntries = rankingData.slice(3);
+  elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
+
+  if (hiddenEntries.length > 0) {
+    const hiddenList = createLeaderboardSummaryList(hiddenEntries, "leaderboard-summary__list leaderboard-summary__list--additional");
+    hiddenList.hidden = true;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "leaderboard-summary__toggle";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.textContent = `展开其余 ${hiddenEntries.length} 个模型`;
+    toggle.addEventListener("click", () => {
+      const expanded = !hiddenList.hidden;
+      hiddenList.hidden = expanded;
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      toggle.textContent = expanded
+        ? `展开其余 ${hiddenEntries.length} 个模型`
+        : `收起其余 ${hiddenEntries.length} 个模型`;
+    });
+    elements.leaderboardSummary.append(toggle, hiddenList);
   }
   elements.leaderboardTable.style.setProperty("--leaderboard-model-count", rankingData.length);
 
@@ -1037,7 +1078,18 @@ function renderLeaderboard() {
     name.className = "leaderboard-model-header__name";
     name.textContent = entry.model?.name ?? entry.modelId;
     name.title = name.textContent;
-    modelHeader.append(rank, name);
+    const rating = ratingState.values.get(entry.modelId);
+    const ratingRow = document.createElement("div");
+    ratingRow.className = "leaderboard-model-header__rating";
+    const ratingStars = createRatingStars(rating?.averageStars ?? 0);
+    ratingStars.classList.add("leaderboard-model-header__stars");
+    const ratingText = document.createElement("span");
+    ratingText.className = "leaderboard-model-header__rating-text";
+    ratingText.textContent = rating && rating.voteCount > 0
+      ? `${rating.averageStars.toFixed(2)} / 5 · ${rating.voteCount} 次`
+      : "暂无评分";
+    ratingRow.append(ratingStars, ratingText);
+    modelHeader.append(rank, name, ratingRow);
     headerRow.append(modelHeader);
   }
   elements.leaderboardHead.replaceChildren(headerRow);
@@ -1456,6 +1508,7 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
     renderRequirementsView();
   } else {
     renderLeaderboard();
+    loadRatingsForRequirement();
   }
   if (updateRoute) {
     updateBrowserRoute({ replace: replaceRoute });
