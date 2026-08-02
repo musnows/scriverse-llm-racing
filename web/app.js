@@ -457,6 +457,11 @@ const elements = {
   modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),
   modelOverallDialogList: document.getElementById("model-overall-dialog-list"),
   modelOverallDialogClose: document.getElementById("model-overall-dialog-close"),
+  leaderboardDetailDialog: document.getElementById("leaderboard-detail-dialog"),
+  leaderboardDetailDialogLabel: document.getElementById("leaderboard-detail-dialog-label"),
+  leaderboardDetailDialogTitle: document.getElementById("leaderboard-detail-dialog-title"),
+  leaderboardDetailDialogContent: document.getElementById("leaderboard-detail-dialog-content"),
+  leaderboardDetailDialogClose: document.getElementById("leaderboard-detail-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
   viewSwitch: document.querySelector(".view-switch"),
   globalRequirementSwitch: document.querySelector(".global-requirement-switch"),
@@ -941,19 +946,34 @@ function createLeaderboardResultCell(entry, testCase) {
 
   if (failed) {
     const reason = entry.failures[testCase.id];
-    const reasonElement = document.createElement("span");
-    reasonElement.className = "leaderboard-reason";
     if (reason) {
-      reasonElement.textContent = reason;
+      const reasonButton = document.createElement("button");
+      reasonButton.type = "button";
+      reasonButton.className = "leaderboard-reason-trigger";
+      reasonButton.textContent = "查看失败原因";
+      reasonButton.setAttribute("aria-label", `查看 ${entry.model?.name ?? entry.modelId} ${testCase.id} 失败原因`);
+      reasonButton.addEventListener("click", () => openLeaderboardDetail({
+        label: `${entry.model?.name ?? entry.modelId} · ${testCase.id}`,
+        title: "失败原因",
+        content: reason,
+      }));
+      cell.append(reasonButton);
     } else {
-      reasonElement.classList.add("leaderboard-reason--empty");
-      reasonElement.title = "失败原因未记录";
-      reasonElement.setAttribute("aria-label", "失败原因未记录");
+      const reasonElement = document.createElement("span");
+      reasonElement.className = "leaderboard-reason leaderboard-reason--empty";
+      reasonElement.textContent = "失败原因未记录";
+      cell.append(reasonElement);
     }
-    cell.append(reasonElement);
   }
 
   return cell;
+}
+
+function openLeaderboardDetail({ label, title, content }) {
+  elements.leaderboardDetailDialogLabel.textContent = label;
+  elements.leaderboardDetailDialogTitle.textContent = title;
+  elements.leaderboardDetailDialogContent.textContent = content;
+  elements.leaderboardDetailDialog.showModal();
 }
 
 function renderLeaderboard() {
@@ -999,6 +1019,7 @@ function renderLeaderboard() {
     const name = document.createElement("span");
     name.className = "leaderboard-model-header__name";
     name.textContent = entry.model?.name ?? entry.modelId;
+    name.title = name.textContent;
     modelHeader.append(rank, name);
     headerRow.append(modelHeader);
   }
@@ -1018,9 +1039,16 @@ function renderLeaderboard() {
     priority.className = "leaderboard-test__priority";
     priority.textContent = testCase.priority;
     identity.append(id, priority);
-    const scenario = document.createElement("span");
-    scenario.className = "leaderboard-test__scenario";
-    scenario.textContent = testCase.scenario;
+    const scenario = document.createElement("button");
+    scenario.type = "button";
+    scenario.className = "leaderboard-test__details";
+    scenario.textContent = "查看测试说明";
+    scenario.setAttribute("aria-label", `查看 ${testCase.id} 测试说明`);
+    scenario.addEventListener("click", () => openLeaderboardDetail({
+      label: `${testCase.id} · ${testCase.priority}`,
+      title: "测试用例说明",
+      content: testCase.scenario,
+    }));
     testCell.append(identity, scenario);
     row.append(testCell);
     for (const entry of rankingData) {
@@ -1519,6 +1547,12 @@ elements.modelOverallDialogClose.addEventListener("click", () => elements.modelO
 elements.modelOverallDialog.addEventListener("click", (event) => {
   if (event.target === elements.modelOverallDialog) {
     elements.modelOverallDialog.close();
+  }
+});
+elements.leaderboardDetailDialogClose.addEventListener("click", () => elements.leaderboardDetailDialog.close());
+elements.leaderboardDetailDialog.addEventListener("click", (event) => {
+  if (event.target === elements.leaderboardDetailDialog) {
+    elements.leaderboardDetailDialog.close();
   }
 });
 elements.dialogClose.addEventListener("click", () => elements.dialog.close());

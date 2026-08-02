@@ -1339,6 +1339,36 @@ a.requirement-meta-card__value:hover {
   font-size: 11px;
 }
 
+.leaderboard-detail-dialog {
+  width: min(680px, calc(100% - 32px));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3b3d39;
+  border-radius: 14px;
+  color: #f4f4f1;
+  background: #111210;
+}
+
+.leaderboard-detail-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.leaderboard-detail-dialog__body {
+  max-height: min(60vh, 520px);
+  padding: 20px 18px 22px;
+  overflow: auto;
+}
+
+.leaderboard-detail-dialog__body p {
+  margin: 0;
+  color: #d2d3ce;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .requirement-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1440,12 +1470,14 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-test-header,
 .leaderboard-test {
-  width: 34%;
+  width: 280px;
+  min-width: 280px;
 }
 
 .leaderboard-model-header,
 .leaderboard-result {
-  width: 16.5%;
+  width: 140px;
+  min-width: 140px;
 }
 
 .leaderboard-test-header,
@@ -1459,6 +1491,23 @@ a.requirement-meta-card__value:hover {
 .leaderboard-model-header {
   position: sticky;
   top: 0;
+  z-index: 2;
+}
+
+.leaderboard-test-header,
+.leaderboard-test {
+  position: sticky;
+  left: 0;
+  box-shadow: 8px 0 12px -12px rgba(0, 0, 0, 0.9);
+}
+
+.leaderboard-test-header {
+  z-index: 4;
+}
+
+.leaderboard-test {
+  z-index: 3;
+  background: #151614;
 }
 
 .leaderboard-model-header__rank,
@@ -1474,8 +1523,11 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-model-header__name {
+  overflow: hidden;
   color: #f4f4f1;
   font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .leaderboard-test__identity {
@@ -1499,12 +1551,32 @@ a.requirement-meta-card__value:hover {
   color: #8f918b;
 }
 
-.leaderboard-test__scenario {
-  display: block;
-  color: #d2d3ce;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.55;
+.leaderboard-test__details,
+.leaderboard-reason-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 7px;
+  border: 1px solid #3b3d39;
+  border-radius: 5px;
+  color: #b5b6b0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.leaderboard-test__details:hover,
+.leaderboard-reason-trigger:hover {
+  border-color: #8d533f;
+  color: #fffaf6;
+  background: #211c19;
+}
+
+.leaderboard-test__details:focus-visible,
+.leaderboard-reason-trigger:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
 }
 
 .leaderboard-result {

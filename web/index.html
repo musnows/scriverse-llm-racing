@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=45">
+    <link rel="stylesheet" href="/styles.css?v=46">
   </head>
   <body>
     <div class="app-shell">
@@ -89,6 +89,19 @@
           <div id="model-overall-dialog-list" class="model-overall-dialog__list"></div>
         </dialog>
 
+        <dialog id="leaderboard-detail-dialog" class="leaderboard-detail-dialog" aria-labelledby="leaderboard-detail-dialog-title">
+          <div class="dialog-toolbar">
+            <div>
+              <p id="leaderboard-detail-dialog-label" class="dialog-model"></p>
+              <h2 id="leaderboard-detail-dialog-title"></h2>
+            </div>
+            <button type="button" id="leaderboard-detail-dialog-close" class="icon-button" aria-label="关闭排行榜详情">关闭</button>
+          </div>
+          <div class="leaderboard-detail-dialog__body">
+            <p id="leaderboard-detail-dialog-content"></p>
+          </div>
+        </dialog>
+
         <section id="model-view" class="view-panel" aria-label="按模型查看" hidden>
           <div id="model-tabs" class="tab-strip" role="tablist" aria-label="模型"></div>
           <div class="section-heading">
@@ -117,7 +130,7 @@
           <p id="leaderboard-note" class="leaderboard-note"></p>
           <div class="leaderboard-table-wrap">
             <table class="leaderboard-table">
-              <caption class="sr-only">各模型的测试用例通过情况与失败原因</caption>
+              <caption class="sr-only">参赛模型的测试用例通过情况与失败原因</caption>
               <thead id="leaderboard-head"></thead>
               <tbody id="leaderboard-body"></tbody>
             </table>
