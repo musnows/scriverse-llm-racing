@@ -1130,7 +1130,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-summary__toggle {
-  justify-self: start;
+  justify-self: center;
   padding: 7px 12px;
   border: 1px solid #3b3d39;
   border-radius: 7px;
