@@ -136,7 +136,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=17";
+const leaderboardDataUrl = "/source/leaderboard.json?v=18";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -566,7 +566,7 @@ function openModelOverallDetails(entry) {
       const title = document.createElement("strong");
       title.textContent = requirement.title;
       const meta = document.createElement("span");
-      meta.textContent = `${requirement.baseRepository} · ${requirement.baseVersion}`;
+      meta.textContent = `${requirement.baseRepository} · commit ${requirement.baseCommit}`;
       button.append(title, meta);
       button.addEventListener("click", () => {
         state.modelId = entry.model.id;
@@ -1588,7 +1588,7 @@ function renderRequirementsView() {
     return;
   }
   elements.requirementTitle.textContent = requirement.title;
-  elements.requirementSummary.textContent = `基于 ${requirement.baseRepository} ${requirement.baseVersion}，用于记录本轮测试基线与参赛配置。`;
+  elements.requirementSummary.textContent = `基于 ${requirement.baseRepository} 的 commit ${requirement.baseCommit}，用于记录本轮测试基线与参赛配置。`;
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
   elements.requirementRepository.textContent = requirement.baseRepository;
   elements.requirementCommit.textContent = requirement.baseCommit;
