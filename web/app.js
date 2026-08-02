@@ -492,10 +492,65 @@ function getTestedRequirementCount(modelId) {
   return getTestedRequirements(modelId).length;
 }
 
+function getRequirementModelEntry(requirement, modelId) {
+  const entries = getRequirementModelEntries(requirement);
+  if (entries) {
+    return entries.find((entry) => (entry.modelId ?? entry.id) === modelId) ?? null;
+  }
+  return leaderboardData?.models.find((entry) => entry.modelId === modelId) ?? null;
+}
+
+function getRequirementScore(entry, requirement) {
+  if (!entry) {
+    return null;
+  }
+  const testCases = getRequirementTestCases(requirement);
+  const scoring = getRequirementScoring(requirement);
+  const failedIds = new Set(Object.keys(entry.failures ?? {}));
+  const deductions = testCases.reduce(
+    (total, testCase) => total + (failedIds.has(testCase.id) ? scoring.deductionByPriority[testCase.priority] : 0),
+    0,
+  );
+  return {
+    score: scoring.initial - deductions,
+    maxScore: scoring.initial,
+  };
+}
+
+function getAverageScore(modelId) {
+  if (!leaderboardData) {
+    return null;
+  }
+  const requirements = getTestedRequirements(modelId);
+  const scores = requirements
+    .map((requirement) => getRequirementScore(getRequirementModelEntry(requirement, modelId), requirement))
+    .filter(Boolean);
+  if (scores.length === 0) {
+    return null;
+  }
+  return {
+    score: scores.reduce((total, item) => total + item.score, 0) / scores.length,
+    maxScore: scores.reduce((total, item) => total + item.maxScore, 0) / scores.length,
+  };
+}
+
+function formatAverageScore(score) {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
 function openModelOverallDetails(entry) {
   const requirements = getTestedRequirements(entry.model.id);
+  const averageScore = getAverageScore(entry.model.id);
+  const dialogMeta = [
+    `工具：${entry.agent?.software || entry.model.tool}`,
+    `已测试 ${requirements.length} / ${leaderboardData.requirements.length}`,
+    averageScore ? `平均得分 ${formatAverageScore(averageScore.score)} / ${formatAverageScore(averageScore.maxScore)}` : "平均得分暂无数据",
+    entry.weightedAverageDurationSeconds === null
+      ? "加权平均耗时暂无数据"
+      : `加权平均耗时 ${formatDurationSeconds(entry.weightedAverageDurationSeconds)}`,
+  ];
   elements.modelOverallDialogModel.textContent = entry.model.name;
-  elements.modelOverallDialogMeta.textContent = `工具：${entry.agent?.software || entry.model.tool} · 已测试 ${requirements.length} / ${leaderboardData.requirements.length}`;
+  elements.modelOverallDialogMeta.textContent = dialogMeta.join(" · ");
   elements.modelOverallDialogList.replaceChildren();
 
   if (requirements.length === 0) {
