@@ -87,7 +87,7 @@ main {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 16px;
+  gap: 8px;
 }
 
 .site-footer__right a {
