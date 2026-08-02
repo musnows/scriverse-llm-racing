@@ -51,8 +51,9 @@ npm run build
 - `/model-overall`：模型总榜
 - `/test-method`：全局测试方法
 - `/req/s3-backup-v1/leaderboard`：需求排行榜
-- `/req/s3-backup-v1/model/1`：指定需求下的模型页面
-- `/req/s3-backup-v1/model/1?tab=unexpected`：指定需求下模型的意外情况
+- `/req/s3-backup-v1/mdl/1`：指定需求下的模型页面
+- `/req/s3-backup-v1/mdl/1?tab=unexpected`：指定需求下模型的意外情况
+- `/req/s3-backup-v1/model/1`：历史模型路径，继续兼容
 - `/req/s3-backup-v1/feature/settings`：指定需求下的功能对比页
 - `/req/s3-backup-v1/info`：需求信息页
 

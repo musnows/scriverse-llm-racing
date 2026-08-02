@@ -1768,7 +1768,7 @@ function getRoutePath() {
     return `/req/${requirementPath}/info`;
   }
   if (state.view === "model") {
-    const modelPath = `/req/${requirementPath}/model/${encodeURIComponent(state.modelId)}`;
+    const modelPath = `/req/${requirementPath}/mdl/${encodeURIComponent(state.modelId)}`;
     return state.modelContentTab === "unexpected" ? `${modelPath}?tab=unexpected` : modelPath;
   }
   if (state.view === "feature") {
@@ -1819,7 +1819,7 @@ function parseBrowserRoute() {
   if (parts[2] === "info") {
     return { view: "requirements", requirementsTab: "requirement", requirementId };
   }
-  if (parts[2] === "model" && parts[3]) {
+  if ((parts[2] === "mdl" || parts[2] === "model") && parts[3]) {
     const modelId = Number(parts[3]);
     return {
       view: "model",
