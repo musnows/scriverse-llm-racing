@@ -1,21 +1,76 @@
 # Scriverse LLM Racing
 
-这个仓库用于归档“叙界赛博斗蛐蛐”系列的公开复现材料。
+这个仓库用于归档“叙界赛博斗蛐蛐”系列的公开复现材料，包含评测前端、用户评分后端和经过清理的数据归档。
 
 测试基于 [musnows/Scriverse](https://github.com/musnows/Scriverse) `v0.6.6`，基准 commit 为 `91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2`。
 
-## 数据文件
+## 目录结构
 
-所有公开测试材料都直接放在 [`data/`](data/) 目录：
+```text
+web/
+  index.html                 评测榜单前端
+  app.js                     页面逻辑、评分请求和视图渲染
+  styles.css                 页面样式
+  source/leaderboard.json    评测需求、模型和测试结果
+  rating-catalog.json        后端评分允许列表
+  build.mjs                  构建 API 配置和部署时间
 
-| 目录 | 用途 |
+server/
+  server.mjs                 Node.js 评分后端
+  rating-catalog.json        后端本地评分允许列表
+  DEPLOY.md                  Ubuntu、systemd、Nginx 部署说明
+
+data/
+  git-worktree/              统一的 worktree skill
+  scriverse-demo-*/          脱敏后的公开验收数据
+```
+
+## 前端
+
+前端是无构建依赖的静态页面，构建时可注入评分后端地址：
+
+```bash
+cd web
+API_BASE=https://your-api.example.com npm run build
+```
+
+`npm run build` 会生成：
+
+- `api-config.js`：前端评分 API 地址。
+- `build-meta.js`：footer 显示的最近更新时间。
+
+如果前后端同域部署，`API_BASE` 可以留空；如果前端部署在 Netlify、后端独立部署，则必须设置后端完整 URL。
+
+## 评分后端
+
+后端只使用 Node.js 内置模块，不需要 `npm install`，要求 Node.js 22.5 或更高版本。默认监听 `13250` 端口，可通过 `PORT` 修改。
+
+```bash
+cd server
+PORT=13250 \
+RATING_DB=/var/lib/agent-evaluation/ratings.sqlite \
+IP_HASH_SECRET='替换为随机长字符串' \
+ALLOWED_ORIGIN='https://your-netlify-site.example' \
+CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
+node server.mjs
+```
+
+后端接口：
+
+- `GET /api/rating-config`
+- `GET /api/ratings?requirementId=s3-backup-v1`
+- `POST /api/ratings/vote`
+
+完整的 Ubuntu、systemd、Nginx 和前后端连接配置见 [`server/DEPLOY.md`](server/DEPLOY.md)。
+
+## 数据归档
+
+公开测试材料放在 [`data/`](data/)：
+
+| 路径 | 用途 |
 | --- | --- |
 | [`data/git-worktree/`](data/git-worktree/) | 给参赛 Agent 创建隔离 worktree 的统一 skill |
 | [`data/scriverse-demo-db-with-setting-images-20260802/`](data/scriverse-demo-db-with-setting-images-20260802/) | 数据库迁移、图片同步和 S3 备份验收使用的演示数据 |
-
-## 使用方式
-
-把 [`data/git-worktree/`](data/git-worktree/) 复制到对应 Agent 工具的 skills 目录，再按测试 prompt 创建独立 worktree。
 
 数据库测试目录包含：
 
@@ -26,31 +81,27 @@ runtime/master.key
 runtime/attachments/
 ```
 
-将 `data/scriverse-demo-db-with-setting-images-20260802/runtime/` 作为 Scriverse 演示运行目录。验收时使用跳过登录的开发命令启动：
+将 `runtime/` 作为 Scriverse 演示运行目录。验收时使用：
 
 ```bash
 NODE_ENV=development APP_DEV_SKIP_AUTH=true npm run dev
 ```
 
-## 隐私与安全处理
-
-上传前已经对两个目录的文本、数据库记录、二进制可见字符串、图片内容和图片元数据进行检查，并做了以下处理：
-
-- 删除本机用户名和绝对路径，manifest 使用相对路径，skill 示例使用 `~/.worktree/`。
-- 清空数据库中的用户会话、CSRF 数据和登录尝试记录。
-- 将演示用户的密码哈希与盐替换为不可登录的公开占位值。
-- 确认数据库中不存在用户 API Key、AI Provider Key、头像或 AI 对话记录。
-- 合并并移除 SQLite WAL/SHM，避免残留历史页数据。
-- 将 `runtime/master.key` 替换为固定的公开演示 key；它不是秘密，只能用于这份公开测试数据。
-- 确认附件图片不包含真实姓名、邮箱、电话、GPS、作者或设备信息。
-- 两个目录都不包含真实 S3 AK/SK 或其他生产凭证。
-
-<font color=Red>这些材料只用于公开测试和复现，禁止复制到生产环境，也不要在其中保存真实凭证或个人数据。</font>
-
-## 数据库完整性校验
+数据库完整性检查：
 
 ```bash
 sqlite3 data/scriverse-demo-db-with-setting-images-20260802/runtime/demo.db 'PRAGMA integrity_check;'
 ```
 
-正常输出应为`ok`。如果检查失败，请重新拉取仓库，不要继续使用损坏或来源不明的数据库文件。
+## 隐私与安全
+
+这些材料只用于公开测试和复现，禁止复制到生产环境，也不要在其中保存真实凭证或个人数据。
+
+归档数据必须满足：
+
+- 不包含本机用户名、绝对路径、真实 API Key、S3 AK/SK 或其他生产凭证。
+- 数据库中的会话、CSRF、登录尝试和个人数据已经清理。
+- 图片和附件不包含真实姓名、邮箱、电话、GPS、作者或设备信息。
+- manifest 使用相对路径，归档目录结构保持可复现。
+
+项目修改规范见根目录 [`AGENTS.md`](AGENTS.md)。
