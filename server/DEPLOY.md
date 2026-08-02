@@ -7,6 +7,49 @@
 
 这个后端只使用 Node.js 内置模块，不需要 `npm install`。
 
+## Docker
+
+构建镜像时使用 `server/` 作为构建上下文：
+
+```bash
+docker build -f server/Dockerfile \
+  -t musnows/scriverse-llm-racing-server:latest \
+  server
+```
+
+在 Ubuntu Server 上运行，使用宿主机目录保存 SQLite 数据，并让 Docker 在服务器重启后自动拉起：
+
+```bash
+sudo mkdir -p /opt/scriverse-llm-racing/data
+sudo chown -R 1000:1000 /opt/scriverse-llm-racing/data
+docker run -d \
+  --name scriverse-llm-racing-server \
+  --restart unless-stopped \
+  -p 13250:13250 \
+  -e IP_HASH_SECRET='替换为一段随机长字符串' \
+  -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
+  -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
+  -e TRUST_PROXY=true \
+  -v /opt/scriverse-llm-racing/data:/var/lib/scriverse-llm-racing \
+  musnows/scriverse-llm-racing-server:latest
+```
+
+容器默认监听 `13250`。如果只需要更换宿主机端口，只修改左侧端口，例如 `-p 18080:13250`；容器内部端口仍保持 `13250`。如果需要同时更换容器端口，则增加 `-e PORT=18080 -p 18080:18080`。
+
+发布到 Docker Hub 前先登录，然后使用 Buildx 发布常见服务器架构：
+
+```bash
+docker login
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -f server/Dockerfile \
+  -t musnows/scriverse-llm-racing-server:latest \
+  --push \
+  server
+```
+
+发布后，Ubuntu Server 可以用同一个 `docker run` 命令启动镜像；更新镜像时执行 `docker pull`，再删除旧容器并重新执行启动命令。
+
 ## 启动
 
 把当前仓库的 `server/` 目录上传到服务器，例如 `/opt/agent-evaluation`，然后执行：

@@ -61,6 +61,20 @@ node server.mjs
 - `GET /api/ratings?requirementId=s3-backup-v1`
 - `POST /api/ratings/vote`
 
+也可以直接使用 Docker 镜像运行后端：
+
+```bash
+docker run -d \
+  --name scriverse-llm-racing-server \
+  --restart unless-stopped \
+  -p 13250:13250 \
+  -e IP_HASH_SECRET='替换为一段随机长字符串' \
+  -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
+  -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
+  -v /opt/scriverse-llm-racing/data:/var/lib/scriverse-llm-racing \
+  musnows/scriverse-llm-racing-server:latest
+```
+
 完整的 Ubuntu、systemd、Nginx 和前后端连接配置见 [`server/DEPLOY.md`](server/DEPLOY.md)。
 
 ## 数据归档
