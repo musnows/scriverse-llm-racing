@@ -5,6 +5,10 @@
   font-synthesis: none;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   min-height: 100%;
   background: #0f100f;
