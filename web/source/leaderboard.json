@@ -136,8 +136,8 @@
     { "modelName": "GPT-5.6 Luna Max", "software": "Codex", "version": "26.727.51351", "context": "373K", "status": "暂无测试数据" },
     { "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "暂无测试数据" },
-    { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "未参赛" },
-    { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "未参赛" },
+    { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
+    { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "MiniMax-M3", "software": "", "version": "", "context": "1M", "status": "未参赛" }
   ]
 }
