@@ -75,6 +75,15 @@ docker run -d \
   musnows/scriverse-llm-racing-server:latest
 ```
 
+仓库根目录也提供了 [`docker-compose.yml`](docker-compose.yml) 和 [`.env.example`](.env.example)，在 Ubuntu Server 上可以直接执行：
+
+```bash
+cp .env.example .env
+vi .env
+docker compose pull
+docker compose up -d
+```
+
 完整的 Ubuntu、systemd、Nginx 和前后端连接配置见 [`server/DEPLOY.md`](server/DEPLOY.md)。
 
 ## 数据归档

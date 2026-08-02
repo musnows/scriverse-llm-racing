@@ -50,6 +50,18 @@ docker buildx build \
 
 发布后，Ubuntu Server 可以用同一个 `docker run` 命令启动镜像；更新镜像时执行 `docker pull`，再删除旧容器并重新执行启动命令。
 
+如果使用 Docker Compose，在仓库根目录准备配置：
+
+```bash
+cp .env.example .env
+vi .env
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+Compose 会读取 `.env` 中的前端 Origin、评分目录地址和密钥，并将当前目录的 `data/` 挂载到容器的 SQLite 数据目录。宿主机端口通过 `HOST_PORT` 修改，容器内部端口固定为 `13250`。
+
 ## 启动
 
 把当前仓库的 `server/` 目录上传到服务器，例如 `/opt/agent-evaluation`，然后执行：

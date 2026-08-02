@@ -1,0 +1,18 @@
+services:
+  server:
+    image: musnows/scriverse-llm-racing-server:latest
+    container_name: scriverse-llm-racing-server
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-13250}:13250"
+    environment:
+      PORT: "13250"
+      RATING_DB: /var/lib/scriverse-llm-racing/ratings.sqlite
+      IP_HASH_SECRET: "${IP_HASH_SECRET:?请先在 .env 中设置 IP_HASH_SECRET}"
+      MAX_VOTES_PER_DAY: "${MAX_VOTES_PER_DAY:-10}"
+      ALLOWED_ORIGIN: "${ALLOWED_ORIGIN:?请先在 .env 中设置 ALLOWED_ORIGIN}"
+      CATALOG_URL: "${CATALOG_URL:?请先在 .env 中设置 CATALOG_URL}"
+      CATALOG_SYNC_INTERVAL_MS: "${CATALOG_SYNC_INTERVAL_MS:-600000}"
+      TRUST_PROXY: "${TRUST_PROXY:-false}"
+    volumes:
+      - ./data:/var/lib/scriverse-llm-racing
