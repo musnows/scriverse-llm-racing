@@ -124,7 +124,7 @@
     },
     {
       "modelId": 5,
-      "durationSeconds": null,
+      "durationSeconds": 4140,
       "agent": {
         "software": "Claude Code",
         "version": "2.1.220",
@@ -141,7 +141,7 @@
     },
     {
       "modelId": 6,
-      "durationSeconds": null,
+      "durationSeconds": 1136,
       "agent": {
         "software": "Claude Code",
         "version": "2.1.220",
