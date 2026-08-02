@@ -487,6 +487,7 @@ const elements = {
   featureComparison: document.getElementById("feature-comparison"),
   leaderboardView: document.getElementById("leaderboard-view"),
   leaderboardRequirement: document.getElementById("leaderboard-requirement"),
+  leaderboardDescription: document.getElementById("leaderboard-description"),
   leaderboardSummary: document.getElementById("leaderboard-summary"),
   leaderboardNote: document.getElementById("leaderboard-note"),
   leaderboardTable: document.querySelector(".leaderboard-table"),
@@ -1013,6 +1014,7 @@ function renderLeaderboard() {
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；失败原因为空表示资料中尚未记录明确原因。TC-20 的状态按各模型表格记录展示，但不计入得分扣分。`;
+  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“未通过”状态可查看详细失败原因。";
   for (const entry of rankingData) {
     elements.leaderboardSummary.append(createLeaderboardSummaryCard(entry));
   }
