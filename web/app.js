@@ -1558,7 +1558,8 @@ function createLeaderboardSummaryCard(entry) {
 
   const context = document.createElement("p");
   context.className = "leaderboard-card__context";
-  context.textContent = `上下文 ${entry.agent?.context ?? "未记录"}`;
+  const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
+  context.textContent = `上下文 ${contextValue}`;
   context.title = context.textContent;
 
   const score = document.createElement("p");
