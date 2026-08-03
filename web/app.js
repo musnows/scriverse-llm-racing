@@ -204,7 +204,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=32";
+const leaderboardDataUrl = "/source/leaderboard.json?v=33";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -1538,6 +1538,7 @@ function createLeaderboardSummaryCard(entry) {
   const context = document.createElement("p");
   context.className = "leaderboard-card__context";
   context.textContent = `上下文 ${entry.agent?.context ?? "未记录"}`;
+  context.title = context.textContent;
 
   const score = document.createElement("p");
   score.className = "leaderboard-card__score";

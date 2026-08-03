@@ -271,7 +271,7 @@
       "agent": {
         "software": "Cursor Agent View",
         "version": "3.14.7",
-        "context": "200K"
+        "context": "200K（Cursor 不支持 1M）"
       },
       "failures": {
         "TC-06": "后端能够加密并保留 AK/SK，但编辑对话框清空凭证后仍把两个输入设为 required，浏览器会阻止只修改其他字段并保留旧凭证。",
@@ -298,7 +298,7 @@
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
-    { "modelId": 11, "modelName": "GLM-5.2 Max", "software": "Cursor Agent View", "version": "3.14.7", "context": "200K", "status": "已测试" },
+    { "modelId": 11, "modelName": "GLM-5.2 Max", "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
     { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "MiniMax-M3", "software": "", "version": "", "context": "1M", "status": "未参赛" }
   ]
