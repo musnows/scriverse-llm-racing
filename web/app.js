@@ -72,7 +72,7 @@ const models = [
     id: 4,
     name: "Hy3",
     tool: "WorkBuddy",
-    supportsMultimodal: true,
+    supportsMultimodal: false,
     images: [
       ["image-20260801230712-zy199ri.webp", "Max 模式与模型选择", ["process"]],
       ["image-20260802000001-749b4nc.webp", "任务完成耗时", ["process"]],
