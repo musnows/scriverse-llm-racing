@@ -310,22 +310,30 @@ function renderBuildUpdatedAt() {
 }
 
 function getOverallRatingData() {
-  const testRanking = new Map(getRankingData().map((entry) => [entry.modelId, entry]));
   const ranking = models.map((model) => ({
     model,
     agent: leaderboardData?.agents.find((entry) => entry.modelId === model.id),
-    test: testRanking.get(model.id) ?? null,
+    overallMetrics: getOverallModelMetrics(model.id),
     testedRequirementCount: getTestedRequirementCount(model.id),
     weightedAverageDurationSeconds: getWeightedAverageDurationSeconds(model.id),
     rating: ratingState.allValues.get(model.id) ?? null,
   }));
 
   ranking.sort((left, right) => {
-    return (left.test?.rank ?? Number.MAX_SAFE_INTEGER) - (right.test?.rank ?? Number.MAX_SAFE_INTEGER)
+    const weightedPassRateDifference = (right.overallMetrics?.weightedPassRate ?? -Infinity)
+      - (left.overallMetrics?.weightedPassRate ?? -Infinity);
+    const leftDuration = left.weightedAverageDurationSeconds ?? Number.MAX_SAFE_INTEGER;
+    const rightDuration = right.weightedAverageDurationSeconds ?? Number.MAX_SAFE_INTEGER;
+    return weightedPassRateDifference
+      || leftDuration - rightDuration
       || left.model.name.localeCompare(right.model.name);
   });
 
-  return ranking;
+  let testedRank = 0;
+  return ranking.map((entry) => ({
+    ...entry,
+    rank: entry.overallMetrics ? ++testedRank : null,
+  }));
 }
 
 function getRequirementWeight(requirement) {
@@ -491,7 +499,7 @@ function createModelOverallChartData(ranking) {
   return ranking
     .map((entry) => {
       const weightedAverageDurationSeconds = Number(entry.weightedAverageDurationSeconds);
-      const weightedPassRate = Number(entry.test?.weightedPassRate);
+      const weightedPassRate = Number(entry.overallMetrics?.weightedPassRate);
       if (!Number.isFinite(weightedAverageDurationSeconds) || weightedAverageDurationSeconds <= 0 || !Number.isFinite(weightedPassRate)) {
         return null;
       }
@@ -677,25 +685,45 @@ function getRequirementScore(entry, requirement) {
   };
 }
 
-function getAverageScore(modelId) {
+function getOverallModelMetrics(modelId) {
   if (!leaderboardData) {
     return null;
   }
   const requirements = getTestedRequirements(modelId);
-  const scores = requirements
-    .map((requirement) => getRequirementScore(getRequirementModelEntry(requirement, modelId), requirement))
+  const scoreRecords = requirements
+    .map((requirement) => {
+      const score = getRequirementScore(getRequirementModelEntry(requirement, modelId), requirement);
+      const weightedPassRate = getWeightedPassRate(score?.score, score?.maxScore);
+      return score && weightedPassRate !== null
+        ? { requirement, score, weightedPassRate, weight: getRequirementWeight(requirement) }
+        : null;
+    })
     .filter(Boolean);
-  if (scores.length === 0) {
+  if (scoreRecords.length === 0) {
     return null;
   }
+  const totalWeight = scoreRecords.reduce((total, record) => total + record.weight, 0);
+  if (totalWeight <= 0) {
+    return null;
+  }
+  const weightedPassRate = scoreRecords.reduce(
+    (total, record) => total + record.weightedPassRate * record.weight,
+    0,
+  ) / totalWeight;
   return {
-    score: scores.reduce((total, item) => total + item.score, 0) / scores.length,
-    maxScore: scores.reduce((total, item) => total + item.maxScore, 0) / scores.length,
+    score: scoreRecords.reduce((total, record) => total + record.score.score * record.weight, 0) / totalWeight,
+    maxScore: scoreRecords.reduce((total, record) => total + record.score.maxScore * record.weight, 0) / totalWeight,
+    weightedPassRate,
   };
 }
 
 function formatAverageScore(score) {
   return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function formatWeightedPassRate(weightedPassRate) {
+  const value = Number(weightedPassRate);
+  return Number.isFinite(value) ? `${Math.round(value)}%` : "暂无";
 }
 
 function getModelToolName(entry) {
@@ -718,11 +746,11 @@ function createResultBranchLink(entry, className = "") {
 
 function openModelOverallDetails(entry) {
   const requirements = getTestedRequirements(entry.model.id);
-  const averageScore = getAverageScore(entry.model.id);
+  const overallMetrics = getOverallModelMetrics(entry.model.id);
   const modelToolName = getModelToolName(entry);
   const dialogMeta = [
     `已测试 ${requirements.length} / ${leaderboardData.requirements.length}`,
-    averageScore ? `平均得分 ${formatAverageScore(averageScore.score)} / ${formatAverageScore(averageScore.maxScore)}` : "平均得分暂无数据",
+    overallMetrics ? `加权平均得分 ${formatAverageScore(overallMetrics.score)} / ${formatAverageScore(overallMetrics.maxScore)}` : "加权平均得分暂无数据",
     entry.weightedAverageDurationSeconds === null
       ? "加权平均耗时暂无数据"
       : `加权平均耗时 ${formatDurationSeconds(entry.weightedAverageDurationSeconds)}`,
@@ -764,7 +792,7 @@ function createModelOverallRow(entry) {
   const row = document.createElement("button");
   row.type = "button";
   row.className = "model-overall-row";
-  row.style.setProperty("--item-index", String(Math.max(0, (entry.test?.rank ?? 1) - 1)));
+  row.style.setProperty("--item-index", String(Math.max(0, (entry.rank ?? 1) - 1)));
   row.setAttribute("aria-label", `查看 ${entry.model.name} 已测试的需求`);
   row.addEventListener("click", () => openModelOverallDetails(entry));
 
@@ -772,7 +800,7 @@ function createModelOverallRow(entry) {
   identity.className = "model-overall-row__identity";
   const rank = document.createElement("span");
   rank.className = "model-overall-row__rank";
-  rank.textContent = entry.test ? `第 ${String(entry.test.rank).padStart(2, "0")} 名` : "未纳入测试";
+  rank.textContent = entry.overallMetrics ? `第 ${String(entry.rank).padStart(2, "0")} 名` : "未纳入测试";
   const name = document.createElement("strong");
   name.className = "model-overall-row__name";
   name.append(document.createTextNode(`${entry.model.name} · `));
@@ -799,15 +827,16 @@ function createModelOverallRow(entry) {
   testScore.className = "model-overall-row__score-block";
   const testLabel = document.createElement("span");
   testLabel.className = "model-overall-row__label";
-  testLabel.textContent = "测试用例评分";
+  testLabel.textContent = "加权平均评分";
   const testValue = document.createElement("strong");
   testValue.className = "model-overall-row__score";
-  testValue.textContent = entry.test ? `${entry.test.score} / ${entry.test.maxScore}` : "暂无数据";
+  testValue.textContent = entry.overallMetrics
+    ? `${formatAverageScore(entry.overallMetrics.score)} / ${formatAverageScore(entry.overallMetrics.maxScore)}`
+    : "暂无数据";
   const testMeta = document.createElement("span");
   testMeta.className = "model-overall-row__meta";
-  if (entry.test) {
-    const weightedPassRate = entry.test.weightedPassRate === null ? "暂无" : `${Math.round(entry.test.weightedPassRate)}%`;
-    testMeta.textContent = `${entry.test.passCount}/${entry.test.testCaseCount} 个用例通过 · 加权通过率 ${weightedPassRate}`;
+  if (entry.overallMetrics) {
+    testMeta.textContent = `${entry.testedRequirementCount} 个需求 · 加权通过率 ${formatWeightedPassRate(entry.overallMetrics.weightedPassRate)}`;
   } else {
     testMeta.textContent = "暂无测试记录";
   }
@@ -1485,7 +1514,7 @@ function createLeaderboardSummaryCard(entry) {
   const totalCount = entry.testCaseCount;
   const failureCount = Object.keys(entry.failures).length;
   const passCount = totalCount - failureCount;
-  const weightedPassRate = entry.weightedPassRate === null ? "暂无" : `${Math.round(entry.weightedPassRate)}%`;
+  const weightedPassRate = formatWeightedPassRate(entry.weightedPassRate);
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
   const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
