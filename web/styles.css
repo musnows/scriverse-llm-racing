@@ -2166,10 +2166,6 @@ dialog[open]::backdrop {
   white-space: normal;
 }
 
-.leaderboard-model-header__branch {
-  align-self: flex-start;
-}
-
 .leaderboard-model-header__rating {
   display: flex;
   align-items: center;

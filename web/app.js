@@ -1681,7 +1681,6 @@ function renderLeaderboard() {
     name.className = "leaderboard-model-header__name";
     name.textContent = entry.model?.name ?? entry.modelId;
     name.title = name.textContent;
-    const branchLink = createResultBranchLink(entry, "leaderboard-model-header__branch");
     const rating = ratingState.values.get(entry.modelId);
     const ratingRow = document.createElement("div");
     ratingRow.className = "leaderboard-model-header__rating";
@@ -1693,11 +1692,7 @@ function renderLeaderboard() {
       ? `${rating.averageStars.toFixed(2)} / 5 · ${rating.voteCount} 次`
       : "暂无评分";
     ratingRow.append(ratingStars, ratingText);
-    modelHeader.append(rank, name);
-    if (branchLink) {
-      modelHeader.append(branchLink);
-    }
-    modelHeader.append(ratingRow);
+    modelHeader.append(rank, name, ratingRow);
     headerRow.append(modelHeader);
   }
   elements.leaderboardHead.replaceChildren(headerRow);
