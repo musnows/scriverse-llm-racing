@@ -11,6 +11,7 @@ const models = [
     id: 1,
     name: "Doubao-Seed-2.1-Turbo",
     tool: "TRAE SOLO",
+    supportsMultimodal: true,
     images: [
       ["image-20260801230707-wdg04ed.webp", "模型与模式选择", ["process"]],
       ["image-20260802095037-ltvoeks.webp", "系统设置中的 S3 备份入口", ["settings"]],
@@ -30,6 +31,7 @@ const models = [
     id: 2,
     name: "Qwen3.8-Max-Preview",
     tool: "QoderCN IDE Quest",
+    supportsMultimodal: true,
     images: [
       ["image-20260801230701-fvwhgxb.webp", "1M 上下文与模型模式选择", ["process"]],
       ["image-20260802102318-b3vam73.webp", "系统设置中的数据备份入口", ["settings"]],
@@ -49,6 +51,7 @@ const models = [
     id: 3,
     name: "LongCat-2.0",
     tool: "CatPaw",
+    supportsMultimodal: false,
     images: [
       ["image-20260801230716-nekt5zt.webp", "模型选择界面", ["process"]],
       ["image-20260801235849-ejyt7r1.webp", "任务完成与后续确认", ["process"]],
@@ -69,6 +72,7 @@ const models = [
     id: 4,
     name: "Hy3",
     tool: "WorkBuddy",
+    supportsMultimodal: true,
     images: [
       ["image-20260801230712-zy199ri.webp", "Max 模式与模型选择", ["process"]],
       ["image-20260802000001-749b4nc.webp", "任务完成耗时", ["process"]],
@@ -95,6 +99,7 @@ const models = [
     id: 5,
     name: "DeepSeek V4 Flash 0731",
     tool: "Claude Code",
+    supportsMultimodal: false,
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -123,6 +128,7 @@ const models = [
     id: 6,
     name: "DeepSeek V4 Pro Preview",
     tool: "Claude Code",
+    supportsMultimodal: false,
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -145,36 +151,42 @@ const models = [
     id: 7,
     name: "GPT-5.6 Luna Max",
     tool: "Codex CLI",
+    supportsMultimodal: true,
     images: [],
   },
   {
     id: 8,
     name: "Composer 2.5",
     tool: "Cursor IDE",
+    supportsMultimodal: true,
     images: [],
   },
   {
     id: 9,
     name: "Grok 4.5 High",
     tool: "Cursor Agent View",
+    supportsMultimodal: true,
     images: [],
   },
   {
     id: 10,
     name: "Qwen3.8-Max",
     tool: "QoderCN IDE Quest",
+    supportsMultimodal: true,
     images: [],
   },
   {
     id: 11,
     name: "GLM-5.2 Max",
     tool: "Cursor Agent View",
+    supportsMultimodal: false,
     images: [],
   },
   {
     id: 12,
     name: "Kimi K3 Max",
     tool: "Kimi Code",
+    supportsMultimodal: true,
     images: [],
   },
 ];
@@ -1040,6 +1052,33 @@ function getModelToolName(entry) {
   return entry.agent?.software || entry.model.tool;
 }
 
+function createMultimodalIcon(model) {
+  if (!model?.supportsMultimodal) {
+    return null;
+  }
+  const icon = document.createElement("span");
+  icon.className = "model-multimodal-icon";
+  icon.setAttribute("role", "img");
+  icon.setAttribute("aria-label", "支持多模态");
+  icon.title = "支持图片输入（多模态）";
+  icon.innerHTML = `
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <rect x="1.5" y="2.5" width="13" height="11" rx="2"></rect>
+      <circle cx="5" cy="6" r="1"></circle>
+      <path d="m2.7 11 3.1-3.1 2.3 2.2 1.7-1.7 3.5 3.4"></path>
+    </svg>
+  `;
+  return icon;
+}
+
+function appendModelName(container, model, fallbackName) {
+  container.append(document.createTextNode(model?.name ?? fallbackName));
+  const multimodalIcon = createMultimodalIcon(model);
+  if (multimodalIcon) {
+    container.append(multimodalIcon);
+  }
+}
+
 function createResultBranchLink(entry, className = "") {
   if (!entry.resultBranchUrl) {
     return null;
@@ -1103,7 +1142,7 @@ function createModelOverallRow(entry) {
   row.type = "button";
   row.className = "model-overall-row";
   row.style.setProperty("--item-index", String(Math.max(0, (entry.rank ?? 1) - 1)));
-  row.setAttribute("aria-label", `查看 ${entry.model.name} 已测试的需求`);
+  row.setAttribute("aria-label", `查看 ${entry.model.name}${entry.model.supportsMultimodal ? "（支持多模态）" : ""} 已测试的需求`);
   row.addEventListener("click", () => openModelOverallDetails(entry));
 
   const identity = document.createElement("div");
@@ -1113,7 +1152,8 @@ function createModelOverallRow(entry) {
   rank.textContent = entry.overallMetrics ? `第 ${String(entry.rank).padStart(2, "0")} 名` : "未纳入测试";
   const name = document.createElement("strong");
   name.className = "model-overall-row__name";
-  name.append(document.createTextNode(`${entry.model.name} · `));
+  appendModelName(name, entry.model, entry.modelId);
+  name.append(document.createTextNode(" · "));
   const tool = document.createElement("span");
   tool.className = "model-overall-row__tool";
   tool.textContent = getModelToolName(entry);
@@ -1813,7 +1853,7 @@ function createLeaderboardSummaryCard(entry) {
 
   const name = document.createElement("h3");
   name.className = "leaderboard-card__name";
-  name.append(document.createTextNode(entry.model?.name ?? entry.modelId));
+  appendModelName(name, entry.model, entry.modelId);
   const branchCell = document.createElement("div");
   branchCell.className = "leaderboard-card__branch";
   const branchLink = createResultBranchLink(entry);
@@ -2003,8 +2043,8 @@ function renderLeaderboard() {
     rank.textContent = `第 ${entry.rank} 名`;
     const name = document.createElement("span");
     name.className = "leaderboard-model-header__name";
-    name.textContent = entry.model?.name ?? entry.modelId;
-    name.title = name.textContent;
+    appendModelName(name, entry.model, entry.modelId);
+    name.title = entry.model?.name ?? String(entry.modelId);
     const rating = ratingState.values.get(entry.modelId);
     const ratingRow = document.createElement("div");
     ratingRow.className = "leaderboard-model-header__rating";
