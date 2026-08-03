@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -9,7 +9,10 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9
       ]
     }
   ]

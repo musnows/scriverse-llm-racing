@@ -188,6 +188,61 @@
         "TC-20": "原模型没有提交需求实现，后续 commit b5717f4 由 Codex 补交，且全量测试仍未通过。",
         "TC-21": "S3 备份只上传数据库和可选图片，没有读取或上传 master.key；新环境恢复数据库后，已保存的 S3 和 AI 凭证无法解密。"
       }
+    },
+    {
+      "modelId": 7,
+      "durationSeconds": null,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "手动备份失败会显示 Toast，但定时任务失败只记录服务端日志和 lastRun，前端没有轮询、SSE 或其他主动通知通道。",
+        "TC-08": "分页已经实现，但留存筛选仅检查 db/ 前缀和 .db 后缀，可能误删嵌套子目录或不符合 snapshot-时间戳.db 命名规则的对象。",
+        "TC-18": "S3 错误正文的脱敏只覆盖少量 XML 标签和标准 AKIA 格式，当前目标的非标准 AK/SK 仍可能进入错误日志。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
+    },
+    {
+      "modelId": 8,
+      "durationSeconds": null,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Cursor IDE",
+        "version": "3.14.7",
+        "context": "256K"
+      },
+      "failures": {
+        "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 结果被 Database.run 丢弃，随后直接复制活动主库；活跃读事务阻塞 checkpoint 时，副本会缺少 WAL 中已经提交的数据。",
+        "TC-04": "本次 package-lock 更新删除了 Sharp WASM 所需的顶层 @emnapi/runtime 和 @emnapi/core 条目，Docker 跨平台依赖清单测试失败。",
+        "TC-07": "多目标失败后能够继续执行，但日志只保留少数 S3 异常字段，没有完整记录服务端返回结果。",
+        "TC-08": "分页已经实现，但仅按对象 basename 匹配快照名，可能删除 db/ 下其他嵌套子目录中的同名对象。",
+        "TC-14": "S3 对话框继承 editor-dialog 双列网格，但新增区块没有跨列，桌面布局中的设置、说明和目标列表会被割裂到不同列。",
+        "TC-15": "HTML 已更新 app.js 和 styles.css 缓存参数，但四项系统测试仍断言旧版本并失败。",
+        "TC-16": "凭证解密等前置异常发生在逐目标 catch 之前且没有 finally 复位 running；定时调用也没有 rejection handler，可能永久停止后续周期或产生未处理拒绝。",
+        "TC-18": "失败日志会记录 accessKeyHint 中的真实 AK 后四位，服务端消息进入 Toast 前也没有按当前目标 AK/SK 可靠脱敏。",
+        "TC-20": "S3 实现及测试全部处于未提交状态，且全量测试未通过。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
+    },
+    {
+      "modelId": 9,
+      "durationSeconds": null,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.14.7",
+        "context": "256K"
+      },
+      "failures": {
+        "TC-07": "单个目标失败后会立即抛错并中止目标循环，后续启用目标不再执行；S3 请求也没有超时或 AbortSignal。",
+        "TC-08": "分页已经实现，但清理 scriverse/db/ 时没有严格校验数据库快照命名，其他对象和嵌套子目录对象可能被删除。",
+        "TC-13": "数据库快照名称只精确到秒，同一秒内连续备份会生成相同对象 key 并覆盖历史快照。",
+        "TC-18": "S3 原始错误正文未经当前目标 AK/SK 脱敏便进入日志和 API 错误详情，服务端回显凭证时会造成泄露。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
     }
   ],
   "agents": [
@@ -196,10 +251,10 @@
     { "modelId": 2, "modelName": "Qwen3.8-Max-Preview", "software": "QoderCN IDE Quest", "version": "1.9.1", "context": "1M", "status": "已测试" },
     { "modelId": 1, "modelName": "Doubao-Seed-2.1-Turbo", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
     { "modelName": "Doubao-Seed-2.1-Pro", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂不测试" },
-    { "modelName": "Grok 4.5 High", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
-    { "modelName": "Composer 2.5", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "暂无测试数据" },
+    { "modelId": 9, "modelName": "Grok 4.5 High", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "已测试" },
+    { "modelId": 8, "modelName": "Composer 2.5", "software": "Cursor IDE", "version": "3.14.7", "context": "256K", "status": "已测试" },
     { "modelName": "GPT-5.6 Sol Max", "software": "Codex Desktop", "version": "26.727.51351", "context": "373K（设置里手动开）", "status": "暂无测试数据" },
-    { "modelName": "GPT-5.6 Luna Max", "software": "Codex Desktop", "version": "26.727.51351", "context": "373K", "status": "暂无测试数据" },
+    { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },

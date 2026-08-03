@@ -141,6 +141,24 @@ const models = [
       ["image-20260803080224-c7e2z2a.webp", "定时备份触发后的失败状态", ["schedule", "status"]],
     ],
   },
+  {
+    id: 7,
+    name: "GPT-5.6 Luna Max",
+    tool: "Codex CLI",
+    images: [],
+  },
+  {
+    id: 8,
+    name: "Composer 2.5",
+    tool: "Cursor IDE",
+    images: [],
+  },
+  {
+    id: 9,
+    name: "Grok 4.5 High",
+    tool: "Cursor Agent View",
+    images: [],
+  },
 ];
 
 const features = [
@@ -174,7 +192,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=27";
+const leaderboardDataUrl = "/source/leaderboard.json?v=28";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
