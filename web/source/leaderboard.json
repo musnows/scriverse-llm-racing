@@ -246,12 +246,50 @@
         "TC-18": "S3 原始错误正文未经当前目标 AK/SK 脱敏便进入日志和 API 错误详情，服务端回显凭证时会造成泄露。",
         "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
       }
+    },
+    {
+      "modelId": 10,
+      "durationSeconds": 1963,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "QoderCN IDE Quest",
+        "version": "1.10.0",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-03": "支持多个目标的新增、修改和删除，但数据库、API 与前端都没有目标级启用或停用能力。",
+        "TC-07": "目标无法停用，S3 请求也没有超时或 AbortSignal；挂起目标会阻塞后续目标，且任一目标凭证在循环前解密失败也会中止整次备份。",
+        "TC-08": "分页已经实现，但留存清理会处理 db/ 前缀下的全部对象，没有严格限制为本功能生成的数据库快照名称。",
+        "TC-18": "S3 服务端错误消息和原始响应正文未经当前目标 AK/SK 脱敏便进入日志、最近失败状态、API 响应和 Toast，服务端回显凭证时会造成泄露。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
+    },
+    {
+      "modelId": 11,
+      "durationSeconds": 2145,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.14.7",
+        "context": "200K"
+      },
+      "failures": {
+        "TC-06": "后端能够加密并保留 AK/SK，但编辑对话框清空凭证后仍把两个输入设为 required，浏览器会阻止只修改其他字段并保留旧凭证。",
+        "TC-07": "S3 请求没有超时或 AbortSignal，挂起目标会永久阻塞后续目标；定时任务失败也只有服务端日志，没有通道让前端显示明确 Toast。",
+        "TC-08": "分页已经实现，但清理只按 db/ 前缀和 .db 后缀筛选，可能删除嵌套目录或不符合快照命名规则的其他数据库对象。",
+        "TC-13": "数据库对象名称中的时间戳只精确到秒，同一秒内连续备份会使用相同 key 并覆盖历史快照。",
+        "TC-16": "runBackup 设置运行锁后没有 finally；未捕获异常或挂起的 S3 请求会让运行状态永久锁死，导致后续周期无法继续。",
+        "TC-17": "图片 HEAD 检查异常虽然会被捕获，但目标最终仍按数据库上传结果标记为成功，前端可能 Toast 全部成功，未把本次同步判定为失败。",
+        "TC-18": "S3 原始响应正文会直接写入日志，通用脱敏无法保证移除兼容服务回显的当前目标 AK/SK。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
     }
   ],
   "agents": [
     { "modelId": 3, "modelName": "LongCat-2.0", "software": "CatPaw", "version": "2026.0729.1946", "context": "1M", "status": "已测试" },
     { "modelId": 4, "modelName": "Hy3", "software": "WorkBuddy", "version": "5.3.8", "context": "192K", "status": "已测试" },
     { "modelId": 2, "modelName": "Qwen3.8-Max-Preview", "software": "QoderCN IDE Quest", "version": "1.9.1", "context": "1M", "status": "已测试" },
+    { "modelId": 10, "modelName": "Qwen3.8-Max", "software": "QoderCN IDE Quest", "version": "1.10.0", "context": "1M", "status": "已测试" },
     { "modelId": 1, "modelName": "Doubao-Seed-2.1-Turbo", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
     { "modelName": "Doubao-Seed-2.1-Pro", "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂不测试" },
     { "modelId": 9, "modelName": "Grok 4.5 High", "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "已测试" },
@@ -260,7 +298,7 @@
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
-    { "modelName": "GLM-5.2", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
+    { "modelId": 11, "modelName": "GLM-5.2 Max", "software": "Cursor Agent View", "version": "3.14.7", "context": "200K", "status": "已测试" },
     { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
     { "modelName": "MiniMax-M3", "software": "", "version": "", "context": "1M", "status": "未参赛" }
   ]
