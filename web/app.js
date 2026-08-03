@@ -1292,8 +1292,11 @@ function renderFeatureView() {
   elements.featureCount.textContent = `${getFeatureCount(feature.id)} 张相关截图`;
   elements.featureComparison.replaceChildren();
 
-  for (const model of models) {
-    elements.featureComparison.append(createComparisonColumn(model, getFeatureItems(feature.id, model.id)));
+  const modelEntries = models
+    .map((model) => ({ model, items: getFeatureItems(feature.id, model.id) }))
+    .sort((left, right) => Number(right.items.length > 0) - Number(left.items.length > 0));
+  for (const { model, items } of modelEntries) {
+    elements.featureComparison.append(createComparisonColumn(model, items));
   }
 }
 
