@@ -1425,7 +1425,7 @@ function renderModelView() {
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
   elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
-  elements.modelTokenUsage.textContent = formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage);
+  elements.modelTokenUsage.textContent = `token usage：${formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage)}`;
   renderModelRating();
   loadRatingsForRequirement();
   const showScreenshots = state.modelContentTab === "screenshots";
