@@ -486,7 +486,8 @@ function createModelOverallChartExportSvg() {
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
-        .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 9px; }
+        .model-overall-chart__label-connector { stroke: #686b66; stroke-width: 0.75; stroke-dasharray: 2 2; opacity: 0.7; }
+        .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 8px; }
       `,
     ),
     exportSvg.firstChild,
@@ -568,6 +569,125 @@ function createModelOverallChartData(ranking) {
       ...entry,
       color: chartPointColors[index % chartPointColors.length],
     }));
+}
+
+function chartBoxesOverlap(left, right, padding = 2) {
+  return left.left < right.right + padding
+    && left.right > right.left - padding
+    && left.top < right.bottom + padding
+    && left.bottom > right.top - padding;
+}
+
+function getChartLabelWidth(text, fontSize) {
+  return Math.max(18, [...text].reduce(
+    (width, character) => width + (character.codePointAt(0) > 255 ? fontSize : fontSize * 0.6),
+    0,
+  ));
+}
+
+function createChartLabelBox(x, y, width, anchor, fontSize) {
+  const left = anchor === "middle" ? x - width / 2 : anchor === "end" ? x - width : x;
+  return {
+    left,
+    right: left + width,
+    top: y - fontSize - 1,
+    bottom: y + 2,
+  };
+}
+
+function createChartLabelConnector(pointX, pointY, box) {
+  const endX = Math.min(Math.max(pointX, box.left), box.right);
+  const endY = Math.min(Math.max(pointY, box.top), box.bottom);
+  const deltaX = endX - pointX;
+  const deltaY = endY - pointY;
+  const distance = Math.hypot(deltaX, deltaY);
+  if (distance <= 18) {
+    return null;
+  }
+  const startRatio = 7 / distance;
+  return {
+    x1: pointX + deltaX * startRatio,
+    y1: pointY + deltaY * startRatio,
+    x2: endX,
+    y2: endY,
+  };
+}
+
+function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bounds) {
+  const fontSize = 8;
+  const occupiedBoxes = [];
+  const pointBoxes = chartData.map((item) => {
+    const pointX = xPosition(item.weightedAverageDurationSeconds);
+    const pointY = yPosition(item.weightedPassRate);
+    return {
+      left: pointX - 7,
+      right: pointX + 7,
+      top: pointY - 7,
+      bottom: pointY + 7,
+    };
+  });
+
+  return chartData.map((item) => {
+    const pointX = xPosition(item.weightedAverageDurationSeconds);
+    const pointY = yPosition(item.weightedPassRate);
+    const labelWidth = getChartLabelWidth(item.entry.model.name, fontSize);
+    const candidates = [];
+    [0, 12, 24, 36, 52, 68].forEach((extraDistance) => {
+      const diagonalOffset = Math.round(extraDistance * 0.4);
+      candidates.push(
+        { dx: 0, dy: 15 + extraDistance, anchor: "middle" },
+        { dx: 0, dy: -10 - extraDistance, anchor: "middle" },
+        { dx: 10 + extraDistance, dy: 3, anchor: "start" },
+        { dx: -10 - extraDistance, dy: 3, anchor: "end" },
+        { dx: 10 + extraDistance, dy: 15 + diagonalOffset, anchor: "start" },
+        { dx: -10 - extraDistance, dy: 15 + diagonalOffset, anchor: "end" },
+        { dx: 10 + extraDistance, dy: -10 - diagonalOffset, anchor: "start" },
+        { dx: -10 - extraDistance, dy: -10 - diagonalOffset, anchor: "end" },
+      );
+    });
+
+    let selectedCandidate = null;
+    candidates.forEach((candidate) => {
+      const x = pointX + candidate.dx;
+      const y = pointY + candidate.dy;
+      const box = createChartLabelBox(x, y, labelWidth, candidate.anchor, fontSize);
+      const isWithinBounds = box.left >= bounds.left
+        && box.right <= bounds.right
+        && box.top >= bounds.top
+        && box.bottom <= bounds.bottom;
+      if (!isWithinBounds) {
+        return;
+      }
+      const pointCollisionCount = pointBoxes.filter((pointBox) => chartBoxesOverlap(box, pointBox)).length;
+      const labelCollisionCount = occupiedBoxes.filter((occupiedBox) => chartBoxesOverlap(box, occupiedBox)).length;
+      const score = pointCollisionCount * 10000
+        + labelCollisionCount * 20000
+        + Math.hypot(candidate.dx, candidate.dy);
+      if (!selectedCandidate || score < selectedCandidate.score) {
+        selectedCandidate = { ...candidate, x, y, box, score };
+      }
+    });
+
+    if (!selectedCandidate) {
+      const x = Math.min(Math.max(pointX, bounds.left + labelWidth / 2), bounds.right - labelWidth / 2);
+      const y = Math.min(Math.max(pointY + 15, bounds.top + fontSize + 1), bounds.bottom - 2);
+      selectedCandidate = {
+        x,
+        y,
+        anchor: "middle",
+        box: createChartLabelBox(x, y, labelWidth, "middle", fontSize),
+      };
+    }
+
+    occupiedBoxes.push(selectedCandidate.box);
+    return {
+      item,
+      x: selectedCandidate.x,
+      y: selectedCandidate.y,
+      anchor: selectedCandidate.anchor,
+      connector: createChartLabelConnector(pointX, pointY, selectedCandidate.box),
+    };
+  });
 }
 
 function bindModelOverallChartPoint(point, entry, beforeOpen) {
@@ -682,6 +802,23 @@ function renderModelOverallChart(ranking = []) {
   );
   elements.modelOverallChart.append(labels);
 
+  const pointLabelLayout = createModelOverallChartLabelLayout(chartData, xPosition, yPosition, {
+    left: margin.left + 4,
+    right: margin.left + plotWidth - 4,
+    top: margin.top + 4,
+    bottom: margin.top + plotHeight - 4,
+  });
+  const labelConnectors = createChartSvgElement("g", { class: "model-overall-chart__label-connectors" });
+  pointLabelLayout.forEach((label) => {
+    if (label.connector) {
+      labelConnectors.append(createChartSvgElement("line", {
+        class: "model-overall-chart__label-connector",
+        ...label.connector,
+      }));
+    }
+  });
+  elements.modelOverallChart.append(labelConnectors);
+
   const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
   chartData.forEach((item) => {
     const point = createChartSvgElement("circle", {
@@ -703,18 +840,16 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.append(points);
 
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
-  chartData.forEach((item) => {
-    const pointY = yPosition(item.weightedPassRate);
-    const labelY = Math.min(pointY + 14, margin.top + plotHeight + 10);
+  pointLabelLayout.forEach((label) => {
     pointLabels.append(createChartSvgElement(
       "text",
       {
         class: "model-overall-chart__point-label",
-        x: xPosition(item.weightedAverageDurationSeconds),
-        y: labelY,
-        "text-anchor": "middle",
+        x: label.x,
+        y: label.y,
+        "text-anchor": label.anchor,
       },
-      item.entry.model.name,
+      label.item.entry.model.name,
     ));
   });
   elements.modelOverallChart.append(pointLabels);
