@@ -385,6 +385,98 @@ function formatChartAxisDuration(durationSeconds) {
   return `${Math.round(Number(durationSeconds) / 60)} min`;
 }
 
+function createModelOverallChartExportSvg() {
+  const svg = elements.modelOverallChart;
+  const viewBox = svg?.viewBox?.baseVal;
+  if (!svg || !viewBox?.width || !viewBox?.height) {
+    return null;
+  }
+
+  const exportSvg = svg.cloneNode(true);
+  exportSvg.setAttribute("xmlns", chartSvgNamespace);
+  exportSvg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+  exportSvg.setAttribute("width", String(viewBox.width));
+  exportSvg.setAttribute("height", String(viewBox.height));
+  exportSvg.insertBefore(
+    createChartSvgElement("rect", {
+      x: 0,
+      y: 0,
+      width: viewBox.width,
+      height: viewBox.height,
+      fill: "#111210",
+    }),
+    exportSvg.firstChild,
+  );
+  exportSvg.insertBefore(
+    createChartSvgElement(
+      "style",
+      {},
+      `
+        .model-overall-chart__grid line { stroke: #292b28; stroke-width: 1; stroke-dasharray: 3 6; }
+        .model-overall-chart__axes line { stroke: #686b66; stroke-width: 1.2; }
+        .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
+        .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
+        .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
+        .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 9px; }
+      `,
+    ),
+    exportSvg.firstChild,
+  );
+  return { svg: exportSvg, width: viewBox.width, height: viewBox.height };
+}
+
+function downloadModelOverallChartPng() {
+  const exportData = createModelOverallChartExportSvg();
+  if (!exportData) {
+    return;
+  }
+
+  const serializer = new XMLSerializer();
+  const svgBlob = new Blob([serializer.serializeToString(exportData.svg)], {
+    type: "image/svg+xml;charset=utf-8",
+  });
+  const svgUrl = URL.createObjectURL(svgBlob);
+  const image = new Image();
+  image.onload = () => {
+    URL.revokeObjectURL(svgUrl);
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = exportData.width * scale;
+    canvas.height = exportData.height * scale;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      showToast("PNG 生成失败", "error");
+      return;
+    }
+    context.fillStyle = "#111210";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((pngBlob) => {
+      if (!pngBlob) {
+        showToast("PNG 生成失败", "error");
+        return;
+      }
+      const downloadUrl = URL.createObjectURL(pngBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "model-overall-scatter.png";
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      window.setTimeout(() => {
+        link.remove();
+        URL.revokeObjectURL(downloadUrl);
+      }, 1000);
+      showToast("散点图 PNG 已下载", "success");
+    }, "image/png");
+  };
+  image.onerror = () => {
+    URL.revokeObjectURL(svgUrl);
+    showToast("PNG 生成失败", "error");
+  };
+  image.src = svgUrl;
+}
+
 function createModelOverallChartData(ranking) {
   return ranking
     .map((entry, index) => {
@@ -407,6 +499,7 @@ function createModelOverallChartData(ranking) {
 
 function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.replaceChildren();
+  elements.modelOverallChartDownload.disabled = true;
   elements.modelOverallChartEmpty.hidden = true;
   const chartData = createModelOverallChartData(ranking);
   if (chartData.length === 0) {
@@ -512,6 +605,7 @@ function renderModelOverallChart(ranking = []) {
     ));
   });
   elements.modelOverallChart.append(pointLabels);
+  elements.modelOverallChartDownload.disabled = false;
   elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与通过率数据`;
 }
 
@@ -775,6 +869,7 @@ const elements = {
   modelOverallChart: document.getElementById("model-overall-chart"),
   modelOverallChartEmpty: document.getElementById("model-overall-chart-empty"),
   modelOverallChartNote: document.getElementById("model-overall-chart-note"),
+  modelOverallChartDownload: document.getElementById("model-overall-chart-download"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
   modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),
@@ -2080,6 +2175,7 @@ elements.testMethodTab.addEventListener("click", () => {
 });
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
+elements.modelOverallChartDownload.addEventListener("click", downloadModelOverallChartPng);
 elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
 elements.modelOverallDialog.addEventListener("click", (event) => {
   if (event.target === elements.modelOverallDialog) {
