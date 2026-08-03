@@ -340,6 +340,17 @@ function formatDurationSeconds(durationSeconds) {
   return parts.join("");
 }
 
+function formatTokenUsage(tokenUsage) {
+  if (tokenUsage === null || tokenUsage === undefined) {
+    return "未记录";
+  }
+  if (typeof tokenUsage === "number" && Number.isFinite(tokenUsage)) {
+    return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tokens`;
+  }
+  const text = String(tokenUsage).trim();
+  return text || "未记录";
+}
+
 function formatBuildUpdatedAt(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -1004,6 +1015,7 @@ const elements = {
   modelKicker: document.getElementById("model-kicker"),
   modelTitle: document.getElementById("model-title"),
   modelCount: document.getElementById("model-count"),
+  modelTokenUsage: document.getElementById("model-token-usage"),
   modelRating: document.getElementById("model-rating"),
   modelGallery: document.getElementById("model-gallery"),
   modelUnexpectedCasesView: document.getElementById("model-unexpected-cases-view"),
@@ -1407,11 +1419,13 @@ async function loadAllRatingsForRequirements(force = false) {
 
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
+  const modelEntry = getRequirementModelEntry(getCurrentRequirement(), model.id);
   renderModelTabs();
   renderModelContentTabs();
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
   elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
+  elements.modelTokenUsage.textContent = formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage);
   renderModelRating();
   loadRatingsForRequirement();
   const showScreenshots = state.modelContentTab === "screenshots";
