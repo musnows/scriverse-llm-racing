@@ -52,7 +52,8 @@
       "durationSeconds": 2698,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/hy3",
       "unexpectedCases": [
-        "有独立的文件删除用户验证，npm build 会触发这个验证，需要在设置中关闭。"
+        "有独立的文件删除用户验证，npm build 会触发这个验证，需要在设置中关闭。",
+        "二测回归还是没太顶住，只过了 8/21，得分 115/200。没过的是 TC-06、TC-07、TC-08、TC-09、TC-11、TC-12、TC-13、TC-14、TC-15、TC-16、TC-18、TC-20、TC-21；当时实现还全部没提交，所以 TC-20 也算失败。"
       ],
       "agent": {
         "software": "WorkBuddy",
