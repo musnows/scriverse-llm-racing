@@ -2437,6 +2437,20 @@ dialog[open]::backdrop {
   background: #20211f;
 }
 
+.icon-button.dialog-close-button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0;
+  place-items: center;
+}
+
+.dialog-close-button svg {
+  width: 14px;
+  height: 14px;
+}
+
 .dialog-stage {
   display: grid;
   height: calc(100% - 132px);
@@ -2850,6 +2864,17 @@ dialog[open]::backdrop {
 
   .model-overall-chart-dialog .dialog-toolbar .icon-button {
     flex: 0 0 auto;
+  }
+
+  .icon-button.dialog-close-button {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+
+  .dialog-close-button svg {
+    width: 13px;
+    height: 13px;
   }
 
   .model-overall-chart-dialog__note {

@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=92">
+    <link rel="stylesheet" href="/styles.css?v=93">
   </head>
   <body>
     <div class="app-shell">
@@ -152,7 +152,11 @@
               <p id="model-overall-dialog-model" class="dialog-model"></p>
               <h2 id="model-overall-dialog-title">已测试需求</h2>
             </div>
-            <button type="button" id="model-overall-dialog-close" class="icon-button" aria-label="关闭已测试需求">关闭</button>
+            <button type="button" id="model-overall-dialog-close" class="icon-button dialog-close-button" aria-label="关闭已测试需求" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
           </div>
           <p id="model-overall-dialog-meta" class="model-overall-dialog__meta"></p>
           <div id="model-overall-dialog-list" class="model-overall-dialog__list"></div>
@@ -165,7 +169,11 @@
               <h2 id="model-overall-chart-dialog-title">加权平均耗时与加权通过率</h2>
               <p class="model-overall-chart-dialog__note">阅读方式：越靠左上越好；短线连接模型名称与对应散点。</p>
             </div>
-            <button type="button" id="model-overall-chart-dialog-close" class="icon-button" aria-label="关闭散点图大图">关闭</button>
+            <button type="button" id="model-overall-chart-dialog-close" class="icon-button dialog-close-button" aria-label="关闭散点图大图" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
           </div>
           <div class="model-overall-chart-dialog__stage">
             <svg id="model-overall-chart-expanded" class="model-overall-chart model-overall-chart--expanded" role="img"></svg>
@@ -179,7 +187,11 @@
               <p id="leaderboard-detail-dialog-label" class="dialog-model"></p>
               <h2 id="leaderboard-detail-dialog-title"></h2>
             </div>
-            <button type="button" id="leaderboard-detail-dialog-close" class="icon-button" aria-label="关闭排行榜详情">关闭</button>
+            <button type="button" id="leaderboard-detail-dialog-close" class="icon-button dialog-close-button" aria-label="关闭排行榜详情" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
           </div>
           <div class="leaderboard-detail-dialog__body">
             <dl class="leaderboard-detail-dialog__meta">
@@ -455,7 +467,11 @@
           <p id="dialog-model" class="dialog-model"></p>
           <h2 id="dialog-title"></h2>
         </div>
-        <button type="button" id="dialog-close" class="icon-button" aria-label="关闭大图">关闭</button>
+        <button type="button" id="dialog-close" class="icon-button dialog-close-button" aria-label="关闭大图" title="关闭">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+          </svg>
+        </button>
       </div>
       <div class="dialog-stage">
         <img id="dialog-image" alt="">
