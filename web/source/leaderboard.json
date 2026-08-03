@@ -90,7 +90,9 @@
       "modelId": 3,
       "durationSeconds": 2747,
       "unexpectedCases": [
-        "首轮测试时，模型直接把修改写到了主仓库，绕过了 git-worktree 要求必须在 worktree 目录下工作的强约束。"
+        "首轮测试时，模型直接把修改写到了主仓库，绕过了 git-worktree 要求必须在 worktree 目录下工作的强约束。",
+        "长对话时 context usage 进度会锁死在 17%，无法继续更新；多个对话均出现该问题。",
+        "长对话时页面有概率无法自动滚动到底部，需要手动滚动才能看到最新内容。"
       ],
       "agent": {
         "software": "CatPaw",

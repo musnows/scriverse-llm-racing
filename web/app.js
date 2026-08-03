@@ -174,7 +174,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=23";
+const leaderboardDataUrl = "/source/leaderboard.json?v=24";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
