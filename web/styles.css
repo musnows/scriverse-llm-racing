@@ -23,6 +23,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-size: 15px;
+  animation: page-fade-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   background:
     radial-gradient(circle at 85% 0%, rgba(202, 112, 76, 0.12), transparent 29rem),
     #0f100f;
@@ -43,6 +44,93 @@ button {
 
 main {
   flex: 1;
+  view-transition-name: page-main;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes item-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+::view-transition-old(page-main) {
+  animation: page-fade-out 180ms ease both;
+}
+
+::view-transition-new(page-main) {
+  animation: page-fade-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes page-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .site-footer {
@@ -72,6 +160,10 @@ main {
   font-size: 12px;
   line-height: 1.5;
   pointer-events: none;
+}
+
+.toast:not([hidden]) {
+  animation: toast-fade-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .toast--success {
@@ -359,6 +451,20 @@ h2 {
 
 .view-panel {
   padding-top: 28px;
+}
+
+.view-panel:not([hidden]) {
+  animation: view-fade-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.requirement-list > .requirement-card,
+.model-overall-list > .model-overall-row,
+.leaderboard-summary__list > .leaderboard-card,
+.model-gallery > .screenshot-card,
+.comparison-board > .comparison-column,
+.comparison-stack > .screenshot-card {
+  animation: item-fade-up 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--item-index, 0) * 55ms);
 }
 
 .tab-strip {
@@ -1578,6 +1684,14 @@ a.requirement-meta-card__value:hover {
   background: #111210;
 }
 
+dialog[open] {
+  animation: dialog-fade-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+dialog[open]::backdrop {
+  animation: backdrop-fade-in 220ms ease both;
+}
+
 .model-overall-dialog::backdrop {
   background: rgba(0, 0, 0, 0.78);
 }
@@ -2067,6 +2181,26 @@ a.requirement-meta-card__value:hover {
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(page-main),
+  ::view-transition-new(page-main) {
+    animation: none;
+  }
 }
 
 @media (max-width: 1199px) {

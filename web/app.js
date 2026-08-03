@@ -642,6 +642,7 @@ function createModelOverallRow(entry) {
   const row = document.createElement("button");
   row.type = "button";
   row.className = "model-overall-row";
+  row.style.setProperty("--item-index", String(Math.max(0, (entry.test?.rank ?? 1) - 1)));
   row.setAttribute("aria-label", `查看 ${entry.model.name} 已测试的需求`);
   row.addEventListener("click", () => openModelOverallDetails(entry));
 
@@ -756,6 +757,8 @@ const state = {
   dialogIndex: 0,
 };
 
+let activeViewTransition = null;
+
 const elements = {
   viewButtons: [...document.querySelectorAll("[data-view]")],
   modelOverallButton: document.querySelector('[data-view="model-overall"]'),
@@ -865,6 +868,7 @@ function showToast(message, tone = "info") {
 function createScreenshotCard(image, items, index, compact = false) {
   const article = document.createElement("article");
   article.className = "screenshot-card";
+  article.style.setProperty("--item-index", String(index));
 
   const meta = document.createElement("div");
   meta.className = "screenshot-meta";
@@ -1253,9 +1257,10 @@ function renderFeatureTabs() {
   }
 }
 
-function createComparisonColumn(model, items) {
+function createComparisonColumn(model, items, index = 0) {
   const column = document.createElement("section");
   column.className = "comparison-column";
+  column.style.setProperty("--item-index", String(index));
 
   const header = document.createElement("header");
   header.className = "comparison-column__header";
@@ -1295,14 +1300,15 @@ function renderFeatureView() {
   const modelEntries = models
     .map((model) => ({ model, items: getFeatureItems(feature.id, model.id) }))
     .sort((left, right) => Number(right.items.length > 0) - Number(left.items.length > 0));
-  for (const { model, items } of modelEntries) {
-    elements.featureComparison.append(createComparisonColumn(model, items));
-  }
+  modelEntries.forEach(({ model, items }, index) => {
+    elements.featureComparison.append(createComparisonColumn(model, items, index));
+  });
 }
 
 function createLeaderboardSummaryCard(entry) {
   const card = document.createElement("article");
   card.className = "leaderboard-card";
+  card.style.setProperty("--item-index", String(Math.max(0, entry.rank - 1)));
 
   const rank = document.createElement("p");
   rank.className = "leaderboard-card__rank";
@@ -1558,10 +1564,11 @@ function getRequirementAverageScore(requirement) {
   return null;
 }
 
-function createRequirementCard(requirement) {
+function createRequirementCard(requirement, index = 0) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "requirement-card";
+  card.style.setProperty("--item-index", String(index));
   card.addEventListener("click", () => {
     state.requirementId = requirement.id;
     renderGlobalRequirementSelect();
@@ -1601,9 +1608,9 @@ function renderHomeView() {
   }
 
   const requirements = leaderboardData.requirements ?? [];
-  for (const requirement of requirements) {
-    elements.requirementList.append(createRequirementCard(requirement));
-  }
+  requirements.forEach((requirement, index) => {
+    elements.requirementList.append(createRequirementCard(requirement, index));
+  });
 
   if (requirements.length > 1) {
     const scores = requirements.map(getRequirementAverageScore).filter((score) => score !== null);
@@ -1899,52 +1906,76 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
     view = "home";
   }
   state.view = view;
-  const isHome = view === "home";
-  const isModelOverall = view === "model-overall";
-  const isModel = view === "model";
-  const isFeature = view === "feature";
-  const isRequirements = view === "requirements";
-  const isMethodView = isRequirements && state.requirementsTab === "method";
-  elements.homeView.hidden = !isHome;
-  elements.modelOverallView.hidden = !isModelOverall;
-  elements.modelView.hidden = !isModel;
-  elements.featureView.hidden = !isFeature;
-  elements.leaderboardView.hidden = view !== "leaderboard";
-  elements.requirementsView.hidden = !isRequirements;
-  elements.pageHeaderControls.hidden = isHome;
-  elements.homeHeaderEntries.hidden = !isHome;
-  elements.homeModelOverallEntry.hidden = !isHome;
-  elements.globalRequirementSwitch.hidden = isModelOverall || isMethodView;
-  elements.viewSwitch.hidden = isMethodView;
-  elements.modelOverallButton.hidden = Boolean(state.requirementId);
-  elements.backHome.hidden = isHome;
-  const backHomeLabel = isModelOverall ? "返回主页" : "返回需求列表";
-  elements.backHome.setAttribute("aria-label", backHomeLabel);
-  elements.backHome.title = backHomeLabel;
-  elements.viewButtons.forEach((button) => {
-    button.hidden = isMethodView
-      || (isModelOverall && button.dataset.view !== "model-overall")
-      || (button.dataset.view === "model-overall" && Boolean(state.requirementId));
-    button.setAttribute("aria-selected", String(button.dataset.view === view));
-  });
-  if (isHome) {
-    renderHomeView();
-  } else if (isModelOverall) {
-    renderModelOverall();
-    loadAllRatingsForRequirements();
-  } else if (isModel) {
-    renderModelView();
-  } else if (isFeature) {
-    renderFeatureView();
-  } else if (isRequirements) {
-    renderRequirementsView();
-  } else {
-    renderLeaderboard();
-    loadRatingsForRequirement();
+  const renderView = () => {
+    const isHome = view === "home";
+    const isModelOverall = view === "model-overall";
+    const isModel = view === "model";
+    const isFeature = view === "feature";
+    const isRequirements = view === "requirements";
+    const isMethodView = isRequirements && state.requirementsTab === "method";
+    elements.homeView.hidden = !isHome;
+    elements.modelOverallView.hidden = !isModelOverall;
+    elements.modelView.hidden = !isModel;
+    elements.featureView.hidden = !isFeature;
+    elements.leaderboardView.hidden = view !== "leaderboard";
+    elements.requirementsView.hidden = !isRequirements;
+    elements.pageHeaderControls.hidden = isHome;
+    elements.homeHeaderEntries.hidden = !isHome;
+    elements.homeModelOverallEntry.hidden = !isHome;
+    elements.globalRequirementSwitch.hidden = isModelOverall || isMethodView;
+    elements.viewSwitch.hidden = isMethodView;
+    elements.modelOverallButton.hidden = Boolean(state.requirementId);
+    elements.backHome.hidden = isHome;
+    const backHomeLabel = isModelOverall ? "返回主页" : "返回需求列表";
+    elements.backHome.setAttribute("aria-label", backHomeLabel);
+    elements.backHome.title = backHomeLabel;
+    elements.viewButtons.forEach((button) => {
+      button.hidden = isMethodView
+        || (isModelOverall && button.dataset.view !== "model-overall")
+        || (button.dataset.view === "model-overall" && Boolean(state.requirementId));
+      button.setAttribute("aria-selected", String(button.dataset.view === view));
+    });
+    if (isHome) {
+      renderHomeView();
+    } else if (isModelOverall) {
+      renderModelOverall();
+      loadAllRatingsForRequirements();
+    } else if (isModel) {
+      renderModelView();
+    } else if (isFeature) {
+      renderFeatureView();
+    } else if (isRequirements) {
+      renderRequirementsView();
+    } else {
+      renderLeaderboard();
+      loadRatingsForRequirement();
+    }
+    if (updateRoute) {
+      updateBrowserRoute({ replace: replaceRoute });
+    }
+  };
+
+  if (typeof document.startViewTransition === "function"
+    && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    activeViewTransition?.skipTransition();
+    const transition = document.startViewTransition(renderView);
+    activeViewTransition = transition;
+    transition.finished.then(
+      () => {
+        if (activeViewTransition === transition) {
+          activeViewTransition = null;
+        }
+      },
+      () => {
+        if (activeViewTransition === transition) {
+          activeViewTransition = null;
+        }
+      },
+    );
+    return;
   }
-  if (updateRoute) {
-    updateBrowserRoute({ replace: replaceRoute });
-  }
+
+  renderView();
 }
 
 function openDialog(items, index) {
