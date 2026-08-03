@@ -303,12 +303,9 @@ function getRankingData() {
     })
     .sort((left, right) => {
       const scoreDifference = right.score - left.score;
-      const weightedPassRateDifference = (right.weightedPassRate ?? -Infinity)
-        - (left.weightedPassRate ?? -Infinity);
       const durationDifference = getDurationSortValue(left.durationSeconds)
         - getDurationSortValue(right.durationSeconds);
       return scoreDifference
-        || weightedPassRateDifference
         || durationDifference
         || right.passCount - left.passCount
         || String(left.model?.name ?? left.modelId).localeCompare(String(right.model?.name ?? right.modelId));
@@ -370,12 +367,9 @@ function getOverallRatingData() {
   ranking.sort((left, right) => {
     const weightedAverageScoreDifference = (right.overallMetrics?.score ?? -Infinity)
       - (left.overallMetrics?.score ?? -Infinity);
-    const weightedPassRateDifference = (right.overallMetrics?.weightedPassRate ?? -Infinity)
-      - (left.overallMetrics?.weightedPassRate ?? -Infinity);
     const durationDifference = getDurationSortValue(left.weightedAverageDurationSeconds)
       - getDurationSortValue(right.weightedAverageDurationSeconds);
     return weightedAverageScoreDifference
-      || weightedPassRateDifference
       || durationDifference
       || left.model.name.localeCompare(right.model.name);
   });
