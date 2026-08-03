@@ -1752,6 +1752,17 @@ a.requirement-meta-card__value:hover {
   background: rgba(0, 0, 0, 0.82);
 }
 
+.model-overall-chart-dialog .dialog-toolbar > div {
+  min-width: 0;
+}
+
+.model-overall-chart-dialog__note {
+  margin: 5px 0 0;
+  color: #969791;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .model-overall-chart-dialog__stage {
   display: grid;
   min-height: 0;
@@ -2820,15 +2831,38 @@ dialog[open]::backdrop {
 
   .model-overall-chart-dialog {
     width: 100vw;
+    max-width: 100vw;
     height: 100vh;
-    max-height: none;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    margin: 0;
+    inset: 0;
     border: 0;
     border-radius: 0;
   }
 
+  .model-overall-chart-dialog .dialog-toolbar {
+    gap: 12px;
+    padding: 12px 14px;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  .model-overall-chart-dialog .dialog-toolbar .icon-button {
+    flex: 0 0 auto;
+  }
+
+  .model-overall-chart-dialog__note {
+    font-size: 10px;
+  }
+
   .model-overall-chart-dialog__stage {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     padding: 10px;
     place-items: center start;
+    overscroll-behavior: contain;
   }
 
   .model-overall-chart--expanded {
@@ -2839,6 +2873,12 @@ dialog[open]::backdrop {
 
   .model-overall-chart--expanded .model-overall-chart__point-label {
     font-size: 6px;
+  }
+
+  .model-overall-chart-dialog__tip {
+    padding: 10px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    font-size: 10px;
   }
 
   .feature-layout {
