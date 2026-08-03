@@ -1064,10 +1064,16 @@ h2 {
 .test-method-prompt {
   max-height: 360px;
   margin: 0;
+  padding: 15px;
   overflow: auto;
+  border: 1px solid #30322f;
+  border-radius: 8px;
   color: #d6d7d1;
+  background: #10110f;
+  font-size: 12px;
   line-height: 1.7;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .test-method-score-grid {
