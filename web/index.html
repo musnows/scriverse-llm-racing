@@ -122,7 +122,14 @@
                 <p class="section-description">横轴为模型在已测试需求中的加权平均耗时，纵轴为通过用例数占全部用例的比例。点击散点可查看该模型已测试的需求。</p>
                 <p class="model-overall-chart__reading-tip">阅读方式：越靠左上越好，代表耗时更短、用例通过率更高。</p>
               </div>
-              <p id="model-overall-chart-note" class="count-label"></p>
+              <div class="model-overall-chart-heading__actions">
+                <p id="model-overall-chart-note" class="count-label"></p>
+                <button type="button" id="model-overall-chart-download" class="model-overall-chart__download" aria-label="下载模型总榜散点图 PNG" title="下载 PNG" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18h14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="model-overall-chart-layout">
               <div class="model-overall-chart-shell">

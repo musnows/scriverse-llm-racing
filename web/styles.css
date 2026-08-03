@@ -1530,6 +1530,59 @@ a.requirement-meta-card__value:hover {
   margin-bottom: 18px;
 }
 
+.model-overall-chart-heading__actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 0 0 auto;
+  gap: 12px;
+}
+
+.model-overall-chart__download {
+  display: grid;
+  width: 34px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #4a4039;
+  border-radius: 7px;
+  color: #e0a084;
+  background: #211b18;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.2;
+  transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+}
+
+.model-overall-chart__download svg {
+  width: 16px;
+  height: 16px;
+}
+
+.model-overall-chart-heading__actions .count-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.model-overall-chart__download:hover:not(:disabled) {
+  border-color: #a6644b;
+  color: #fffaf6;
+  background: #34231d;
+}
+
+.model-overall-chart__download:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
+}
+
+.model-overall-chart__download:disabled {
+  color: #777a74;
+  background: #191a18;
+  cursor: not-allowed;
+  opacity: .7;
+}
+
 .model-overall-chart-heading h3 {
   margin: 0 0 6px;
   font-size: 17px;
@@ -2569,6 +2622,11 @@ dialog[open]::backdrop {
   .model-overall-chart-heading {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .model-overall-chart-heading__actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .model-overall-chart {
