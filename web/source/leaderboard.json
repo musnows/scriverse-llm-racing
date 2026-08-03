@@ -192,6 +192,7 @@
     {
       "modelId": 7,
       "durationSeconds": null,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-luna-max",
       "unexpectedCases": [],
       "agent": {
         "software": "Codex CLI",
@@ -208,6 +209,7 @@
     {
       "modelId": 8,
       "durationSeconds": null,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/composer-2.5",
       "unexpectedCases": [],
       "agent": {
         "software": "Cursor IDE",
@@ -223,13 +225,13 @@
         "TC-15": "HTML 已更新 app.js 和 styles.css 缓存参数，但四项系统测试仍断言旧版本并失败。",
         "TC-16": "凭证解密等前置异常发生在逐目标 catch 之前且没有 finally 复位 running；定时调用也没有 rejection handler，可能永久停止后续周期或产生未处理拒绝。",
         "TC-18": "失败日志会记录 accessKeyHint 中的真实 AK 后四位，服务端消息进入 Toast 前也没有按当前目标 AK/SK 可靠脱敏。",
-        "TC-20": "S3 实现及测试全部处于未提交状态，且全量测试未通过。",
         "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
       }
     },
     {
       "modelId": 9,
       "durationSeconds": null,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high",
       "unexpectedCases": [],
       "agent": {
         "software": "Cursor Agent View",
