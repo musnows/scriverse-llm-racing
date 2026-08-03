@@ -50,6 +50,7 @@
     {
       "modelId": 4,
       "durationSeconds": 2698,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/hy3",
       "unexpectedCases": [
         "有独立的文件删除用户验证，npm build 会触发这个验证，需要在设置中关闭。"
       ],
@@ -70,6 +71,7 @@
     {
       "modelId": 2,
       "durationSeconds": 1260,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max-preview",
       "unexpectedCases": [
         "启动时就进入限流，任务很难排队成功，必须终止任务并 continue 才能继续。"
       ],
@@ -89,6 +91,7 @@
     {
       "modelId": 3,
       "durationSeconds": 2747,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/longcat-2.0",
       "unexpectedCases": [
         "首轮测试时，模型直接把修改写到了主仓库，绕过了 git-worktree 要求必须在 worktree 目录下工作的强约束。",
         "长对话时 context usage 进度会锁死在 17%，无法继续更新；多个对话均出现该问题。",
@@ -119,6 +122,7 @@
     {
       "modelId": 1,
       "durationSeconds": 1920,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/seed-2.1-turbo",
       "unexpectedCases": [
         "出现权限认证请求（rm 请求）时，页面没有自动滚动到底部，用户无法感知当前任务已经被阻塞。"
       ],
@@ -145,6 +149,7 @@
     {
       "modelId": 5,
       "durationSeconds": 4140,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-flash-0731",
       "unexpectedCases": [
         "TC-21 意外情况：密钥备份在特定配置下可能失效。使用 AI_NOVEL_MASTER_KEY 时，磁盘 master.key 可能不存在或已经过期；DATABASE_PATH 与 DATA_DIR 分离时还可能读取错误路径。密钥文件缺失会被静默跳过，导致数据库快照无法完整恢复已保存的加密凭证。"
       ],
@@ -163,6 +168,7 @@
     {
       "modelId": 6,
       "durationSeconds": 1136,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-pro-preview",
       "unexpectedCases": [],
       "agent": {
         "software": "Claude Code",

@@ -1373,9 +1373,39 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   overflow-wrap: anywhere;
   font-size: 15px;
   line-height: 1.35;
+}
+
+.result-branch-link {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 6px;
+  border: 1px solid #704330;
+  border-radius: 5px;
+  color: #e0a084;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.result-branch-link:hover {
+  border-color: #b45b3a;
+  color: #fffaf6;
+  background: #211c19;
+}
+
+.result-branch-link:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
 }
 
 .leaderboard-card__agent,
@@ -2134,6 +2164,10 @@ dialog[open]::backdrop {
   font-size: 13px;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.leaderboard-model-header__branch {
+  align-self: flex-start;
 }
 
 .leaderboard-model-header__rating {

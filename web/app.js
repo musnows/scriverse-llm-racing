@@ -174,7 +174,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=24";
+const leaderboardDataUrl = "/source/leaderboard.json?v=25";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -686,6 +686,20 @@ function formatAverageScore(score) {
 
 function getModelToolName(entry) {
   return entry.agent?.software || entry.model.tool;
+}
+
+function createResultBranchLink(entry, className = "") {
+  if (!entry.resultBranchUrl) {
+    return null;
+  }
+  const link = document.createElement("a");
+  link.className = `result-branch-link${className ? ` ${className}` : ""}`;
+  link.href = entry.resultBranchUrl;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.textContent = "查看结果分支";
+  link.setAttribute("aria-label", `在 GitHub 查看 ${entry.model?.name ?? entry.modelId} 的结果分支`);
+  return link;
 }
 
 function openModelOverallDetails(entry) {
@@ -1438,7 +1452,11 @@ function createLeaderboardSummaryCard(entry) {
 
   const name = document.createElement("h3");
   name.className = "leaderboard-card__name";
-  name.textContent = entry.model?.name ?? entry.modelId;
+  name.append(document.createTextNode(entry.model?.name ?? entry.modelId));
+  const branchLink = createResultBranchLink(entry, "leaderboard-card__branch");
+  if (branchLink) {
+    name.append(branchLink);
+  }
 
   const agent = document.createElement("p");
   agent.className = "leaderboard-card__agent";
@@ -1622,6 +1640,7 @@ function renderLeaderboard() {
     name.className = "leaderboard-model-header__name";
     name.textContent = entry.model?.name ?? entry.modelId;
     name.title = name.textContent;
+    const branchLink = createResultBranchLink(entry, "leaderboard-model-header__branch");
     const rating = ratingState.values.get(entry.modelId);
     const ratingRow = document.createElement("div");
     ratingRow.className = "leaderboard-model-header__rating";
@@ -1633,7 +1652,11 @@ function renderLeaderboard() {
       ? `${rating.averageStars.toFixed(2)} / 5 · ${rating.voteCount} 次`
       : "暂无评分";
     ratingRow.append(ratingStars, ratingText);
-    modelHeader.append(rank, name, ratingRow);
+    modelHeader.append(rank, name);
+    if (branchLink) {
+      modelHeader.append(branchLink);
+    }
+    modelHeader.append(ratingRow);
     headerRow.append(modelHeader);
   }
   elements.leaderboardHead.replaceChildren(headerRow);
