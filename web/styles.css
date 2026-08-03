@@ -1357,7 +1357,9 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-chart-shell {
+  width: min(100%, 960px);
   min-width: 0;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid #30322f;
   border-radius: 9px;
