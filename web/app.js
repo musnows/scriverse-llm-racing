@@ -263,6 +263,13 @@ function getWeightedPassRate(score, maxScore) {
   return Math.max(0, Math.min(100, (numericScore / numericMaxScore) * 100));
 }
 
+function getDurationSortValue(durationSeconds) {
+  const numericDuration = Number(durationSeconds);
+  return Number.isFinite(numericDuration) && numericDuration > 0
+    ? numericDuration
+    : Number.MAX_SAFE_INTEGER;
+}
+
 function getRankingData() {
   if (!leaderboardData) {
     return [];
@@ -294,7 +301,18 @@ function getRankingData() {
         failureCount: failedIds.size,
       };
     })
-    .sort((left, right) => right.score - left.score || right.passCount - left.passCount)
+    .sort((left, right) => {
+      const scoreDifference = right.score - left.score;
+      const weightedPassRateDifference = (right.weightedPassRate ?? -Infinity)
+        - (left.weightedPassRate ?? -Infinity);
+      const durationDifference = getDurationSortValue(left.durationSeconds)
+        - getDurationSortValue(right.durationSeconds);
+      return scoreDifference
+        || weightedPassRateDifference
+        || durationDifference
+        || right.passCount - left.passCount
+        || String(left.model?.name ?? left.modelId).localeCompare(String(right.model?.name ?? right.modelId));
+    })
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
   rankingDataCacheSource = leaderboardData;
   rankingDataCacheRequirementId = requirementId;
@@ -350,12 +368,15 @@ function getOverallRatingData() {
   }));
 
   ranking.sort((left, right) => {
+    const weightedAverageScoreDifference = (right.overallMetrics?.score ?? -Infinity)
+      - (left.overallMetrics?.score ?? -Infinity);
     const weightedPassRateDifference = (right.overallMetrics?.weightedPassRate ?? -Infinity)
       - (left.overallMetrics?.weightedPassRate ?? -Infinity);
-    const leftDuration = left.weightedAverageDurationSeconds ?? Number.MAX_SAFE_INTEGER;
-    const rightDuration = right.weightedAverageDurationSeconds ?? Number.MAX_SAFE_INTEGER;
-    return weightedPassRateDifference
-      || leftDuration - rightDuration
+    const durationDifference = getDurationSortValue(left.weightedAverageDurationSeconds)
+      - getDurationSortValue(right.weightedAverageDurationSeconds);
+    return weightedAverageScoreDifference
+      || weightedPassRateDifference
+      || durationDifference
       || left.model.name.localeCompare(right.model.name);
   });
 
