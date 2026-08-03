@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=87">
+    <link rel="stylesheet" href="/styles.css?v=88">
   </head>
   <body>
     <div class="app-shell">
@@ -354,11 +354,14 @@
               </section>
 
               <section class="test-method-block" aria-labelledby="test-method-first-prompt-title">
-                <div class="requirement-block-heading">
-                  <p class="section-kicker">第一步</p>
-                  <h3 id="test-method-first-prompt-title">首个 Prompt</h3>
+                <div class="requirement-block-heading requirement-prompt-heading">
+                  <div>
+                    <p class="section-kicker">第一步</p>
+                    <h3 id="test-method-first-prompt-title">首个 Prompt</h3>
+                  </div>
+                  <button type="button" id="copy-test-method-first-prompt" class="copy-button" aria-label="复制首个 Prompt">复制</button>
                 </div>
-                <pre class="test-method-prompt">使用 git-worktree skills 创建一个 worktree，等待我的下一步指示</pre>
+                <pre id="test-method-first-prompt" class="test-method-prompt">使用 git-worktree skills 创建一个 worktree，等待我的下一步指示</pre>
               </section>
 
               <section class="test-method-block" aria-labelledby="test-method-task-prompt-title">
@@ -448,6 +451,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=99"></script>
+    <script src="/app.js?v=100"></script>
   </body>
 </html>

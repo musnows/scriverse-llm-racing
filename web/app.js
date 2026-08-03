@@ -1028,6 +1028,8 @@ const elements = {
   testMethodTab: document.getElementById("test-method-tab"),
   requirementDetailView: document.getElementById("requirement-detail-view"),
   testMethodView: document.getElementById("test-method-view"),
+  testMethodFirstPrompt: document.getElementById("test-method-first-prompt"),
+  copyTestMethodFirstPrompt: document.getElementById("copy-test-method-first-prompt"),
   requirementTitle: document.getElementById("requirement-title"),
   requirementSummary: document.getElementById("requirement-summary"),
   requirementRepository: document.getElementById("requirement-repository"),
@@ -2291,6 +2293,29 @@ async function copyRequirementPrompt() {
   }, 1400);
 }
 
+async function copyTestMethodFirstPrompt() {
+  const prompt = elements.testMethodFirstPrompt.textContent.trim();
+  if (!prompt) {
+    return;
+  }
+
+  const button = elements.copyTestMethodFirstPrompt;
+  try {
+    await navigator.clipboard.writeText(prompt);
+    button.textContent = "已复制";
+    button.setAttribute("aria-label", "已复制首个 Prompt");
+  } catch (error) {
+    console.error("First prompt copy failed", error);
+    button.textContent = "复制失败";
+    button.setAttribute("aria-label", "复制首个 Prompt 失败");
+  }
+
+  window.setTimeout(() => {
+    button.textContent = "复制";
+    button.setAttribute("aria-label", "复制首个 Prompt");
+  }, 1400);
+}
+
 elements.viewButtons.forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
 });
@@ -2316,6 +2341,7 @@ elements.testMethodTab.addEventListener("click", () => {
 });
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
+elements.copyTestMethodFirstPrompt.addEventListener("click", copyTestMethodFirstPrompt);
 elements.modelOverallChartDownload.addEventListener("click", downloadModelOverallChartPng);
 elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
 elements.modelOverallDialog.addEventListener("click", (event) => {
