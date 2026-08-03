@@ -210,7 +210,9 @@
       "modelId": 8,
       "durationSeconds": 1104,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/composer-2.5",
-      "unexpectedCases": [],
+      "unexpectedCases": [
+        "8 月 3 日记录：测试过程中使用了 Cursor 的指定 subagent 模型能力，并调用 Claude Sonnet 5 作为外援；当前测试结果暂不可信，需要重测。"
+      ],
       "agent": {
         "software": "Cursor IDE",
         "version": "3.14.7",
@@ -233,7 +235,9 @@
       "modelId": 9,
       "durationSeconds": 2056,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high",
-      "unexpectedCases": [],
+      "unexpectedCases": [
+        "8 月 3 日记录：测试过程中使用了 Cursor 的指定 subagent 模型能力，并调用 Claude Sonnet 5 作为外援；当前测试结果暂不可信，需要重测。"
+      ],
       "agent": {
         "software": "Cursor Agent View",
         "version": "3.14.7",
@@ -251,7 +255,9 @@
       "modelId": 10,
       "durationSeconds": 1963,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max",
-      "unexpectedCases": [],
+      "unexpectedCases": [
+        "测试期间出现两次服务端错误，需要人工点击“继续”按钮（你就不能自动重试吗？）。"
+      ],
       "agent": {
         "software": "QoderCN IDE Quest",
         "version": "1.10.0",
@@ -269,7 +275,9 @@
       "modelId": 11,
       "durationSeconds": 2145,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.2-max-cursor",
-      "unexpectedCases": [],
+      "unexpectedCases": [
+        "Cursor 中仅支持 200K 上下文，测试期间发生多次上下文压缩（compact）；测试效果可能与官方 1M 上下文的 GLM-5.2 存在一定差距。"
+      ],
       "agent": {
         "software": "Cursor Agent View",
         "version": "3.14.7",
@@ -290,7 +298,9 @@
       "modelId": 12,
       "durationSeconds": 7792,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
-      "unexpectedCases": [],
+      "unexpectedCases": [
+        "首轮测试耗时 45 分钟仍未完成代码分析，并消耗了 5 小时额度的 6%；当前数据来自二次重测。"
+      ],
       "agent": {
         "software": "Kimi Code",
         "version": "0.31.1",
