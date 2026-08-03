@@ -171,6 +171,12 @@ const models = [
     tool: "Cursor Agent View",
     images: [],
   },
+  {
+    id: 12,
+    name: "Kimi K3 Max",
+    tool: "Kimi Code",
+    images: [],
+  },
 ];
 
 const features = [
@@ -204,7 +210,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=33";
+const leaderboardDataUrl = "/source/leaderboard.json?v=34";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;

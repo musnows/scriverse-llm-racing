@@ -283,6 +283,22 @@
         "TC-18": "S3 原始响应正文会直接写入日志，通用脱敏无法保证移除兼容服务回显的当前目标 AK/SK。",
         "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
       }
+    },
+    {
+      "modelId": 12,
+      "durationSeconds": 7792,
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Kimi Code",
+        "version": "0.31.1",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "多个目标使用各自独立的定时器，启动查询也没有固定排序；同一触发时间下无法保证所有启用目标始终按配置顺序执行。",
+        "TC-13": "数据库对象名称中的时间戳只精确到秒，同一目标在一秒内连续备份会使用相同 key 并覆盖历史快照。",
+        "TC-18": "S3 服务端原始响应未经当前目标 AK/SK 值级别脱敏便进入日志、last_error、执行 API 和 Toast，服务端回显凭证时会造成泄露。",
+        "TC-21": "备份流程只上传数据库快照和可选图片，并明确不包含 master.key；新环境无法解密数据库中已有的 S3 与 AI 凭证。"
+      }
     }
   ],
   "agents": [
@@ -299,7 +315,7 @@
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
-    { "modelName": "Kimi K3", "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "暂无测试数据" },
+    { "modelId": 12, "modelName": "Kimi K3 Max", "software": "Kimi Code", "version": "0.31.1", "context": "1M", "status": "已测试" },
     { "modelName": "MiniMax-M3", "software": "", "version": "", "context": "1M", "status": "未参赛" }
   ]
 }
