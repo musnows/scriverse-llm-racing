@@ -570,8 +570,57 @@ function createModelOverallChartData(ranking) {
     }));
 }
 
+function bindModelOverallChartPoint(point, entry, beforeOpen) {
+  const openDetails = () => {
+    point.blur();
+    if (beforeOpen) {
+      beforeOpen();
+    }
+    openModelOverallDetails(entry);
+  };
+  point.addEventListener("click", openDetails);
+  point.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openDetails();
+    }
+  });
+}
+
+function openModelOverallChartDialog() {
+  if (elements.modelOverallChartExpand.disabled || elements.modelOverallChartDialog.open) {
+    return;
+  }
+
+  const sourceChart = elements.modelOverallChart;
+  const expandedChart = elements.modelOverallChartExpanded;
+  expandedChart.replaceChildren(...[...sourceChart.childNodes].map((node) => node.cloneNode(true)));
+  ["viewBox", "preserveAspectRatio"].forEach((attributeName) => {
+    const attributeValue = sourceChart.getAttribute(attributeName);
+    if (attributeValue) {
+      expandedChart.setAttribute(attributeName, attributeValue);
+    }
+  });
+
+  const expandedTitle = [...expandedChart.children].find((element) => element.tagName.toLowerCase() === "title");
+  if (expandedTitle) {
+    expandedTitle.id = "model-overall-chart-expanded-title";
+    expandedChart.setAttribute("aria-labelledby", expandedTitle.id);
+  }
+
+  const rankingByModelId = new Map(getOverallRatingData().map((entry) => [String(entry.model.id), entry]));
+  expandedChart.querySelectorAll(".model-overall-chart__point").forEach((point) => {
+    const entry = rankingByModelId.get(point.dataset.modelId);
+    if (entry) {
+      bindModelOverallChartPoint(point, entry, () => elements.modelOverallChartDialog.close());
+    }
+  });
+  elements.modelOverallChartDialog.showModal();
+}
+
 function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.replaceChildren();
+  elements.modelOverallChartExpand.disabled = true;
   elements.modelOverallChartDownload.disabled = true;
   elements.modelOverallChartEmpty.hidden = true;
   const chartData = createModelOverallChartData(ranking);
@@ -643,21 +692,12 @@ function renderModelOverallChart(ranking = []) {
       fill: item.color,
       tabindex: 0,
       role: "button",
+      "data-model-id": item.entry.model.id,
       "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`,
     });
     const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`);
     point.append(pointTitle);
-    const openDetails = () => {
-      point.blur();
-      openModelOverallDetails(item.entry);
-    };
-    point.addEventListener("click", openDetails);
-    point.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openDetails();
-      }
-    });
+    bindModelOverallChartPoint(point, item.entry);
     points.append(point);
   });
   elements.modelOverallChart.append(points);
@@ -678,6 +718,7 @@ function renderModelOverallChart(ranking = []) {
     ));
   });
   elements.modelOverallChart.append(pointLabels);
+  elements.modelOverallChartExpand.disabled = false;
   elements.modelOverallChartDownload.disabled = false;
   elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与加权通过率数据`;
 }
@@ -975,7 +1016,12 @@ const elements = {
   modelOverallChart: document.getElementById("model-overall-chart"),
   modelOverallChartEmpty: document.getElementById("model-overall-chart-empty"),
   modelOverallChartNote: document.getElementById("model-overall-chart-note"),
+  modelOverallChartShell: document.getElementById("model-overall-chart-shell"),
+  modelOverallChartExpand: document.getElementById("model-overall-chart-expand"),
   modelOverallChartDownload: document.getElementById("model-overall-chart-download"),
+  modelOverallChartDialog: document.getElementById("model-overall-chart-dialog"),
+  modelOverallChartDialogClose: document.getElementById("model-overall-chart-dialog-close"),
+  modelOverallChartExpanded: document.getElementById("model-overall-chart-expanded"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
   modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),
@@ -2342,7 +2388,19 @@ elements.testMethodTab.addEventListener("click", () => {
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
 elements.copyTestMethodFirstPrompt.addEventListener("click", copyTestMethodFirstPrompt);
+elements.modelOverallChartExpand.addEventListener("click", openModelOverallChartDialog);
+elements.modelOverallChartShell.addEventListener("click", (event) => {
+  if (!event.target.closest?.(".model-overall-chart__point")) {
+    openModelOverallChartDialog();
+  }
+});
 elements.modelOverallChartDownload.addEventListener("click", downloadModelOverallChartPng);
+elements.modelOverallChartDialogClose.addEventListener("click", () => elements.modelOverallChartDialog.close());
+elements.modelOverallChartDialog.addEventListener("click", (event) => {
+  if (event.target === elements.modelOverallChartDialog) {
+    elements.modelOverallChartDialog.close();
+  }
+});
 elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
 elements.modelOverallDialog.addEventListener("click", (event) => {
   if (event.target === elements.modelOverallDialog) {
@@ -2364,6 +2422,11 @@ elements.dialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && elements.modelOverallChartDialog.open) {
+    event.preventDefault();
+    elements.modelOverallChartDialog.close();
+    return;
+  }
   if (!elements.dialog.open) {
     return;
   }

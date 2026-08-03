@@ -1575,7 +1575,7 @@ a.requirement-meta-card__value:hover {
   gap: 12px;
 }
 
-.model-overall-chart__download {
+.model-overall-chart__action {
   display: grid;
   width: 34px;
   height: 32px;
@@ -1592,7 +1592,7 @@ a.requirement-meta-card__value:hover {
   transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
 }
 
-.model-overall-chart__download svg {
+.model-overall-chart__action svg {
   width: 16px;
   height: 16px;
 }
@@ -1602,18 +1602,18 @@ a.requirement-meta-card__value:hover {
   overflow-wrap: anywhere;
 }
 
-.model-overall-chart__download:hover:not(:disabled) {
+.model-overall-chart__action:hover:not(:disabled) {
   border-color: #a6644b;
   color: #fffaf6;
   background: #34231d;
 }
 
-.model-overall-chart__download:focus-visible {
+.model-overall-chart__action:focus-visible {
   outline: 2px solid #e58b66;
   outline-offset: 2px;
 }
 
-.model-overall-chart__download:disabled {
+.model-overall-chart__action:disabled {
   color: #777a74;
   background: #191a18;
   cursor: not-allowed;
@@ -1644,6 +1644,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-chart-shell {
+  position: relative;
   width: min(100%, 960px);
   min-width: 0;
   margin-inline: auto;
@@ -1651,6 +1652,13 @@ a.requirement-meta-card__value:hover {
   border: 1px solid #30322f;
   border-radius: 9px;
   background: #111210;
+  cursor: zoom-in;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.model-overall-chart-shell:hover {
+  border-color: #6b493c;
+  box-shadow: 0 0 0 1px rgba(229, 139, 102, .08);
 }
 
 .model-overall-chart {
@@ -1709,6 +1717,54 @@ a.requirement-meta-card__value:hover {
   color: #969791;
   font-size: 12px;
   line-height: 1.55;
+}
+
+.model-overall-chart-dialog {
+  width: min(96vw, 1680px);
+  max-width: none;
+  height: min(94vh, 1050px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #3b3d39;
+  border-radius: 14px;
+  color: #f4f4f1;
+  background: #111210;
+}
+
+.model-overall-chart-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.model-overall-chart-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.model-overall-chart-dialog__stage {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  padding: clamp(10px, 2vw, 28px);
+  place-items: center;
+  overflow: auto;
+  background: #090a09;
+}
+
+.model-overall-chart--expanded {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.model-overall-chart-dialog__tip {
+  margin: 0;
+  padding: 12px 18px;
+  border-top: 1px solid #30322f;
+  color: #969791;
+  background: #171816;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .model-content-tabs {
@@ -2695,7 +2751,7 @@ dialog[open]::backdrop {
   .model-overall-chart-heading {
     flex-direction: column;
     gap: 10px;
-    padding-right: 46px;
+    padding-right: 88px;
   }
 
   .model-overall-chart-card {
@@ -2711,14 +2767,40 @@ dialog[open]::backdrop {
     max-width: 100%;
   }
 
-  .model-overall-chart__download {
+  .model-overall-chart__action {
     position: absolute;
     top: 20px;
+  }
+
+  .model-overall-chart__expand {
+    right: 62px;
+  }
+
+  .model-overall-chart__download {
     right: 20px;
   }
 
   .model-overall-chart {
     min-height: 0;
+  }
+
+  .model-overall-chart-dialog {
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .model-overall-chart-dialog__stage {
+    padding: 10px;
+    place-items: center start;
+  }
+
+  .model-overall-chart--expanded {
+    width: 820px;
+    min-width: 820px;
+    height: auto;
   }
 
   .feature-layout {
