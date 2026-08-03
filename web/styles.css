@@ -2493,15 +2493,7 @@ dialog[open]::backdrop {
   }
 
   .requirements-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    overflow-x: auto;
-  }
-
-  .requirements-nav > .feature-nav__label {
-    margin-bottom: 0;
-    flex: 0 0 auto;
+    display: none;
   }
 
   .feature-nav {
@@ -2528,26 +2520,6 @@ dialog[open]::backdrop {
     gap: 6px;
     max-width: 100%;
     overflow-x: auto;
-  }
-
-  .requirement-tabs {
-    display: flex;
-    gap: 6px;
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  .requirements-nav__divider {
-    width: 1px;
-    height: 28px;
-    margin: 0 4px;
-    flex: 0 0 auto;
-  }
-
-  .requirement-tab {
-    flex: 0 0 auto;
-    width: auto;
-    white-space: nowrap;
   }
 
   .requirement-meta-grid {
