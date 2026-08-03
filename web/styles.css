@@ -1297,6 +1297,10 @@ a.requirement-meta-card__value:hover {
   font-weight: 600;
 }
 
+.agent-roster-table th.agent-roster-table__model--multimodal {
+  color: #e58b66;
+}
+
 .agent-roster-table thead th {
   color: #9c9e97;
   background: #191a18;

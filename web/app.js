@@ -11,7 +11,6 @@ const models = [
     id: 1,
     name: "Doubao-Seed-2.1-Turbo",
     tool: "TRAE SOLO",
-    supportsMultimodal: true,
     images: [
       ["image-20260801230707-wdg04ed.webp", "模型与模式选择", ["process"]],
       ["image-20260802095037-ltvoeks.webp", "系统设置中的 S3 备份入口", ["settings"]],
@@ -31,7 +30,6 @@ const models = [
     id: 2,
     name: "Qwen3.8-Max-Preview",
     tool: "QoderCN IDE Quest",
-    supportsMultimodal: true,
     images: [
       ["image-20260801230701-fvwhgxb.webp", "1M 上下文与模型模式选择", ["process"]],
       ["image-20260802102318-b3vam73.webp", "系统设置中的数据备份入口", ["settings"]],
@@ -51,7 +49,6 @@ const models = [
     id: 3,
     name: "LongCat-2.0",
     tool: "CatPaw",
-    supportsMultimodal: false,
     images: [
       ["image-20260801230716-nekt5zt.webp", "模型选择界面", ["process"]],
       ["image-20260801235849-ejyt7r1.webp", "任务完成与后续确认", ["process"]],
@@ -72,7 +69,6 @@ const models = [
     id: 4,
     name: "Hy3",
     tool: "WorkBuddy",
-    supportsMultimodal: false,
     images: [
       ["image-20260801230712-zy199ri.webp", "Max 模式与模型选择", ["process"]],
       ["image-20260802000001-749b4nc.webp", "任务完成耗时", ["process"]],
@@ -99,7 +95,6 @@ const models = [
     id: 5,
     name: "DeepSeek V4 Flash 0731",
     tool: "Claude Code",
-    supportsMultimodal: false,
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -128,7 +123,6 @@ const models = [
     id: 6,
     name: "DeepSeek V4 Pro Preview",
     tool: "Claude Code",
-    supportsMultimodal: false,
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -151,42 +145,36 @@ const models = [
     id: 7,
     name: "GPT-5.6 Luna Max",
     tool: "Codex CLI",
-    supportsMultimodal: true,
     images: [],
   },
   {
     id: 8,
     name: "Composer 2.5",
     tool: "Cursor IDE",
-    supportsMultimodal: true,
     images: [],
   },
   {
     id: 9,
     name: "Grok 4.5 High",
     tool: "Cursor Agent View",
-    supportsMultimodal: true,
     images: [],
   },
   {
     id: 10,
     name: "Qwen3.8-Max",
     tool: "QoderCN IDE Quest",
-    supportsMultimodal: true,
     images: [],
   },
   {
     id: 11,
     name: "GLM-5.2 Max",
     tool: "Cursor Agent View",
-    supportsMultimodal: false,
     images: [],
   },
   {
     id: 12,
     name: "Kimi K3 Max",
     tool: "Kimi Code",
-    supportsMultimodal: true,
     images: [],
   },
 ];
@@ -222,7 +210,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=41";
+const leaderboardDataUrl = "/source/leaderboard.json?v=42";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -2258,6 +2246,11 @@ function renderRequirementsView() {
     const model = document.createElement("th");
     model.scope = "row";
     model.textContent = agent.modelName;
+    if (agent.supportsMultimodal) {
+      model.classList.add("agent-roster-table__model--multimodal");
+      model.setAttribute("aria-label", `${agent.modelName}，支持多模态`);
+      model.title = "支持图片输入（多模态）";
+    }
     const software = document.createElement("td");
     software.textContent = agent.software || "未记录";
     const version = document.createElement("td");
@@ -2303,10 +2296,16 @@ async function loadLeaderboardData() {
         entry?.unexpectedCases === undefined
         || (Array.isArray(entry.unexpectedCases) && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim()))
       ));
-    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases) {
+    const hasValidAgentCapabilities = Array.isArray(payload?.agents)
+      && payload.agents.every((agent) => typeof agent?.supportsMultimodal === "boolean");
+    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases || !hasValidAgentCapabilities) {
       throw new Error("Leaderboard data shape is invalid");
     }
     leaderboardData = payload;
+    for (const model of models) {
+      const agent = payload.agents.find((item) => item.modelId === model.id);
+      model.supportsMultimodal = agent?.supportsMultimodal === true;
+    }
     rankingDataCache = null;
     rankingDataCacheSource = null;
     rankingDataCacheRequirementId = null;
