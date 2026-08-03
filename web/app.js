@@ -210,7 +210,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=39";
+const leaderboardDataUrl = "/source/leaderboard.json?v=41";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -338,6 +338,17 @@ function formatDurationSeconds(durationSeconds) {
     parts.push(`${seconds}s`);
   }
   return parts.join("");
+}
+
+function formatTokenUsage(tokenUsage) {
+  if (tokenUsage === null || tokenUsage === undefined) {
+    return "未记录";
+  }
+  if (typeof tokenUsage === "number" && Number.isFinite(tokenUsage)) {
+    return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tokens`;
+  }
+  const text = String(tokenUsage).trim();
+  return text || "未记录";
 }
 
 function formatBuildUpdatedAt(value) {
@@ -1257,6 +1268,7 @@ const elements = {
   modelKicker: document.getElementById("model-kicker"),
   modelTitle: document.getElementById("model-title"),
   modelCount: document.getElementById("model-count"),
+  modelTokenUsage: document.getElementById("model-token-usage"),
   modelRating: document.getElementById("model-rating"),
   modelGallery: document.getElementById("model-gallery"),
   modelUnexpectedCasesView: document.getElementById("model-unexpected-cases-view"),
@@ -1660,11 +1672,13 @@ async function loadAllRatingsForRequirements(force = false) {
 
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
+  const modelEntry = getRequirementModelEntry(getCurrentRequirement(), model.id);
   renderModelTabs();
   renderModelContentTabs();
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
   elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
+  elements.modelTokenUsage.textContent = `token usage：${formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage)}`;
   renderModelRating();
   loadRatingsForRequirement();
   const showScreenshots = state.modelContentTab === "screenshots";
@@ -1948,7 +1962,7 @@ function renderLeaderboard() {
   }
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。P2 用例状态按各模型记录展示，但不计入得分扣分。`;
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明。";
   const visibleEntries = rankingData.slice(0, 3);
   const hiddenEntries = rankingData.slice(3);

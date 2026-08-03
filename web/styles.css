@@ -514,6 +514,20 @@ h2 {
   min-width: 250px;
 }
 
+#model-view .model-heading-actions > .count-label {
+  font-size: 11px;
+}
+
+.model-token-usage {
+  margin: 12px 0 0;
+  color: #969791;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .model-rating-row {
   display: flex;
   align-items: stretch;
