@@ -299,7 +299,8 @@
       "durationSeconds": 7792,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
       "unexpectedCases": [
-        "首轮跑了 45 分钟，结果连代码分析都没做完，还吃掉了 5 小时额度的 6%。现在这份数据是我重新测第二遍的结果。"
+        "首轮跑了 45 分钟，结果连代码分析都没做完，还吃掉了 5 小时额度的 6%。现在这份数据是我重新测第二遍的结果。",
+        "不算 subagent，单看主 Agent，实测 TPS 只有 9，跑起来是真的慢。"
       ],
       "agent": {
         "software": "Kimi Code",
