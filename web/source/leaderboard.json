@@ -225,6 +225,7 @@
         "TC-15": "HTML 已更新 app.js 和 styles.css 缓存参数，但四项系统测试仍断言旧版本并失败。",
         "TC-16": "凭证解密等前置异常发生在逐目标 catch 之前且没有 finally 复位 running；定时调用也没有 rejection handler，可能永久停止后续周期或产生未处理拒绝。",
         "TC-18": "失败日志会记录 accessKeyHint 中的真实 AK 后四位，服务端消息进入 Toast 前也没有按当前目标 AK/SK 可靠脱敏。",
+        "TC-20": "原 Composer 2.5 Agent 没有创建独立 Git commit；提交 11b5fb8 由 Codex 代为补交，不计为模型自行完成，因此本用例不通过。",
         "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
       }
     },

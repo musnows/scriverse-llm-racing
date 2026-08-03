@@ -192,7 +192,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=29";
+const leaderboardDataUrl = "/source/leaderboard.json?v=30";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
