@@ -486,6 +486,7 @@ function createModelOverallChartExportSvg() {
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
+        .model-overall-chart__label-connectors--expanded { display: none; }
         .model-overall-chart__label-connector { stroke: #686b66; stroke-width: 0.75; stroke-dasharray: 2 2; opacity: 0.7; }
         .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 8px; }
       `,
@@ -595,13 +596,13 @@ function createChartLabelBox(x, y, width, anchor, fontSize) {
   };
 }
 
-function createChartLabelConnector(pointX, pointY, box) {
+function createChartLabelConnector(pointX, pointY, box, minimumDistance = 18) {
   const endX = Math.min(Math.max(pointX, box.left), box.right);
   const endY = Math.min(Math.max(pointY, box.top), box.bottom);
   const deltaX = endX - pointX;
   const deltaY = endY - pointY;
   const distance = Math.hypot(deltaX, deltaY);
-  if (distance <= 18) {
+  if (distance <= minimumDistance) {
     return null;
   }
   const startRatio = 7 / distance;
@@ -613,17 +614,26 @@ function createChartLabelConnector(pointX, pointY, box) {
   };
 }
 
-function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bounds) {
-  const fontSize = 8;
+function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bounds, options = {}) {
+  const fontSize = options.fontSize ?? 8;
+  const pointRadius = options.pointRadius ?? 7;
+  const collisionPadding = options.collisionPadding ?? 2;
+  const sideDistance = options.sideDistance ?? 10;
+  const sideBaselineOffset = options.sideBaselineOffset ?? 3;
+  const belowDistance = options.belowDistance ?? 15;
+  const aboveDistance = options.aboveDistance ?? 10;
+  const extraDistances = options.extraDistances ?? [0, 12, 24, 36, 52, 68];
+  const preferHorizontalLabels = options.preferHorizontalLabels ?? false;
+  const connectorMinimumDistance = options.connectorMinimumDistance ?? 18;
   const occupiedBoxes = [];
   const pointBoxes = chartData.map((item) => {
     const pointX = xPosition(item.weightedAverageDurationSeconds);
     const pointY = yPosition(item.weightedPassRate);
     return {
-      left: pointX - 7,
-      right: pointX + 7,
-      top: pointY - 7,
-      bottom: pointY + 7,
+      left: pointX - pointRadius,
+      right: pointX + pointRadius,
+      top: pointY - pointRadius,
+      bottom: pointY + pointRadius,
     };
   });
 
@@ -632,17 +642,23 @@ function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bou
     const pointY = yPosition(item.weightedPassRate);
     const labelWidth = getChartLabelWidth(item.entry.model.name, fontSize);
     const candidates = [];
-    [0, 12, 24, 36, 52, 68].forEach((extraDistance) => {
+    extraDistances.forEach((extraDistance) => {
       const diagonalOffset = Math.round(extraDistance * 0.4);
+      const horizontalCandidates = [
+        { dx: sideDistance + extraDistance, dy: sideBaselineOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: sideBaselineOffset, anchor: "end" },
+      ];
+      const verticalCandidates = [
+        { dx: 0, dy: belowDistance + extraDistance, anchor: "middle" },
+        { dx: 0, dy: -aboveDistance - extraDistance, anchor: "middle" },
+      ];
       candidates.push(
-        { dx: 0, dy: 15 + extraDistance, anchor: "middle" },
-        { dx: 0, dy: -10 - extraDistance, anchor: "middle" },
-        { dx: 10 + extraDistance, dy: 3, anchor: "start" },
-        { dx: -10 - extraDistance, dy: 3, anchor: "end" },
-        { dx: 10 + extraDistance, dy: 15 + diagonalOffset, anchor: "start" },
-        { dx: -10 - extraDistance, dy: 15 + diagonalOffset, anchor: "end" },
-        { dx: 10 + extraDistance, dy: -10 - diagonalOffset, anchor: "start" },
-        { dx: -10 - extraDistance, dy: -10 - diagonalOffset, anchor: "end" },
+        ...(preferHorizontalLabels ? horizontalCandidates : verticalCandidates),
+        ...(preferHorizontalLabels ? verticalCandidates : horizontalCandidates),
+        { dx: sideDistance + extraDistance, dy: belowDistance + diagonalOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: belowDistance + diagonalOffset, anchor: "end" },
+        { dx: sideDistance + extraDistance, dy: -aboveDistance - diagonalOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: -aboveDistance - diagonalOffset, anchor: "end" },
       );
     });
 
@@ -658,11 +674,18 @@ function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bou
       if (!isWithinBounds) {
         return;
       }
-      const pointCollisionCount = pointBoxes.filter((pointBox) => chartBoxesOverlap(box, pointBox)).length;
-      const labelCollisionCount = occupiedBoxes.filter((occupiedBox) => chartBoxesOverlap(box, occupiedBox)).length;
+      const pointCollisionCount = pointBoxes.filter(
+        (pointBox) => chartBoxesOverlap(box, pointBox, collisionPadding),
+      ).length;
+      const labelCollisionCount = occupiedBoxes.filter(
+        (occupiedBox) => chartBoxesOverlap(box, occupiedBox, collisionPadding),
+      ).length;
+      const distanceScore = preferHorizontalLabels
+        ? Math.abs(candidate.dx) + Math.abs(candidate.dy) * 2
+        : Math.hypot(candidate.dx, candidate.dy);
       const score = pointCollisionCount * 10000
         + labelCollisionCount * 20000
-        + Math.hypot(candidate.dx, candidate.dy);
+        + distanceScore;
       if (!selectedCandidate || score < selectedCandidate.score) {
         selectedCandidate = { ...candidate, x, y, box, score };
       }
@@ -685,7 +708,12 @@ function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bou
       x: selectedCandidate.x,
       y: selectedCandidate.y,
       anchor: selectedCandidate.anchor,
-      connector: createChartLabelConnector(pointX, pointY, selectedCandidate.box),
+      connector: createChartLabelConnector(
+        pointX,
+        pointY,
+        selectedCandidate.box,
+        connectorMinimumDistance,
+      ),
     };
   });
 }
@@ -727,6 +755,12 @@ function openModelOverallChartDialog() {
     expandedTitle.id = "model-overall-chart-expanded-title";
     expandedChart.setAttribute("aria-labelledby", expandedTitle.id);
   }
+
+  expandedChart.querySelectorAll(".model-overall-chart__point-label").forEach((label) => {
+    label.setAttribute("x", label.dataset.expandedX);
+    label.setAttribute("y", label.dataset.expandedY);
+    label.setAttribute("text-anchor", label.dataset.expandedAnchor);
+  });
 
   const rankingByModelId = new Map(getOverallRatingData().map((entry) => [String(entry.model.id), entry]));
   expandedChart.querySelectorAll(".model-overall-chart__point").forEach((point) => {
@@ -802,13 +836,34 @@ function renderModelOverallChart(ranking = []) {
   );
   elements.modelOverallChart.append(labels);
 
-  const pointLabelLayout = createModelOverallChartLabelLayout(chartData, xPosition, yPosition, {
+  const chartBounds = {
     left: margin.left + 4,
     right: margin.left + plotWidth - 4,
     top: margin.top + 4,
     bottom: margin.top + plotHeight - 4,
+  };
+  const pointLabelLayout = createModelOverallChartLabelLayout(chartData, xPosition, yPosition, chartBounds);
+  const expandedPointLabelLayout = createModelOverallChartLabelLayout(
+    chartData,
+    xPosition,
+    yPosition,
+    chartBounds,
+    {
+      fontSize: 6,
+      pointRadius: 4,
+      collisionPadding: 0.5,
+      sideDistance: 9,
+      sideBaselineOffset: 2,
+      belowDistance: 12,
+      aboveDistance: 8,
+      extraDistances: [0, 8, 16, 26, 38, 52],
+      preferHorizontalLabels: true,
+      connectorMinimumDistance: 4,
+    },
+  );
+  const labelConnectors = createChartSvgElement("g", {
+    class: "model-overall-chart__label-connectors model-overall-chart__label-connectors--default",
   });
-  const labelConnectors = createChartSvgElement("g", { class: "model-overall-chart__label-connectors" });
   pointLabelLayout.forEach((label) => {
     if (label.connector) {
       labelConnectors.append(createChartSvgElement("line", {
@@ -818,6 +873,19 @@ function renderModelOverallChart(ranking = []) {
     }
   });
   elements.modelOverallChart.append(labelConnectors);
+
+  const expandedLabelConnectors = createChartSvgElement("g", {
+    class: "model-overall-chart__label-connectors model-overall-chart__label-connectors--expanded",
+  });
+  expandedPointLabelLayout.forEach((label) => {
+    if (label.connector) {
+      expandedLabelConnectors.append(createChartSvgElement("line", {
+        class: "model-overall-chart__label-connector",
+        ...label.connector,
+      }));
+    }
+  });
+  elements.modelOverallChart.append(expandedLabelConnectors);
 
   const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
   chartData.forEach((item) => {
@@ -840,7 +908,8 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.append(points);
 
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
-  pointLabelLayout.forEach((label) => {
+  pointLabelLayout.forEach((label, index) => {
+    const expandedLabel = expandedPointLabelLayout[index];
     pointLabels.append(createChartSvgElement(
       "text",
       {
@@ -848,6 +917,9 @@ function renderModelOverallChart(ranking = []) {
         x: label.x,
         y: label.y,
         "text-anchor": label.anchor,
+        "data-expanded-x": expandedLabel.x,
+        "data-expanded-y": expandedLabel.y,
+        "data-expanded-anchor": expandedLabel.anchor,
       },
       label.item.entry.model.name,
     ));

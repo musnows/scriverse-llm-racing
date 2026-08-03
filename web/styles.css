@@ -1719,6 +1719,10 @@ a.requirement-meta-card__value:hover {
   pointer-events: none;
 }
 
+.model-overall-chart__label-connectors--expanded {
+  display: none;
+}
+
 .model-overall-chart__empty {
   margin: 0;
   padding: 14px 10px;
@@ -1764,8 +1768,26 @@ a.requirement-meta-card__value:hover {
   min-height: 0;
 }
 
+.model-overall-chart--expanded .model-overall-chart__point {
+  r: 3px;
+  stroke-width: 1.2;
+}
+
+.model-overall-chart--expanded .model-overall-chart__point:hover,
+.model-overall-chart--expanded .model-overall-chart__point:focus-visible {
+  r: 4px;
+}
+
 .model-overall-chart--expanded .model-overall-chart__point-label {
-  font-size: 7px;
+  font-size: 6px;
+}
+
+.model-overall-chart--expanded .model-overall-chart__label-connectors--default {
+  display: none;
+}
+
+.model-overall-chart--expanded .model-overall-chart__label-connectors--expanded {
+  display: inline;
 }
 
 .model-overall-chart-dialog__tip {
@@ -2816,7 +2838,7 @@ dialog[open]::backdrop {
   }
 
   .model-overall-chart--expanded .model-overall-chart__point-label {
-    font-size: 8px;
+    font-size: 6px;
   }
 
   .feature-layout {
