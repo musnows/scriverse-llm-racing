@@ -697,7 +697,10 @@ h2 {
 }
 
 .image-button {
-  display: block;
+  position: relative;
+  display: grid;
+  min-height: 0;
+  place-items: center;
   width: 100%;
   padding: 0;
   overflow: hidden;
@@ -707,6 +710,60 @@ h2 {
   cursor: zoom-in;
 }
 
+.image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #b8b9b4;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(216, 120, 85, 0.16), transparent 34%),
+    linear-gradient(135deg, #1c1e1b, #121412 72%);
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.image-placeholder__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 250, 246, 0.08) 48%, transparent 76%);
+  transform: translateX(-100%);
+  animation: image-placeholder-shimmer 1.8s ease-in-out infinite;
+}
+
+.image-placeholder__content {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.image-placeholder__label {
+  color: #e0a084;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.image-placeholder__meta {
+  color: #858880;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
+@keyframes image-placeholder-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .image-button img {
   display: block;
   width: 100%;
@@ -714,6 +771,35 @@ h2 {
   max-height: 620px;
   object-fit: contain;
   background: #090a09;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.image-button--loaded img {
+  opacity: 1;
+}
+
+.image-button--loading,
+.image-button--error {
+  min-height: clamp(220px, 28vw, 520px);
+}
+
+.image-button--loaded .image-placeholder {
+  opacity: 0;
+}
+
+.image-button--error .image-placeholder {
+  background:
+    radial-gradient(circle at 25% 20%, rgba(169, 79, 48, 0.18), transparent 34%),
+    linear-gradient(135deg, #211b18, #151412 72%);
+}
+
+.image-button--error .image-placeholder__shimmer {
+  display: none;
+}
+
+.image-button--error .image-placeholder__label {
+  color: #f2aa8c;
 }
 
 .image-button:hover {
@@ -1220,6 +1306,11 @@ a.requirement-meta-card__value:hover {
 
 .comparison-stack .image-button img {
   max-height: 420px;
+}
+
+.comparison-stack .image-button--loading,
+.comparison-stack .image-button--error {
+  min-height: 140px;
 }
 
 .empty-state {

@@ -887,14 +887,41 @@ function createScreenshotCard(image, items, index, compact = false) {
   button.setAttribute("aria-label", `查看大图：${image.modelName}，${image.title}`);
   button.addEventListener("click", () => openDialog(items, index));
 
+  const placeholder = document.createElement("span");
+  placeholder.className = "image-placeholder";
+  placeholder.setAttribute("aria-hidden", "true");
+  const placeholderShimmer = document.createElement("span");
+  placeholderShimmer.className = "image-placeholder__shimmer";
+  const placeholderContent = document.createElement("span");
+  placeholderContent.className = "image-placeholder__content";
+  const placeholderLabel = document.createElement("strong");
+  placeholderLabel.className = "image-placeholder__label";
+  placeholderLabel.textContent = "正在加载截图";
+  const placeholderMeta = document.createElement("span");
+  placeholderMeta.className = "image-placeholder__meta";
+  placeholderMeta.textContent = "图片载入后显示";
+  placeholderContent.append(placeholderLabel, placeholderMeta);
+  placeholder.append(placeholderShimmer, placeholderContent);
+
   const img = document.createElement("img");
-  img.src = assetRoot + image.file;
   img.alt = `${image.modelName}：${image.title}`;
   img.loading = "lazy";
   img.decoding = "async";
+  const setImageState = (state) => {
+    button.classList.remove("image-button--loading", "image-button--loaded", "image-button--error");
+    button.classList.add(`image-button--${state}`);
+    if (state === "error") {
+      placeholderLabel.textContent = "截图加载失败";
+      placeholderMeta.textContent = "请稍后重试";
+    }
+  };
+  img.addEventListener("load", () => setImageState("loaded"), { once: true });
+  img.addEventListener("error", () => setImageState("error"), { once: true });
+  img.src = assetRoot + image.file;
+  setImageState(img.complete ? (img.naturalWidth > 0 ? "loaded" : "error") : "loading");
 
   meta.append(sequence, title);
-  button.append(img);
+  button.append(placeholder, img);
   article.append(meta, button);
 
   if (compact) {
