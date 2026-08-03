@@ -514,6 +514,10 @@ h2 {
   min-width: 250px;
 }
 
+#model-view .model-heading-actions > .count-label {
+  font-size: 11px;
+}
+
 .model-token-usage {
   margin: 12px 0 0;
   color: #969791;
