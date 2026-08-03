@@ -1343,7 +1343,7 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-card {
   display: grid;
-  grid-template-columns: minmax(72px, 0.45fr) minmax(190px, 1.25fr) minmax(118px, 0.8fr) minmax(170px, 1fr) minmax(100px, 0.65fr) minmax(110px, 0.7fr) minmax(220px, 1.3fr);
+  grid-template-columns: minmax(72px, 0.45fr) minmax(190px, 1.25fr) minmax(170px, 1fr) minmax(100px, 0.65fr) minmax(110px, 0.7fr) minmax(220px, 1.3fr) minmax(118px, 0.8fr);
   align-items: center;
   gap: 14px;
   min-width: 0;
@@ -2632,7 +2632,7 @@ dialog[open]::backdrop {
 
   .leaderboard-card__branch {
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 6;
   }
 
   .leaderboard-card__agent {

@@ -1524,7 +1524,7 @@ function createLeaderboardSummaryCard(entry) {
     : formatDurationSeconds(entry.durationSeconds);
   meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText}`;
 
-  card.append(rank, name, branchCell, agent, context, score, meta);
+  card.append(rank, name, agent, context, score, meta, branchCell);
   return card;
 }
 
