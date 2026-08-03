@@ -1343,7 +1343,7 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-card {
   display: grid;
-  grid-template-columns: minmax(72px, 0.45fr) minmax(190px, 1.25fr) minmax(170px, 1fr) minmax(100px, 0.65fr) minmax(110px, 0.7fr) minmax(220px, 1.3fr);
+  grid-template-columns: minmax(72px, 0.45fr) minmax(190px, 1.25fr) minmax(118px, 0.8fr) minmax(170px, 1fr) minmax(100px, 0.65fr) minmax(110px, 0.7fr) minmax(220px, 1.3fr);
   align-items: center;
   gap: 14px;
   min-width: 0;
@@ -1355,6 +1355,7 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-card__rank,
 .leaderboard-card__name,
+.leaderboard-card__branch,
 .leaderboard-card__agent,
 .leaderboard-card__context,
 .leaderboard-card__score,
@@ -1373,13 +1374,13 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__name {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
   overflow-wrap: anywhere;
   font-size: 15px;
   line-height: 1.35;
+}
+
+.leaderboard-card__branch {
+  min-width: 0;
 }
 
 .result-branch-link {
@@ -2629,19 +2630,29 @@ dialog[open]::backdrop {
     grid-row: 1;
   }
 
-  .leaderboard-card__agent,
+  .leaderboard-card__branch {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .leaderboard-card__agent {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
   .leaderboard-card__context {
     grid-column: 1 / -1;
+    grid-row: 4;
   }
 
   .leaderboard-card__score {
     grid-column: 1;
-    grid-row: 4;
+    grid-row: 5;
   }
 
   .leaderboard-card__meta {
     grid-column: 2;
-    grid-row: 4;
+    grid-row: 5;
   }
 
   .model-overall-row {

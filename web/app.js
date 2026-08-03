@@ -739,8 +739,8 @@ function createResultBranchLink(entry, className = "") {
   link.href = entry.resultBranchUrl;
   link.target = "_blank";
   link.rel = "noreferrer";
-  link.textContent = "查看结果分支";
-  link.setAttribute("aria-label", `在 GitHub 查看 ${entry.model?.name ?? entry.modelId} 的结果分支`);
+  link.textContent = "查看源码";
+  link.setAttribute("aria-label", `在 GitHub 查看 ${entry.model?.name ?? entry.modelId} 的源码`);
   return link;
 }
 
@@ -1494,9 +1494,11 @@ function createLeaderboardSummaryCard(entry) {
   const name = document.createElement("h3");
   name.className = "leaderboard-card__name";
   name.append(document.createTextNode(entry.model?.name ?? entry.modelId));
-  const branchLink = createResultBranchLink(entry, "leaderboard-card__branch");
+  const branchCell = document.createElement("div");
+  branchCell.className = "leaderboard-card__branch";
+  const branchLink = createResultBranchLink(entry);
   if (branchLink) {
-    name.append(branchLink);
+    branchCell.append(branchLink);
   }
 
   const agent = document.createElement("p");
@@ -1522,7 +1524,7 @@ function createLeaderboardSummaryCard(entry) {
     : formatDurationSeconds(entry.durationSeconds);
   meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText}`;
 
-  card.append(rank, name, agent, context, score, meta);
+  card.append(rank, name, branchCell, agent, context, score, meta);
   return card;
 }
 
