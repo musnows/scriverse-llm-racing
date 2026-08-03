@@ -152,7 +152,7 @@
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-flash-0731",
       "unexpectedCases": [
         "TC-21 意外情况：密钥备份在特定配置下可能失效。使用 AI_NOVEL_MASTER_KEY 时，磁盘 master.key 可能不存在或已经过期；DATABASE_PATH 与 DATA_DIR 分离时还可能读取错误路径。密钥文件缺失会被静默跳过，导致数据库快照无法完整恢复已保存的加密凭证。",
-        "Flash 是所有模型中唯一一个遵循 AGENTS.md 完成自动化测试的模型。"
+        "Flash 是所有模型中唯一一个遵循 AGENTS.md 完成浏览器自动化测试的模型。"
       ],
       "agent": {
         "software": "Claude Code",
