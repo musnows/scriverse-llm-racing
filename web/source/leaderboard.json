@@ -250,6 +250,7 @@
     {
       "modelId": 10,
       "durationSeconds": 1963,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max",
       "unexpectedCases": [],
       "agent": {
         "software": "QoderCN IDE Quest",
@@ -267,6 +268,7 @@
     {
       "modelId": 11,
       "durationSeconds": 2145,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.2-max-cursor",
       "unexpectedCases": [],
       "agent": {
         "software": "Cursor Agent View",
@@ -287,6 +289,7 @@
     {
       "modelId": 12,
       "durationSeconds": 7792,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
       "unexpectedCases": [],
       "agent": {
         "software": "Kimi Code",
