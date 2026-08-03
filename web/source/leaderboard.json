@@ -211,7 +211,7 @@
       "durationSeconds": 1104,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/composer-2.5",
       "unexpectedCases": [
-        "8 月 3 日记录：测试过程中使用了 Cursor 的指定 subagent 模型能力，并调用 Claude Sonnet 5 作为外援；当前测试结果暂不可信，需要重测。"
+        "测试过程中居然用了 Cursor 的指定 subagent 模型能力，还喊了 Claude Sonnet 5 来当外援。这样测出来的结果暂时不能信，得重测。（8 月 3 日记录）"
       ],
       "agent": {
         "software": "Cursor IDE",
@@ -236,7 +236,7 @@
       "durationSeconds": 2056,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high",
       "unexpectedCases": [
-        "8 月 3 日记录：测试过程中使用了 Cursor 的指定 subagent 模型能力，并调用 Claude Sonnet 5 作为外援；当前测试结果暂不可信，需要重测。"
+        "测试过程中居然用了 Cursor 的指定 subagent 模型能力，还喊了 Claude Sonnet 5 来当外援。这样测出来的结果暂时不能信，得重测。（8 月 3 日记录）"
       ],
       "agent": {
         "software": "Cursor Agent View",
@@ -256,7 +256,7 @@
       "durationSeconds": 1963,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max",
       "unexpectedCases": [
-        "测试期间出现两次服务端错误，需要人工点击“继续”按钮（你就不能自动重试吗？）。"
+        "测试期间碰到了两次服务端错误，每次都得我手动点“继续”才能跑下去。你就不能自己重试吗？"
       ],
       "agent": {
         "software": "QoderCN IDE Quest",
@@ -276,7 +276,7 @@
       "durationSeconds": 2145,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.2-max-cursor",
       "unexpectedCases": [
-        "Cursor 中仅支持 200K 上下文，测试期间发生多次上下文压缩（compact）；测试效果可能与官方 1M 上下文的 GLM-5.2 存在一定差距。"
+        "Cursor 里只能给 GLM-5.2 开到 200K 上下文，测试中间还 compact 了好几次。这个结果和官方 1M 上下文的 GLM-5.2 应该还是有点差距。"
       ],
       "agent": {
         "software": "Cursor Agent View",
@@ -299,7 +299,7 @@
       "durationSeconds": 7792,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
       "unexpectedCases": [
-        "首轮测试耗时 45 分钟仍未完成代码分析，并消耗了 5 小时额度的 6%；当前数据来自二次重测。"
+        "首轮跑了 45 分钟，结果连代码分析都没做完，还吃掉了 5 小时额度的 6%。现在这份数据是我重新测第二遍的结果。"
       ],
       "agent": {
         "software": "Kimi Code",
