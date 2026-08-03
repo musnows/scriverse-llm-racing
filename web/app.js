@@ -224,6 +224,15 @@ function formatDeductionRules(deductionByPriority = {}) {
     .join("，");
 }
 
+function getWeightedPassRate(score, maxScore) {
+  const numericScore = Number(score);
+  const numericMaxScore = Number(maxScore);
+  if (!Number.isFinite(numericScore) || !Number.isFinite(numericMaxScore) || numericMaxScore <= 0) {
+    return null;
+  }
+  return Math.max(0, Math.min(100, (numericScore / numericMaxScore) * 100));
+}
+
 function getRankingData() {
   if (!leaderboardData) {
     return [];
@@ -249,6 +258,7 @@ function getRankingData() {
         agent: leaderboardData.agents.find((agent) => agent.modelId === entry.modelId) ?? entry.agent,
         score: scoring.initial - deductions,
         maxScore: scoring.initial,
+        weightedPassRate: getWeightedPassRate(scoring.initial - deductions, scoring.initial),
         testCaseCount: testCases.length,
         passCount: testCases.length - failedIds.size,
         failureCount: failedIds.size,
@@ -479,22 +489,26 @@ function downloadModelOverallChartPng() {
 
 function createModelOverallChartData(ranking) {
   return ranking
-    .map((entry, index) => {
+    .map((entry) => {
       const weightedAverageDurationSeconds = Number(entry.weightedAverageDurationSeconds);
-      const testCaseCount = Number(entry.test?.testCaseCount);
-      const passCount = Number(entry.test?.passCount);
-      if (!Number.isFinite(weightedAverageDurationSeconds) || weightedAverageDurationSeconds <= 0 || !Number.isFinite(testCaseCount) || testCaseCount <= 0) {
+      const weightedPassRate = Number(entry.test?.weightedPassRate);
+      if (!Number.isFinite(weightedAverageDurationSeconds) || weightedAverageDurationSeconds <= 0 || !Number.isFinite(weightedPassRate)) {
         return null;
       }
-      const passRate = Math.max(0, Math.min(100, (passCount / testCaseCount) * 100));
       return {
         entry,
         weightedAverageDurationSeconds,
-        passRate,
-        color: chartPointColors[index % chartPointColors.length],
+        weightedPassRate,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((left, right) => right.weightedPassRate - left.weightedPassRate
+      || left.weightedAverageDurationSeconds - right.weightedAverageDurationSeconds
+      || left.entry.model.name.localeCompare(right.entry.model.name))
+    .map((entry, index) => ({
+      ...entry,
+      color: chartPointColors[index % chartPointColors.length],
+    }));
 }
 
 function renderModelOverallChart(ranking = []) {
@@ -505,7 +519,7 @@ function renderModelOverallChart(ranking = []) {
   if (chartData.length === 0) {
     elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
     elements.modelOverallChartEmpty.hidden = false;
-    elements.modelOverallChartEmpty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和用例通过率的模型。" : "正在加载散点图数据……";
+    elements.modelOverallChartEmpty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和加权通过率的模型。" : "正在加载散点图数据……";
     return;
   }
 
@@ -518,11 +532,11 @@ function renderModelOverallChart(ranking = []) {
   const tickStepSeconds = Math.max(600, Math.ceil((durationWithPadding / 4) / 600) * 600);
   const maxDurationSeconds = tickStepSeconds * 4;
   const xPosition = (durationSeconds) => margin.left + (durationSeconds / maxDurationSeconds) * plotWidth;
-  const yPosition = (passRate) => margin.top + ((100 - passRate) / 100) * plotHeight;
+  const yPosition = (weightedPassRate) => margin.top + ((100 - weightedPassRate) / 100) * plotHeight;
 
   elements.modelOverallChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
   elements.modelOverallChart.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  const title = createChartSvgElement("title", { id: "model-overall-chart-svg-title" }, "模型加权平均耗时与用例通过率散点图");
+  const title = createChartSvgElement("title", { id: "model-overall-chart-svg-title" }, "模型加权平均耗时与加权通过率散点图");
   elements.modelOverallChart.setAttribute("aria-labelledby", title.id);
   elements.modelOverallChart.append(title);
 
@@ -556,7 +570,7 @@ function renderModelOverallChart(ranking = []) {
   });
   labels.append(
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 6, "text-anchor": "middle" }, "加权平均耗时"),
-    createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "用例通过率"),
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "加权通过率"),
   );
   elements.modelOverallChart.append(labels);
 
@@ -565,14 +579,14 @@ function renderModelOverallChart(ranking = []) {
     const point = createChartSvgElement("circle", {
       class: "model-overall-chart__point",
       cx: xPosition(item.weightedAverageDurationSeconds),
-      cy: yPosition(item.passRate),
+      cy: yPosition(item.weightedPassRate),
       r: 5,
       fill: item.color,
       tabindex: 0,
       role: "button",
-      "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，用例通过率 ${item.passRate.toFixed(0)}%`,
+      "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`,
     });
-    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，通过率 ${item.passRate.toFixed(0)}%`);
+    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`);
     point.append(pointTitle);
     const openDetails = () => {
       point.blur();
@@ -591,7 +605,7 @@ function renderModelOverallChart(ranking = []) {
 
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
   chartData.forEach((item) => {
-    const pointY = yPosition(item.passRate);
+    const pointY = yPosition(item.weightedPassRate);
     const labelY = Math.min(pointY + 14, margin.top + plotHeight + 10);
     pointLabels.append(createChartSvgElement(
       "text",
@@ -606,7 +620,7 @@ function renderModelOverallChart(ranking = []) {
   });
   elements.modelOverallChart.append(pointLabels);
   elements.modelOverallChartDownload.disabled = false;
-  elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与通过率数据`;
+  elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与加权通过率数据`;
 }
 
 function getRequirementModelEntries(requirement) {
@@ -792,10 +806,8 @@ function createModelOverallRow(entry) {
   const testMeta = document.createElement("span");
   testMeta.className = "model-overall-row__meta";
   if (entry.test) {
-    const passRate = entry.test.testCaseCount > 0
-      ? Math.round((entry.test.passCount / entry.test.testCaseCount) * 100)
-      : 0;
-    testMeta.textContent = `${entry.test.passCount}/${entry.test.testCaseCount} 个用例通过 ${passRate}%`;
+    const weightedPassRate = entry.test.weightedPassRate === null ? "暂无" : `${Math.round(entry.test.weightedPassRate)}%`;
+    testMeta.textContent = `${entry.test.passCount}/${entry.test.testCaseCount} 个用例通过 · 加权通过率 ${weightedPassRate}`;
   } else {
     testMeta.textContent = "暂无测试记录";
   }
@@ -1473,13 +1485,13 @@ function createLeaderboardSummaryCard(entry) {
   const totalCount = entry.testCaseCount;
   const failureCount = Object.keys(entry.failures).length;
   const passCount = totalCount - failureCount;
-  const passRate = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
+  const weightedPassRate = entry.weightedPassRate === null ? "暂无" : `${Math.round(entry.weightedPassRate)}%`;
   const meta = document.createElement("p");
   meta.className = "leaderboard-card__meta";
   const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
     ? "耗时未记录"
     : formatDurationSeconds(entry.durationSeconds);
-  meta.textContent = `通过 ${passCount} / ${totalCount} · 通过率 ${passRate}% · ${durationText}`;
+  meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText}`;
 
   card.append(rank, name, agent, context, score, meta);
   return card;
