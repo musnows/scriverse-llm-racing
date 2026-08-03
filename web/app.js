@@ -552,18 +552,22 @@ function formatAverageScore(score) {
   return Number.isInteger(score) ? String(score) : score.toFixed(1);
 }
 
+function getModelToolName(entry) {
+  return entry.agent?.software || entry.model.tool;
+}
+
 function openModelOverallDetails(entry) {
   const requirements = getTestedRequirements(entry.model.id);
   const averageScore = getAverageScore(entry.model.id);
+  const modelToolName = getModelToolName(entry);
   const dialogMeta = [
-    `工具：${entry.agent?.software || entry.model.tool}`,
     `已测试 ${requirements.length} / ${leaderboardData.requirements.length}`,
     averageScore ? `平均得分 ${formatAverageScore(averageScore.score)} / ${formatAverageScore(averageScore.maxScore)}` : "平均得分暂无数据",
     entry.weightedAverageDurationSeconds === null
       ? "加权平均耗时暂无数据"
       : `加权平均耗时 ${formatDurationSeconds(entry.weightedAverageDurationSeconds)}`,
   ];
-  elements.modelOverallDialogModel.textContent = entry.model.name;
+  elements.modelOverallDialogModel.textContent = `${entry.model.name} · ${modelToolName}`;
   elements.modelOverallDialogMeta.textContent = dialogMeta.join(" · ");
   elements.modelOverallDialogList.replaceChildren();
 
@@ -610,11 +614,12 @@ function createModelOverallRow(entry) {
   rank.textContent = entry.test ? `第 ${String(entry.test.rank).padStart(2, "0")} 名` : "未纳入测试";
   const name = document.createElement("strong");
   name.className = "model-overall-row__name";
-  name.textContent = entry.model.name;
+  name.append(document.createTextNode(`${entry.model.name} · `));
   const tool = document.createElement("span");
   tool.className = "model-overall-row__tool";
-  tool.textContent = `工具：${entry.agent?.software || entry.model.tool}`;
-  identity.append(rank, name, tool);
+  tool.textContent = getModelToolName(entry);
+  name.append(tool);
+  identity.append(rank, name);
 
   const testedRequirements = document.createElement("div");
   testedRequirements.className = "model-overall-row__score-block";
