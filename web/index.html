@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=89">
+    <link rel="stylesheet" href="/styles.css?v=94">
   </head>
   <body>
     <div class="app-shell">
@@ -119,12 +119,17 @@
               <div>
                 <p class="section-kicker">效率与质量</p>
                 <h3 id="model-overall-chart-title">加权平均耗时与加权通过率</h3>
-                <p class="section-description">横轴为各需求按需求权重计算的加权平均耗时，纵轴为各需求加权通过率的需求权重平均值。点击散点可查看该模型已测试的需求。</p>
+                <p class="section-description">横轴为各需求按需求权重计算的加权平均耗时，纵轴为各需求加权通过率的需求权重平均值。点击图表空白处可放大，点击散点可查看该模型已测试的需求。</p>
                 <p class="model-overall-chart__reading-tip">阅读方式：越靠左上越好，代表耗时更短、加权通过率更高。</p>
               </div>
               <div class="model-overall-chart-heading__actions">
                 <p id="model-overall-chart-note" class="count-label"></p>
-                <button type="button" id="model-overall-chart-download" class="model-overall-chart__download" aria-label="下载模型总榜散点图 PNG" title="下载 PNG" disabled>
+                <button type="button" id="model-overall-chart-expand" class="model-overall-chart__action model-overall-chart__expand" aria-label="放大模型总榜散点图" title="放大查看" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                  </svg>
+                </button>
+                <button type="button" id="model-overall-chart-download" class="model-overall-chart__action model-overall-chart__download" aria-label="下载模型总榜散点图 PNG" title="下载 PNG" disabled>
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18h14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
                   </svg>
@@ -132,7 +137,7 @@
               </div>
             </div>
             <div class="model-overall-chart-layout">
-              <div class="model-overall-chart-shell">
+              <div id="model-overall-chart-shell" class="model-overall-chart-shell">
                 <svg id="model-overall-chart" class="model-overall-chart" role="img" aria-labelledby="model-overall-chart-title"></svg>
                 <p id="model-overall-chart-empty" class="model-overall-chart__empty" hidden></p>
               </div>
@@ -147,10 +152,33 @@
               <p id="model-overall-dialog-model" class="dialog-model"></p>
               <h2 id="model-overall-dialog-title">已测试需求</h2>
             </div>
-            <button type="button" id="model-overall-dialog-close" class="icon-button" aria-label="关闭已测试需求">关闭</button>
+            <button type="button" id="model-overall-dialog-close" class="icon-button dialog-close-button" aria-label="关闭已测试需求" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
           </div>
           <p id="model-overall-dialog-meta" class="model-overall-dialog__meta"></p>
           <div id="model-overall-dialog-list" class="model-overall-dialog__list"></div>
+        </dialog>
+
+        <dialog id="model-overall-chart-dialog" class="model-overall-chart-dialog" aria-labelledby="model-overall-chart-dialog-title">
+          <div class="dialog-toolbar">
+            <div>
+              <p class="dialog-model">效率与质量</p>
+              <h2 id="model-overall-chart-dialog-title">加权平均耗时与加权通过率</h2>
+              <p class="model-overall-chart-dialog__note">阅读方式：越靠左上越好；短线连接模型名称与对应散点。</p>
+            </div>
+            <button type="button" id="model-overall-chart-dialog-close" class="icon-button dialog-close-button" aria-label="关闭散点图大图" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="model-overall-chart-dialog__stage">
+            <svg id="model-overall-chart-expanded" class="model-overall-chart model-overall-chart--expanded" role="img"></svg>
+          </div>
+          <p class="model-overall-chart-dialog__tip">可横向滚动查看完整图表；点击散点可继续查看该模型已测试的需求。</p>
         </dialog>
 
         <dialog id="leaderboard-detail-dialog" class="leaderboard-detail-dialog" aria-labelledby="leaderboard-detail-dialog-title">
@@ -159,7 +187,11 @@
               <p id="leaderboard-detail-dialog-label" class="dialog-model"></p>
               <h2 id="leaderboard-detail-dialog-title"></h2>
             </div>
-            <button type="button" id="leaderboard-detail-dialog-close" class="icon-button" aria-label="关闭排行榜详情">关闭</button>
+            <button type="button" id="leaderboard-detail-dialog-close" class="icon-button dialog-close-button" aria-label="关闭排行榜详情" title="关闭">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
           </div>
           <div class="leaderboard-detail-dialog__body">
             <dl class="leaderboard-detail-dialog__meta">
@@ -438,7 +470,11 @@
           <p id="dialog-model" class="dialog-model"></p>
           <h2 id="dialog-title"></h2>
         </div>
-        <button type="button" id="dialog-close" class="icon-button" aria-label="关闭大图">关闭</button>
+        <button type="button" id="dialog-close" class="icon-button dialog-close-button" aria-label="关闭大图" title="关闭">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+          </svg>
+        </button>
       </div>
       <div class="dialog-stage">
         <img id="dialog-image" alt="">
@@ -454,6 +490,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=104"></script>
+    <script src="/app.js?v=105"></script>
   </body>
 </html>

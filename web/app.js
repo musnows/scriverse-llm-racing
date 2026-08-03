@@ -497,7 +497,9 @@ function createModelOverallChartExportSvg() {
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
-        .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 9px; }
+        .model-overall-chart__label-connectors--expanded { display: none; }
+        .model-overall-chart__label-connector { stroke: #686b66; stroke-width: 0.75; stroke-dasharray: 2 2; opacity: 0.7; }
+        .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 8px; }
       `,
     ),
     exportSvg.firstChild,
@@ -581,8 +583,209 @@ function createModelOverallChartData(ranking) {
     }));
 }
 
+function chartBoxesOverlap(left, right, padding = 2) {
+  return left.left < right.right + padding
+    && left.right > right.left - padding
+    && left.top < right.bottom + padding
+    && left.bottom > right.top - padding;
+}
+
+function getChartLabelWidth(text, fontSize) {
+  return Math.max(18, [...text].reduce(
+    (width, character) => width + (character.codePointAt(0) > 255 ? fontSize : fontSize * 0.6),
+    0,
+  ));
+}
+
+function createChartLabelBox(x, y, width, anchor, fontSize) {
+  const left = anchor === "middle" ? x - width / 2 : anchor === "end" ? x - width : x;
+  return {
+    left,
+    right: left + width,
+    top: y - fontSize - 1,
+    bottom: y + 2,
+  };
+}
+
+function createChartLabelConnector(pointX, pointY, box, minimumDistance = 18) {
+  const endX = Math.min(Math.max(pointX, box.left), box.right);
+  const endY = Math.min(Math.max(pointY, box.top), box.bottom);
+  const deltaX = endX - pointX;
+  const deltaY = endY - pointY;
+  const distance = Math.hypot(deltaX, deltaY);
+  if (distance <= minimumDistance) {
+    return null;
+  }
+  const startRatio = 7 / distance;
+  return {
+    x1: pointX + deltaX * startRatio,
+    y1: pointY + deltaY * startRatio,
+    x2: endX,
+    y2: endY,
+  };
+}
+
+function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bounds, options = {}) {
+  const fontSize = options.fontSize ?? 8;
+  const pointRadius = options.pointRadius ?? 7;
+  const collisionPadding = options.collisionPadding ?? 2;
+  const sideDistance = options.sideDistance ?? 10;
+  const sideBaselineOffset = options.sideBaselineOffset ?? 3;
+  const belowDistance = options.belowDistance ?? 15;
+  const aboveDistance = options.aboveDistance ?? 10;
+  const extraDistances = options.extraDistances ?? [0, 12, 24, 36, 52, 68];
+  const preferHorizontalLabels = options.preferHorizontalLabels ?? false;
+  const connectorMinimumDistance = options.connectorMinimumDistance ?? 18;
+  const occupiedBoxes = [];
+  const pointBoxes = chartData.map((item) => {
+    const pointX = xPosition(item.weightedAverageDurationSeconds);
+    const pointY = yPosition(item.weightedPassRate);
+    return {
+      left: pointX - pointRadius,
+      right: pointX + pointRadius,
+      top: pointY - pointRadius,
+      bottom: pointY + pointRadius,
+    };
+  });
+
+  return chartData.map((item) => {
+    const pointX = xPosition(item.weightedAverageDurationSeconds);
+    const pointY = yPosition(item.weightedPassRate);
+    const labelWidth = getChartLabelWidth(item.entry.model.name, fontSize);
+    const candidates = [];
+    extraDistances.forEach((extraDistance) => {
+      const diagonalOffset = Math.round(extraDistance * 0.4);
+      const horizontalCandidates = [
+        { dx: sideDistance + extraDistance, dy: sideBaselineOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: sideBaselineOffset, anchor: "end" },
+      ];
+      const verticalCandidates = [
+        { dx: 0, dy: belowDistance + extraDistance, anchor: "middle" },
+        { dx: 0, dy: -aboveDistance - extraDistance, anchor: "middle" },
+      ];
+      candidates.push(
+        ...(preferHorizontalLabels ? horizontalCandidates : verticalCandidates),
+        ...(preferHorizontalLabels ? verticalCandidates : horizontalCandidates),
+        { dx: sideDistance + extraDistance, dy: belowDistance + diagonalOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: belowDistance + diagonalOffset, anchor: "end" },
+        { dx: sideDistance + extraDistance, dy: -aboveDistance - diagonalOffset, anchor: "start" },
+        { dx: -sideDistance - extraDistance, dy: -aboveDistance - diagonalOffset, anchor: "end" },
+      );
+    });
+
+    let selectedCandidate = null;
+    candidates.forEach((candidate) => {
+      const x = pointX + candidate.dx;
+      const y = pointY + candidate.dy;
+      const box = createChartLabelBox(x, y, labelWidth, candidate.anchor, fontSize);
+      const isWithinBounds = box.left >= bounds.left
+        && box.right <= bounds.right
+        && box.top >= bounds.top
+        && box.bottom <= bounds.bottom;
+      if (!isWithinBounds) {
+        return;
+      }
+      const pointCollisionCount = pointBoxes.filter(
+        (pointBox) => chartBoxesOverlap(box, pointBox, collisionPadding),
+      ).length;
+      const labelCollisionCount = occupiedBoxes.filter(
+        (occupiedBox) => chartBoxesOverlap(box, occupiedBox, collisionPadding),
+      ).length;
+      const distanceScore = preferHorizontalLabels
+        ? Math.abs(candidate.dx) + Math.abs(candidate.dy) * 2
+        : Math.hypot(candidate.dx, candidate.dy);
+      const score = pointCollisionCount * 10000
+        + labelCollisionCount * 20000
+        + distanceScore;
+      if (!selectedCandidate || score < selectedCandidate.score) {
+        selectedCandidate = { ...candidate, x, y, box, score };
+      }
+    });
+
+    if (!selectedCandidate) {
+      const x = Math.min(Math.max(pointX, bounds.left + labelWidth / 2), bounds.right - labelWidth / 2);
+      const y = Math.min(Math.max(pointY + 15, bounds.top + fontSize + 1), bounds.bottom - 2);
+      selectedCandidate = {
+        x,
+        y,
+        anchor: "middle",
+        box: createChartLabelBox(x, y, labelWidth, "middle", fontSize),
+      };
+    }
+
+    occupiedBoxes.push(selectedCandidate.box);
+    return {
+      item,
+      x: selectedCandidate.x,
+      y: selectedCandidate.y,
+      anchor: selectedCandidate.anchor,
+      connector: createChartLabelConnector(
+        pointX,
+        pointY,
+        selectedCandidate.box,
+        connectorMinimumDistance,
+      ),
+    };
+  });
+}
+
+function bindModelOverallChartPoint(point, entry, beforeOpen) {
+  const openDetails = () => {
+    point.blur();
+    if (beforeOpen) {
+      beforeOpen();
+    }
+    openModelOverallDetails(entry);
+  };
+  point.addEventListener("click", openDetails);
+  point.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openDetails();
+    }
+  });
+}
+
+function openModelOverallChartDialog() {
+  if (elements.modelOverallChartExpand.disabled || elements.modelOverallChartDialog.open) {
+    return;
+  }
+
+  const sourceChart = elements.modelOverallChart;
+  const expandedChart = elements.modelOverallChartExpanded;
+  expandedChart.replaceChildren(...[...sourceChart.childNodes].map((node) => node.cloneNode(true)));
+  ["viewBox", "preserveAspectRatio"].forEach((attributeName) => {
+    const attributeValue = sourceChart.getAttribute(attributeName);
+    if (attributeValue) {
+      expandedChart.setAttribute(attributeName, attributeValue);
+    }
+  });
+
+  const expandedTitle = [...expandedChart.children].find((element) => element.tagName.toLowerCase() === "title");
+  if (expandedTitle) {
+    expandedTitle.id = "model-overall-chart-expanded-title";
+    expandedChart.setAttribute("aria-labelledby", expandedTitle.id);
+  }
+
+  expandedChart.querySelectorAll(".model-overall-chart__point-label").forEach((label) => {
+    label.setAttribute("x", label.dataset.expandedX);
+    label.setAttribute("y", label.dataset.expandedY);
+    label.setAttribute("text-anchor", label.dataset.expandedAnchor);
+  });
+
+  const rankingByModelId = new Map(getOverallRatingData().map((entry) => [String(entry.model.id), entry]));
+  expandedChart.querySelectorAll(".model-overall-chart__point").forEach((point) => {
+    const entry = rankingByModelId.get(point.dataset.modelId);
+    if (entry) {
+      bindModelOverallChartPoint(point, entry, () => elements.modelOverallChartDialog.close());
+    }
+  });
+  elements.modelOverallChartDialog.showModal();
+}
+
 function renderModelOverallChart(ranking = []) {
   elements.modelOverallChart.replaceChildren();
+  elements.modelOverallChartExpand.disabled = true;
   elements.modelOverallChartDownload.disabled = true;
   elements.modelOverallChartEmpty.hidden = true;
   const chartData = createModelOverallChartData(ranking);
@@ -644,6 +847,57 @@ function renderModelOverallChart(ranking = []) {
   );
   elements.modelOverallChart.append(labels);
 
+  const chartBounds = {
+    left: margin.left + 4,
+    right: margin.left + plotWidth - 4,
+    top: margin.top + 4,
+    bottom: margin.top + plotHeight - 4,
+  };
+  const pointLabelLayout = createModelOverallChartLabelLayout(chartData, xPosition, yPosition, chartBounds);
+  const expandedPointLabelLayout = createModelOverallChartLabelLayout(
+    chartData,
+    xPosition,
+    yPosition,
+    chartBounds,
+    {
+      fontSize: 6,
+      pointRadius: 4,
+      collisionPadding: 0.5,
+      sideDistance: 9,
+      sideBaselineOffset: 2,
+      belowDistance: 12,
+      aboveDistance: 8,
+      extraDistances: [0, 8, 16, 26, 38, 52],
+      preferHorizontalLabels: true,
+      connectorMinimumDistance: 4,
+    },
+  );
+  const labelConnectors = createChartSvgElement("g", {
+    class: "model-overall-chart__label-connectors model-overall-chart__label-connectors--default",
+  });
+  pointLabelLayout.forEach((label) => {
+    if (label.connector) {
+      labelConnectors.append(createChartSvgElement("line", {
+        class: "model-overall-chart__label-connector",
+        ...label.connector,
+      }));
+    }
+  });
+  elements.modelOverallChart.append(labelConnectors);
+
+  const expandedLabelConnectors = createChartSvgElement("g", {
+    class: "model-overall-chart__label-connectors model-overall-chart__label-connectors--expanded",
+  });
+  expandedPointLabelLayout.forEach((label) => {
+    if (label.connector) {
+      expandedLabelConnectors.append(createChartSvgElement("line", {
+        class: "model-overall-chart__label-connector",
+        ...label.connector,
+      }));
+    }
+  });
+  elements.modelOverallChart.append(expandedLabelConnectors);
+
   const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
   chartData.forEach((item) => {
     const point = createChartSvgElement("circle", {
@@ -654,41 +908,35 @@ function renderModelOverallChart(ranking = []) {
       fill: item.color,
       tabindex: 0,
       role: "button",
+      "data-model-id": item.entry.model.id,
       "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`,
     });
     const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`);
     point.append(pointTitle);
-    const openDetails = () => {
-      point.blur();
-      openModelOverallDetails(item.entry);
-    };
-    point.addEventListener("click", openDetails);
-    point.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openDetails();
-      }
-    });
+    bindModelOverallChartPoint(point, item.entry);
     points.append(point);
   });
   elements.modelOverallChart.append(points);
 
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
-  chartData.forEach((item) => {
-    const pointY = yPosition(item.weightedPassRate);
-    const labelY = Math.min(pointY + 14, margin.top + plotHeight + 10);
+  pointLabelLayout.forEach((label, index) => {
+    const expandedLabel = expandedPointLabelLayout[index];
     pointLabels.append(createChartSvgElement(
       "text",
       {
         class: "model-overall-chart__point-label",
-        x: xPosition(item.weightedAverageDurationSeconds),
-        y: labelY,
-        "text-anchor": "middle",
+        x: label.x,
+        y: label.y,
+        "text-anchor": label.anchor,
+        "data-expanded-x": expandedLabel.x,
+        "data-expanded-y": expandedLabel.y,
+        "data-expanded-anchor": expandedLabel.anchor,
       },
-      item.entry.model.name,
+      label.item.entry.model.name,
     ));
   });
   elements.modelOverallChart.append(pointLabels);
+  elements.modelOverallChartExpand.disabled = false;
   elements.modelOverallChartDownload.disabled = false;
   elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与加权通过率数据`;
 }
@@ -986,7 +1234,12 @@ const elements = {
   modelOverallChart: document.getElementById("model-overall-chart"),
   modelOverallChartEmpty: document.getElementById("model-overall-chart-empty"),
   modelOverallChartNote: document.getElementById("model-overall-chart-note"),
+  modelOverallChartShell: document.getElementById("model-overall-chart-shell"),
+  modelOverallChartExpand: document.getElementById("model-overall-chart-expand"),
   modelOverallChartDownload: document.getElementById("model-overall-chart-download"),
+  modelOverallChartDialog: document.getElementById("model-overall-chart-dialog"),
+  modelOverallChartDialogClose: document.getElementById("model-overall-chart-dialog-close"),
+  modelOverallChartExpanded: document.getElementById("model-overall-chart-expanded"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
   modelOverallDialogMeta: document.getElementById("model-overall-dialog-meta"),
@@ -2356,7 +2609,19 @@ elements.testMethodTab.addEventListener("click", () => {
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
 elements.copyTestMethodFirstPrompt.addEventListener("click", copyTestMethodFirstPrompt);
+elements.modelOverallChartExpand.addEventListener("click", openModelOverallChartDialog);
+elements.modelOverallChartShell.addEventListener("click", (event) => {
+  if (!event.target.closest?.(".model-overall-chart__point")) {
+    openModelOverallChartDialog();
+  }
+});
 elements.modelOverallChartDownload.addEventListener("click", downloadModelOverallChartPng);
+elements.modelOverallChartDialogClose.addEventListener("click", () => elements.modelOverallChartDialog.close());
+elements.modelOverallChartDialog.addEventListener("click", (event) => {
+  if (event.target === elements.modelOverallChartDialog) {
+    elements.modelOverallChartDialog.close();
+  }
+});
 elements.modelOverallDialogClose.addEventListener("click", () => elements.modelOverallDialog.close());
 elements.modelOverallDialog.addEventListener("click", (event) => {
   if (event.target === elements.modelOverallDialog) {
@@ -2378,6 +2643,11 @@ elements.dialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && elements.modelOverallChartDialog.open) {
+    event.preventDefault();
+    elements.modelOverallChartDialog.close();
+    return;
+  }
   if (!elements.dialog.open) {
     return;
   }
