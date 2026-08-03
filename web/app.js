@@ -1493,8 +1493,8 @@ function renderFeatureView() {
   elements.featureComparison.replaceChildren();
 
   const modelEntries = models
-    .map((model) => ({ model, items: getFeatureItems(feature.id, model.id) }))
-    .sort((left, right) => Number(right.items.length > 0) - Number(left.items.length > 0));
+    .map((model, sourceIndex) => ({ model, items: getFeatureItems(feature.id, model.id), sourceIndex }))
+    .sort((left, right) => right.items.length - left.items.length || left.sourceIndex - right.sourceIndex);
   modelEntries.forEach(({ model, items }, index) => {
     elements.featureComparison.append(createComparisonColumn(model, items, index));
   });
