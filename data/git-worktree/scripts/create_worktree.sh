@@ -18,12 +18,12 @@ while true; do
   # 一次 ls 快照
   EXISTING=$(ls -1 "$WORKTREE_BASE" 2>/dev/null || true)
 
-  # 一次性生成3个候选 hash
-  CANDIDATES=$(for _ in 1 2 3; do
+  # 一次性生成5个候选 hash
+  CANDIDATES=$(for _ in 1 2 3 4 5; do
     head -c 32 /dev/urandom | md5sum | cut -c 1-8
   done)
 
-  # 遍历3个候选，选第一个不冲突的
+  # 遍历5个候选，选第一个不冲突的
   HASH=""
   while IFS= read -r candidate; do
     if ! echo "$EXISTING" | grep -qx "$candidate"; then
@@ -37,7 +37,7 @@ while true; do
     TARGET_PATH="$WORKTREE_BASE/$HASH/$PROJECT_NAME"
     break
   fi
-  # 3个都冲突，重试
+  # 5个都冲突，重试
 done
 
 echo "TARGET_PATH=$TARGET_PATH"
