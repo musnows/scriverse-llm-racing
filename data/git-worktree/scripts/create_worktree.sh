@@ -4,7 +4,6 @@
 
 set -e
 
-# 获取项目目录名
 PROJECT_NAME=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
 
 if [ -z "$PROJECT_NAME" ]; then
@@ -15,13 +14,28 @@ fi
 WORKTREE_BASE="$HOME/.worktree"
 mkdir -p "$WORKTREE_BASE"
 
-# 生成唯一 hash，避免冲突
 while true; do
-  HASH=$(head -c 32 /dev/urandom | md5sum | head -c 6)
-  TARGET_PATH="$WORKTREE_BASE/$HASH/$PROJECT_NAME"
-  if [ ! -e "$TARGET_PATH" ]; then
+  # 一次 ls 快照
+  EXISTING=$(ls -1 "$WORKTREE_BASE" 2>/dev/null || true)
+
+  # 一次性生成3个候选 hash
+  CANDIDATES=$(for _ in 1 2 3; do head -c 32 /dev/urandom | md5sum | head -c 6; done)
+
+  # 遍历3个候选，选第一个不冲突的
+  HASH=""
+  while IFS= read -r candidate; do
+    if ! echo "$EXISTING" | grep -qx "$candidate"; then
+      HASH="$candidate"
+      break
+    fi
+  done <<< "$CANDIDATES"
+
+  # 找到一个可用 hash，跳出循环
+  if [ -n "$HASH" ]; then
+    TARGET_PATH="$WORKTREE_BASE/$HASH/$PROJECT_NAME"
     break
   fi
+  # 3个都冲突，重试
 done
 
 echo "TARGET_PATH=$TARGET_PATH"
