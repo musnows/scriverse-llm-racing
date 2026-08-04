@@ -384,12 +384,12 @@
     },
     {
       "modelId": 17,
-      "durationSeconds": 1640,
+      "durationSeconds": 1628,
       "resultBranchUrl": "",
       "unexpectedCases": [],
       "agent": {
         "software": "WorkBuddy",
-        "version": "",
+        "version": "5.3.8",
         "context": "512K"
       },
       "failures": {
@@ -420,6 +420,6 @@
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "supportsMultimodal": false, "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
     { "modelId": 12, "modelName": "Kimi K3 Max", "supportsMultimodal": true, "software": "Kimi Code", "version": "0.31.1", "context": "1M", "status": "已测试" },
-    { "modelId": 17, "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "WorkBuddy", "version": "", "context": "512K", "status": "已测试" }
+    { "modelId": 17, "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "WorkBuddy", "version": "5.3.8", "context": "512K", "status": "已测试" }
   ]
 }
