@@ -248,7 +248,7 @@ const models = [
   },
   {
     id: 14,
-    name: "GPT-5.5",
+    name: "GPT-5.5 Xhigh",
     tool: "Codex CLI",
     testedAt: "2026-08-04T10:56:21+08:00",
     images: [],
