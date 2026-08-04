@@ -860,12 +860,9 @@ function createModelOverallChartLabelLayout(chartData, xPosition, yPosition, bou
   });
 }
 
-function bindModelOverallChartPoint(point, entry, beforeOpen) {
+function bindModelOverallChartPoint(point, entry) {
   const openDetails = () => {
     point.blur();
-    if (beforeOpen) {
-      beforeOpen();
-    }
     openModelOverallDetails(entry);
   };
   point.addEventListener("click", openDetails);
@@ -914,7 +911,7 @@ function openModelOverallChartDialog() {
   expandedChart.querySelectorAll(".model-overall-chart__point").forEach((point) => {
     const entry = rankingByModelId.get(point.dataset.modelId);
     if (entry) {
-      bindModelOverallChartPoint(point, entry, () => elements.modelOverallChartDialog.close());
+      bindModelOverallChartPoint(point, entry);
     }
   });
   elements.modelOverallChartDialog.showModal();
@@ -2838,7 +2835,7 @@ elements.dialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && elements.modelOverallChartDialog.open) {
+  if (event.key === "Escape" && elements.modelOverallChartDialog.open && !elements.modelOverallDialog.open) {
     event.preventDefault();
     elements.modelOverallChartDialog.close();
     return;
