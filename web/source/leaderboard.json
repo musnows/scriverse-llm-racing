@@ -237,7 +237,7 @@
       "durationSeconds": 2056,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high",
       "unexpectedCases": [
-        "测试过程中居然用了 Cursor 的指定 subagent 模型能力，还喊了 Claude Sonnet 5 来当外援。这样测出来的结果暂时不能信，得重测。（8 月 3 日记录）"
+        "首次测试 Grok 4.5 High 时，Grok 通过 Cursor 的 subagent 能力点名使用了 Claude Sonnet 5 当外援，测试结果因此失真，第一次得分是 170。当前平台展示的是第二次重新测试的结果，这次全程只使用纯 Grok 4.5。（8 月 3 日记录）"
       ],
       "agent": {
         "software": "Cursor Agent View",
