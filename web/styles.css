@@ -1855,12 +1855,15 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-chart-dialog__best {
-  margin: 8px 0 0;
+  flex: 0 1 auto;
+  margin: 0;
   color: #f3c76b;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.45;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .model-overall-chart-dialog__stage {
@@ -3077,9 +3080,16 @@ dialog[open]::backdrop {
   }
 
   .model-overall-chart-dialog .dialog-toolbar {
+    flex-wrap: wrap;
     gap: 12px;
     padding: 12px 14px;
     padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  .model-overall-chart-dialog__best {
+    flex: 1 0 100%;
+    order: 3;
+    text-align: left;
   }
 
   .model-overall-chart-dialog .dialog-toolbar .icon-button {
