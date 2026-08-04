@@ -518,14 +518,22 @@ h2 {
   font-size: 11px;
 }
 
+.model-test-time,
 .model-token-usage {
-  margin: 12px 0 0;
   color: #969791;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.model-test-time {
+  margin: 12px 0 0;
+}
+
+.model-token-usage {
+  margin: 4px 0 0;
 }
 
 .model-rating-row {

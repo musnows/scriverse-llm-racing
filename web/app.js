@@ -11,6 +11,7 @@ const models = [
     id: 1,
     name: "Doubao-Seed-2.1-Turbo",
     tool: "TRAE SOLO",
+    testedAt: "2026-08-02T16:31:21+08:00",
     images: [
       ["image-20260801230707-wdg04ed.webp", "模型与模式选择", ["process"]],
       ["image-20260802095037-ltvoeks.webp", "系统设置中的 S3 备份入口", ["settings"]],
@@ -30,6 +31,7 @@ const models = [
     id: 2,
     name: "Qwen3.8-Max-Preview",
     tool: "QoderCN IDE Quest",
+    testedAt: "2026-08-02T16:31:21+08:00",
     images: [
       ["image-20260801230701-fvwhgxb.webp", "1M 上下文与模型模式选择", ["process"]],
       ["image-20260802102318-b3vam73.webp", "系统设置中的数据备份入口", ["settings"]],
@@ -49,6 +51,7 @@ const models = [
     id: 3,
     name: "LongCat-2.0",
     tool: "CatPaw",
+    testedAt: "2026-08-02T16:31:21+08:00",
     images: [
       ["image-20260801230716-nekt5zt.webp", "模型选择界面", ["process"]],
       ["image-20260801235849-ejyt7r1.webp", "任务完成与后续确认", ["process"]],
@@ -69,6 +72,7 @@ const models = [
     id: 4,
     name: "Hy3",
     tool: "WorkBuddy",
+    testedAt: "2026-08-02T16:31:21+08:00",
     images: [
       ["image-20260801230712-zy199ri.webp", "Max 模式与模型选择", ["process"]],
       ["image-20260802000001-749b4nc.webp", "任务完成耗时", ["process"]],
@@ -95,6 +99,7 @@ const models = [
     id: 5,
     name: "DeepSeek V4 Flash 0731",
     tool: "Claude Code",
+    testedAt: "2026-08-03T00:31:37+08:00",
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -123,6 +128,7 @@ const models = [
     id: 6,
     name: "DeepSeek V4 Pro Preview",
     tool: "Claude Code",
+    testedAt: "2026-08-03T00:31:37+08:00",
     images: [
       ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
       ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
@@ -145,6 +151,7 @@ const models = [
     id: 7,
     name: "GPT-5.6 Luna Max",
     tool: "Codex CLI",
+    testedAt: "2026-08-03T23:03:51+08:00",
     images: [
       ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
       ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
@@ -159,6 +166,7 @@ const models = [
     id: 8,
     name: "Composer 2.5",
     tool: "Cursor IDE",
+    testedAt: "2026-08-03T23:03:51+08:00",
     images: [
       ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
       ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
@@ -173,6 +181,7 @@ const models = [
     id: 9,
     name: "Grok 4.5 High",
     tool: "Cursor Agent View",
+    testedAt: "2026-08-03T23:03:51+08:00",
     images: [
       ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
       ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
@@ -189,6 +198,7 @@ const models = [
     id: 10,
     name: "Qwen3.8-Max",
     tool: "QoderCN IDE Quest",
+    testedAt: "2026-08-04T00:20:37+08:00",
     images: [
       ["image-20260804001203-ymvj4gr.webp", "设置中心入口", ["settings"]],
       ["image-20260804001141-h7wn6px.webp", "数据备份页面", ["overview"]],
@@ -199,6 +209,7 @@ const models = [
     id: 11,
     name: "GLM-5.2 Max",
     tool: "Cursor Agent View",
+    testedAt: "2026-08-04T00:20:37+08:00",
     images: [
       ["image-20260804001209-s8z1js9.webp", "设置中心入口", ["settings"]],
       ["image-20260804001214-fn2utm1.webp", "备份与同步页面", ["overview", "schedule"]],
@@ -210,6 +221,7 @@ const models = [
     id: 12,
     name: "Kimi K3 Max",
     tool: "Kimi Code",
+    testedAt: "2026-08-04T05:49:42+08:00",
     images: [
       ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
       ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
@@ -225,6 +237,7 @@ const models = [
     id: 13,
     name: "GPT-5.6 Sol Max",
     tool: "Codex CLI",
+    testedAt: "2026-08-04T08:12:31+08:00",
     images: [
       ["image-20260804065202-ny26db1.webp", "Terra 与 Sol 模型启动", ["process"]],
       ["image-20260804065235-zeqgize.webp", "Sol 启动与记忆设置", ["process"]],
@@ -237,12 +250,14 @@ const models = [
     id: 14,
     name: "GPT-5.5",
     tool: "Codex CLI",
+    testedAt: "2026-08-04T10:56:21+08:00",
     images: [],
   },
   {
     id: 15,
     name: "GPT-5.6 Terra Max",
     tool: "Codex CLI",
+    testedAt: "2026-08-04T10:56:21+08:00",
     images: [],
   },
 ];
@@ -430,6 +445,23 @@ function formatBuildUpdatedAt(value) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
+  }).format(date).replaceAll("/", "-");
+}
+
+function formatTestedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "未记录";
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   }).format(date).replaceAll("/", "-");
 }
@@ -1413,6 +1445,7 @@ const elements = {
   modelContentTabs: document.getElementById("model-content-tabs"),
   modelKicker: document.getElementById("model-kicker"),
   modelTitle: document.getElementById("model-title"),
+  modelTestedAt: document.getElementById("model-tested-at"),
   modelCount: document.getElementById("model-count"),
   modelTokenUsage: document.getElementById("model-token-usage"),
   modelRating: document.getElementById("model-rating"),
@@ -1822,6 +1855,7 @@ function renderModelView() {
   renderModelContentTabs();
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
+  elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(model.testedAt)}`;
   elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
   elements.modelTokenUsage.textContent = `token usage：${formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage)}`;
   renderModelRating();
