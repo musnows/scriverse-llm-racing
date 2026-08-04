@@ -2792,6 +2792,7 @@ dialog[open]::backdrop {
     min-width: 0;
     flex: 1;
     overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .view-switch__button {
@@ -3226,7 +3227,9 @@ dialog[open]::backdrop {
   .view-switch {
     justify-content: flex-start;
     gap: 4px;
-    padding: 4px;
+    height: 46px;
+    padding: 2px 4px;
+    overflow-y: hidden;
   }
 
   .header-view-controls .view-switch {
