@@ -388,7 +388,7 @@
     {
       "modelId": 17,
       "durationSeconds": 1628,
-      "resultBranchUrl": "",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/minimax-m3",
       "unexpectedCases": [],
       "agent": {
         "software": "WorkBuddy",
