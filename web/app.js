@@ -305,7 +305,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=50";
+const leaderboardDataUrl = "/source/leaderboard.json?v=51";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
