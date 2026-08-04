@@ -1252,6 +1252,18 @@ a.requirement-meta-card__value:hover {
   font-size: 16px;
 }
 
+.agent-roster__multimodal-note {
+  margin: 6px 0 0;
+  color: #969890;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.agent-roster__multimodal-note span {
+  color: #e58b66;
+  font-weight: 600;
+}
+
 .requirement-prompt-block pre {
   max-height: 520px;
   margin: 0;
