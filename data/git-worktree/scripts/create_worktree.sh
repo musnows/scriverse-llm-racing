@@ -1,5 +1,5 @@
 #!/bin/bash
-# 生成唯一的目标路径: ~/.worktree/{6位hash}/{项目目录名}
+# 生成唯一的目标路径: ~/.worktree/{8位hash}/{项目目录名}
 # 输出: TARGET_PATH=xxx 和 HASH=xxx
 
 set -e
@@ -19,7 +19,9 @@ while true; do
   EXISTING=$(ls -1 "$WORKTREE_BASE" 2>/dev/null || true)
 
   # 一次性生成3个候选 hash
-  CANDIDATES=$(for _ in 1 2 3; do head -c 32 /dev/urandom | md5sum | head -c 6; done)
+  CANDIDATES=$(for _ in 1 2 3; do
+    head -c 32 /dev/urandom | md5sum | cut -c 1-8
+  done)
 
   # 遍历3个候选，选第一个不冲突的
   HASH=""

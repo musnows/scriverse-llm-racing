@@ -53,7 +53,7 @@ basename $(git rev-parse --show-toplevel)
 
 ### 2. 生成目标路径
 
-用脚本生成唯一目标路径，格式固定为：`~/.worktree/{6位hash}/{项目目录名}`
+用脚本生成唯一目标路径，格式固定为：`~/.worktree/{8位hash}/{项目目录名}`
 
 执行脚本：
 
@@ -63,12 +63,12 @@ bash <skill_dir>/scripts/create_worktree.sh
 
 脚本会输出类似：
 ```
-TARGET_PATH=/Users/<username>/.worktree/a3f2b1/my-project
+TARGET_PATH=/Users/<username>/.worktree/a3f2b1c4/my-project
 ```
 
 从中提取 `TARGET_PATH` 使用。如果目标路径已存在，脚本会自动重新生成 hash。
 
-从中提取 hash 作为分支名后缀（本例中为 `a3f2b1`）。
+从中提取 hash 作为分支名后缀（本例中为 `a3f2b1c4`）。
 
 ### 3. 询问基础分支
 
@@ -126,11 +126,11 @@ git branch --format='%(refname:short)'
 获得基础分支后，执行：
 
 ```bash
-git worktree add -b worktree/{6位hash} {target_path} {base_branch}
+git worktree add -b worktree/{8位hash} {target_path} {base_branch}
 ```
 
 其中：
-- `worktree/{6位hash}`：新分支名，固定格式，hash 与目标路径中的 hash 一致
+- `worktree/{8位hash}`：新分支名，固定格式，hash 与目标路径中的 hash 一致
 - `{target_path}`：步骤 2 中脚本输出的路径
 - `{base_branch}`：步骤 3 中获得的分支
 
