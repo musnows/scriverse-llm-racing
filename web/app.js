@@ -506,6 +506,7 @@ function createModelOverallChartExportSvg() {
         .model-overall-chart__label-connectors--expanded { display: none; }
         .model-overall-chart__label-connector { stroke: #686b66; stroke-width: 0.75; stroke-dasharray: 2 2; opacity: 0.7; }
         .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 8px; }
+        .model-overall-chart__best-marker { display: none; }
       `,
     ),
     exportSvg.firstChild,
@@ -587,6 +588,28 @@ function createModelOverallChartData(ranking) {
       ...entry,
       color: chartPointColors[index % chartPointColors.length],
     }));
+}
+
+function getModelOverallChartBestItem(chartData, xPosition, yPosition, topLeft) {
+  return chartData.reduce((best, item) => {
+    const distance = Math.hypot(
+      xPosition(item.weightedAverageDurationSeconds) - topLeft.x,
+      yPosition(item.weightedPassRate) - topLeft.y,
+    );
+    if (!best || distance < best.distance) {
+      return { item, distance };
+    }
+    if (distance !== best.distance) {
+      return best;
+    }
+    if (item.weightedPassRate !== best.item.weightedPassRate) {
+      return item.weightedPassRate > best.item.weightedPassRate ? { item, distance } : best;
+    }
+    if (item.weightedAverageDurationSeconds !== best.item.weightedAverageDurationSeconds) {
+      return item.weightedAverageDurationSeconds < best.item.weightedAverageDurationSeconds ? { item, distance } : best;
+    }
+    return item.entry.model.name.localeCompare(best.item.entry.model.name) < 0 ? { item, distance } : best;
+  }, null)?.item ?? null;
 }
 
 function chartBoxesOverlap(left, right, padding = 2) {
@@ -780,6 +803,12 @@ function openModelOverallChartDialog() {
   });
 
   const rankingByModelId = new Map(getOverallRatingData().map((entry) => [String(entry.model.id), entry]));
+  const bestPoint = sourceChart.querySelector(".model-overall-chart__point--best");
+  const bestEntry = bestPoint ? rankingByModelId.get(String(bestPoint.dataset.modelId)) : null;
+  elements.modelOverallChartDialogBest.hidden = !bestEntry;
+  elements.modelOverallChartDialogBest.textContent = bestEntry
+    ? `当前最强（距离左上角最近）：${bestEntry.model.name}`
+    : "";
   expandedChart.querySelectorAll(".model-overall-chart__point").forEach((point) => {
     const entry = rankingByModelId.get(point.dataset.modelId);
     if (entry) {
@@ -794,6 +823,8 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChartExpand.disabled = true;
   elements.modelOverallChartDownload.disabled = true;
   elements.modelOverallChartEmpty.hidden = true;
+  elements.modelOverallChartDialogBest.hidden = true;
+  elements.modelOverallChartDialogBest.textContent = "";
   const chartData = createModelOverallChartData(ranking);
   if (chartData.length === 0) {
     elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
@@ -812,6 +843,10 @@ function renderModelOverallChart(ranking = []) {
   const maxDurationSeconds = tickStepSeconds * 4;
   const xPosition = (durationSeconds) => margin.left + (durationSeconds / maxDurationSeconds) * plotWidth;
   const yPosition = (weightedPassRate) => margin.top + ((100 - weightedPassRate) / 100) * plotHeight;
+  const bestChartItem = getModelOverallChartBestItem(chartData, xPosition, yPosition, {
+    x: margin.left,
+    y: margin.top,
+  });
 
   elements.modelOverallChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
   elements.modelOverallChart.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -906,8 +941,9 @@ function renderModelOverallChart(ranking = []) {
 
   const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
   chartData.forEach((item) => {
+    const isBest = item === bestChartItem;
     const point = createChartSvgElement("circle", {
-      class: "model-overall-chart__point",
+      class: `model-overall-chart__point${isBest ? " model-overall-chart__point--best" : ""}`,
       cx: xPosition(item.weightedAverageDurationSeconds),
       cy: yPosition(item.weightedPassRate),
       r: 5,
@@ -915,14 +951,27 @@ function renderModelOverallChart(ranking = []) {
       tabindex: 0,
       role: "button",
       "data-model-id": item.entry.model.id,
-      "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`,
+      "aria-label": `${item.entry.model.name}，加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%${isBest ? "，当前最强（距离左上角最近）" : ""}`,
     });
-    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`);
+    const pointTitle = createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均耗时 ${formatChartDuration(item.weightedAverageDurationSeconds)}，加权通过率 ${item.weightedPassRate.toFixed(0)}%${isBest ? "，当前最强（距离左上角最近）" : ""}`);
     point.append(pointTitle);
     bindModelOverallChartPoint(point, item.entry);
     points.append(point);
   });
   elements.modelOverallChart.append(points);
+
+  if (bestChartItem) {
+    const bestMarker = createChartSvgElement("g", {
+      class: "model-overall-chart__best-marker",
+      transform: `translate(${xPosition(bestChartItem.weightedAverageDurationSeconds)} ${yPosition(bestChartItem.weightedPassRate)})`,
+      "aria-hidden": "true",
+    });
+    bestMarker.append(
+      createChartSvgElement("circle", { class: "model-overall-chart__best-marker-ring", r: 9 }),
+      createChartSvgElement("text", { class: "model-overall-chart__best-marker-label", x: 0, y: -14, "text-anchor": "middle" }, "最强"),
+    );
+    elements.modelOverallChart.append(bestMarker);
+  }
 
   const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
   pointLabelLayout.forEach((label, index) => {
@@ -1273,6 +1322,7 @@ const elements = {
   modelOverallChartDownload: document.getElementById("model-overall-chart-download"),
   modelOverallChartDialog: document.getElementById("model-overall-chart-dialog"),
   modelOverallChartDialogClose: document.getElementById("model-overall-chart-dialog-close"),
+  modelOverallChartDialogBest: document.getElementById("model-overall-chart-dialog-best"),
   modelOverallChartExpanded: document.getElementById("model-overall-chart-expanded"),
   modelOverallDialog: document.getElementById("model-overall-dialog"),
   modelOverallDialogModel: document.getElementById("model-overall-dialog-model"),
