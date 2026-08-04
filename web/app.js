@@ -1,5 +1,7 @@
 const assetRoot = "/source/assets/";
 const apiBase = String(window.__RATING_API_BASE__ || "").trim().replace(/\/+$/, "");
+const configuredLeaderboardTopN = Number.parseInt(String(window.__LEADERBOARD_TOP_N__ ?? ""), 10);
+const leaderboardTopN = Number.isFinite(configuredLeaderboardTopN) ? Math.max(3, configuredLeaderboardTopN) : 4;
 
 function apiUrl(path) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -2453,8 +2455,8 @@ function renderLeaderboard() {
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。在测试用例“查看说明”中可点赞或踩。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。";
-  const visibleEntries = rankingData.slice(0, 3);
-  const hiddenEntries = rankingData.slice(3);
+  const visibleEntries = rankingData.slice(0, leaderboardTopN);
+  const hiddenEntries = rankingData.slice(leaderboardTopN);
   elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
 
   if (hiddenEntries.length > 0) {

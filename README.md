@@ -33,12 +33,14 @@ data/
 cd web
 API_BASE=https://your-api.example.com \
 BAIDU_STATISTICS_ID=your-baidu-statistics-id \
+LEADERBOARD_TOP_N=4 \
 npm run build
 ```
 
 `npm run build` 会生成：
 
 - `api-config.js`：前端评分 API 地址。
+- `leaderboard-config.js`：需求排行榜默认展示数量；`LEADERBOARD_TOP_N` 未设置时显示前 4，设置为小于 3 的值时仍显示前 3。
 - `build-meta.js`：footer 显示的最近更新时间。
 - `baidu-statistics-config.js`：百度统计 ID；未设置 `BAIDU_STATISTICS_ID` 时不加载统计脚本。
 
