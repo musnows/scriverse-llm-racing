@@ -323,6 +323,15 @@ const ratingState = {
   valuesByRequirement: new Map(),
   requestsByRequirement: new Map(),
 };
+const caseVoteState = {
+  requirementId: null,
+  loading: false,
+  loaded: false,
+  values: new Map(),
+  valuesByRequirement: new Map(),
+  requestsByRequirement: new Map(),
+  pending: new Set(),
+};
 
 function getCurrentRequirement() {
   const requirements = leaderboardData?.requirements ?? [];
@@ -1853,6 +1862,179 @@ async function loadAllRatingsForRequirements(force = false) {
   }
 }
 
+function getCaseVotePendingKey(requirementId, testCaseId) {
+  return `${requirementId}:${testCaseId}`;
+}
+
+async function requestCaseVotesForRequirement(requirementId, force = false) {
+  if (!force && caseVoteState.valuesByRequirement.has(requirementId)) {
+    return caseVoteState.valuesByRequirement.get(requirementId);
+  }
+  if (!force && caseVoteState.requestsByRequirement.has(requirementId)) {
+    return caseVoteState.requestsByRequirement.get(requirementId);
+  }
+
+  const request = (async () => {
+    const response = await fetch(apiUrl(`/api/case-votes?requirementId=${encodeURIComponent(requirementId)}`), {
+      cache: "no-store",
+      credentials: "include",
+    });
+    if (!response.ok) {
+      throw new Error("用例反馈服务尚未部署");
+    }
+    const payload = await response.json();
+    const values = Array.isArray(payload.data) ? payload.data : [];
+    caseVoteState.valuesByRequirement.set(requirementId, values);
+    return values;
+  })();
+  caseVoteState.requestsByRequirement.set(requirementId, request);
+  try {
+    return await request;
+  } finally {
+    if (caseVoteState.requestsByRequirement.get(requirementId) === request) {
+      caseVoteState.requestsByRequirement.delete(requirementId);
+    }
+  }
+}
+
+async function loadCaseVotesForRequirement(force = false) {
+  const requirementId = state.requirementId;
+  if (!requirementId) {
+    return;
+  }
+  if (!force && caseVoteState.loaded && caseVoteState.requirementId === requirementId) {
+    if (state.view === "leaderboard") {
+      renderLeaderboard();
+    }
+    return;
+  }
+
+  if (caseVoteState.requirementId !== requirementId) {
+    caseVoteState.values = new Map();
+    caseVoteState.loaded = false;
+  }
+  caseVoteState.requirementId = requirementId;
+  caseVoteState.loading = true;
+  try {
+    const values = await requestCaseVotesForRequirement(requirementId, force);
+    if (state.requirementId === requirementId) {
+      caseVoteState.values = new Map(values.map((item) => [item.testCaseId, item]));
+      caseVoteState.loaded = true;
+    }
+  } catch {
+    if (state.requirementId === requirementId) {
+      caseVoteState.values = new Map();
+      caseVoteState.loaded = false;
+    }
+  } finally {
+    if (state.requirementId === requirementId) {
+      caseVoteState.loading = false;
+      if (state.view === "leaderboard") {
+        renderLeaderboard();
+      }
+    }
+  }
+}
+
+async function submitCaseVote(testCaseId, reaction) {
+  const requirementId = state.requirementId;
+  if (!requirementId) {
+    return;
+  }
+  const current = caseVoteState.values.get(testCaseId);
+  if (current?.viewerReaction === reaction) {
+    showToast(reaction === "up" ? "你已点赞此测试用例" : "你已踩此测试用例", "info");
+    return;
+  }
+
+  const pendingKey = getCaseVotePendingKey(requirementId, testCaseId);
+  if (caseVoteState.pending.has(pendingKey)) {
+    return;
+  }
+  caseVoteState.pending.add(pendingKey);
+  renderLeaderboard();
+  try {
+    const response = await fetch(apiUrl("/api/case-votes/vote"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requirementId, testCaseId, reaction }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error === "request_rate_limited"
+        ? "操作过于频繁"
+        : payload.error === "daily_limit_reached" && Number.isInteger(payload.limit)
+          ? `今日对该用例的反馈已达 ${payload.limit} 次上限`
+          : "用例反馈服务暂不可用");
+    }
+    const item = payload.data;
+    if (!item || item.testCaseId !== testCaseId) {
+      throw new Error("用例反馈服务返回异常");
+    }
+    const values = new Map((caseVoteState.valuesByRequirement.get(requirementId) ?? [])
+      .map((value) => [value.testCaseId, value]));
+    values.set(testCaseId, item);
+    caseVoteState.valuesByRequirement.set(requirementId, [...values.values()]);
+    if (state.requirementId === requirementId) {
+      caseVoteState.values = values;
+      caseVoteState.loaded = true;
+    }
+    const label = reaction === "up" ? "点赞" : "踩";
+    showToast(item.result === "updated" ? `已改为${label}` : `已${label}`, "success");
+  } catch (error) {
+    showToast(error instanceof Error && error.message ? error.message : "用例反馈服务尚未部署", "error");
+  } finally {
+    caseVoteState.pending.delete(pendingKey);
+    if (state.requirementId === requirementId && state.view === "leaderboard") {
+      renderLeaderboard();
+    }
+  }
+}
+
+function createCaseVoteControls(testCase) {
+  const controls = document.createElement("div");
+  controls.className = "case-vote-controls";
+  controls.setAttribute("aria-label", `${testCase.id} 用例反馈`);
+  controls.setAttribute("aria-live", "polite");
+  const loading = caseVoteState.requirementId === state.requirementId && caseVoteState.loading;
+  controls.setAttribute("aria-busy", String(loading));
+
+  const label = document.createElement("span");
+  label.className = "case-vote-controls__label";
+  label.textContent = loading && !caseVoteState.loaded ? "反馈加载中" : "用例反馈";
+
+  const value = caseVoteState.requirementId === state.requirementId
+    ? caseVoteState.values.get(testCase.id)
+    : null;
+  const upvoteCount = Number(value?.upvoteCount) || 0;
+  const downvoteCount = Number(value?.downvoteCount) || 0;
+  const pending = caseVoteState.pending.has(getCaseVotePendingKey(state.requirementId, testCase.id));
+
+  const createButton = (reaction, text, count) => {
+    const button = document.createElement("button");
+    const selected = value?.viewerReaction === reaction;
+    button.type = "button";
+    button.className = `case-vote-controls__button case-vote-controls__button--${reaction}`;
+    button.textContent = `${text} ${count}`;
+    button.disabled = pending;
+    button.setAttribute("aria-pressed", String(selected));
+    button.setAttribute("aria-label", `为 ${testCase.id} ${text}，当前 ${count} 次`);
+    button.title = `${text}此测试用例`;
+    button.addEventListener("click", () => {
+      void submitCaseVote(testCase.id, reaction);
+    });
+    return button;
+  };
+
+  controls.append(
+    label,
+    createButton("up", "赞", upvoteCount),
+    createButton("down", "踩", downvoteCount),
+  );
+  return controls;
+}
+
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
   const modelEntry = getRequirementModelEntry(getCurrentRequirement(), model.id);
@@ -2146,8 +2328,8 @@ function renderLeaderboard() {
   }
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。`;
-  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明。";
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。每个测试用例均可点赞或踩。`;
+  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明，也可为测试用例点赞或踩。";
   const visibleEntries = rankingData.slice(0, 3);
   const hiddenEntries = rankingData.slice(3);
   elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
@@ -2233,7 +2415,7 @@ function renderLeaderboard() {
       priority: testCase.priority,
       scenario: testCase.scenario,
     }));
-    testCell.append(identity, scenario);
+    testCell.append(identity, scenario, createCaseVoteControls(testCase));
     row.append(testCell);
     for (const entry of rankingData) {
       row.append(createLeaderboardResultCell(entry, testCase));
@@ -2646,6 +2828,7 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
     } else {
       renderLeaderboard();
       loadRatingsForRequirement();
+      loadCaseVotesForRequirement();
     }
     if (updateRoute) {
       updateBrowserRoute({ replace: replaceRoute });

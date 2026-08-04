@@ -2455,6 +2455,74 @@ dialog[open]::backdrop {
   outline-offset: 2px;
 }
 
+.case-vote-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.case-vote-controls__label {
+  flex: 0 0 100%;
+  color: #858880;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.case-vote-controls__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  padding: 4px 7px;
+  border: 1px solid #3b3d39;
+  border-radius: 5px;
+  background: #1b1c1a;
+  color: #b5b6b0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+}
+
+.case-vote-controls__button--up:hover {
+  border-color: #54795a;
+  color: #c5e6c7;
+  background: rgba(71, 139, 80, 0.16);
+}
+
+.case-vote-controls__button--down:hover {
+  border-color: #8d533f;
+  color: #ffd1c0;
+  background: rgba(169, 79, 48, 0.16);
+}
+
+.case-vote-controls__button--up[aria-pressed="true"] {
+  border-color: #6da874;
+  color: #d5f0d7;
+  background: rgba(71, 139, 80, 0.28);
+}
+
+.case-vote-controls__button--down[aria-pressed="true"] {
+  border-color: #ca7759;
+  color: #ffe0d2;
+  background: rgba(169, 79, 48, 0.3);
+}
+
+.case-vote-controls__button:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
+}
+
+.case-vote-controls__button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
 .leaderboard-result {
   min-height: 72px;
 }
