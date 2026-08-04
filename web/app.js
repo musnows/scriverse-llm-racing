@@ -2041,18 +2041,17 @@ function createCaseVoteControls(testCase, { showLabel = true, dialog = false } =
   return controls;
 }
 
-function createCaseVoteSummary(testCase) {
-  const summary = document.createElement("span");
-  summary.className = "leaderboard-test__feedback";
-  const value = caseVoteState.requirementId === state.requirementId
-    ? caseVoteState.values.get(testCase.id)
-    : null;
-  const upvoteCount = Number(value?.upvoteCount) || 0;
+function createCaseVoteSummaryItem(total, reaction) {
+  const item = document.createElement("span");
+  item.className = "leaderboard-test__feedback-item";
   const count = document.createElement("span");
   count.className = "leaderboard-test__feedback-count";
-  count.textContent = String(upvoteCount);
+  count.textContent = String(total);
   const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   icon.classList.add("leaderboard-test__feedback-icon");
+  if (reaction === "down") {
+    icon.classList.add("leaderboard-test__feedback-icon--down");
+  }
   icon.setAttribute("viewBox", "0 0 24 24");
   icon.setAttribute("aria-hidden", "true");
   icon.setAttribute("focusable", "false");
@@ -2060,8 +2059,23 @@ function createCaseVoteSummary(testCase) {
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
   path.setAttribute("d", "M2 21h4V9H2v12Zm20-11c0-1.1-.9-2-2-2h-6.3l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L13.17 1 6.59 7.59C6.22 7.95 6 8.45 6 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2Z");
   icon.append(path);
-  summary.append(count, icon);
-  summary.setAttribute("aria-label", `${testCase.id} 共有 ${upvoteCount} 人点赞`);
+  item.append(count, icon);
+  return item;
+}
+
+function createCaseVoteSummary(testCase) {
+  const summary = document.createElement("span");
+  summary.className = "leaderboard-test__feedback";
+  const value = caseVoteState.requirementId === state.requirementId
+    ? caseVoteState.values.get(testCase.id)
+    : null;
+  const upvoteCount = Number(value?.upvoteCount) || 0;
+  const downvoteCount = Number(value?.downvoteCount) || 0;
+  summary.append(
+    createCaseVoteSummaryItem(upvoteCount, "up"),
+    createCaseVoteSummaryItem(downvoteCount, "down"),
+  );
+  summary.setAttribute("aria-label", `${testCase.id} 共有 ${upvoteCount} 人点赞，${downvoteCount} 人踩`);
   return summary;
 }
 
