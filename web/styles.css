@@ -1796,6 +1796,13 @@ a.requirement-meta-card__value:hover {
   stroke-width: 2px;
 }
 
+.model-overall-chart__best-marker-connector {
+  stroke: #f3c76b;
+  stroke-width: .8px;
+  stroke-dasharray: 1.5 1.5;
+  opacity: .85;
+}
+
 .model-overall-chart__label-connector {
   stroke: #686b66;
   stroke-width: .75;
@@ -1839,6 +1846,25 @@ a.requirement-meta-card__value:hover {
 
 .model-overall-chart-dialog .dialog-toolbar > div {
   min-width: 0;
+}
+
+.model-overall-chart-dialog .dialog-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.model-overall-chart-dialog .dialog-toolbar > div {
+  grid-column: 1;
+}
+
+.model-overall-chart-dialog .dialog-toolbar .model-overall-chart-dialog__best {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.model-overall-chart-dialog .dialog-toolbar .icon-button {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .model-overall-chart-dialog__note {
@@ -3074,20 +3100,23 @@ dialog[open]::backdrop {
   }
 
   .model-overall-chart-dialog .dialog-toolbar {
-    flex-wrap: wrap;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     padding: 12px 14px;
     padding-top: max(12px, env(safe-area-inset-top));
   }
 
   .model-overall-chart-dialog__best {
-    flex: 1 0 100%;
-    order: 3;
-    text-align: left;
+    grid-column: 1 / -1 !important;
+    grid-row: 2;
+    justify-self: center !important;
+    text-align: center;
   }
 
   .model-overall-chart-dialog .dialog-toolbar .icon-button {
-    flex: 0 0 auto;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .icon-button.dialog-close-button {

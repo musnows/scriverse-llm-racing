@@ -1074,7 +1074,16 @@ function renderModelOverallChart(ranking = []) {
       transform: `translate(${xPosition(bestChartItem.weightedAverageDurationSeconds)} ${yPosition(bestChartItem.weightedPassRate)})`,
       "aria-hidden": "true",
     });
-    bestMarker.append(createChartSvgElement("text", { class: "model-overall-chart__best-marker-label", x: 0, y: -14, "text-anchor": "middle" }, "BEST"));
+    bestMarker.append(
+      createChartSvgElement("line", {
+        class: "model-overall-chart__best-marker-connector",
+        x1: 0,
+        y1: -3.5,
+        x2: 0,
+        y2: -7,
+      }),
+      createChartSvgElement("text", { class: "model-overall-chart__best-marker-label", x: 0, y: -8, "text-anchor": "middle" }, "BEST"),
+    );
     elements.modelOverallChart.append(bestMarker);
   }
 
