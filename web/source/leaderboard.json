@@ -381,6 +381,25 @@
         "TC-13": "数据库快照文件名只有秒级时间戳，同一秒内重复备份会生成同名对象并覆盖历史快照。",
         "TC-21": "备份流程只上传数据库，没有上传 master.key 或等价恢复密钥。"
       }
+    },
+    {
+      "modelId": 17,
+      "durationSeconds": 1640,
+      "resultBranchUrl": "",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "WorkBuddy",
+        "version": "",
+        "context": "512K"
+      },
+      "failures": {
+        "TC-08": "DeleteObjects 请求未携带 Content-MD5，且批量删除返回的部分错误未被检查，旧快照清理可能失败或被误记为成功。",
+        "TC-11": "保存备份目标后未刷新 BackupRunner 调度器，新配置的两分钟触发时间可能仍按启动时默认下一次时间执行。",
+        "TC-12": "保存或修改定时配置后未重新调度，运行中的调度器不会及时应用新的触发时间。",
+        "TC-18": "Access Key ID 会明文返回并进入安全日志；虽未发现 SK 回显，但不满足 AK/SK 均不得泄漏。",
+        "TC-20": "新增 backup-service 测试传入 safeLogConfigForTarget 未声明字段，npm run typecheck 失败；候选改动尚未提交。",
+        "TC-21": "S3 备份流程只上传数据库和图片，没有上传 master.key 或等价恢复密钥，异机恢复无法解密凭证。"
+      }
     }
   ],
   "agents": [
@@ -401,6 +420,6 @@
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "supportsMultimodal": false, "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
     { "modelId": 12, "modelName": "Kimi K3 Max", "supportsMultimodal": true, "software": "Kimi Code", "version": "0.31.1", "context": "1M", "status": "已测试" },
-    { "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "", "version": "", "context": "1M", "status": "未参赛" }
+    { "modelId": 17, "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "WorkBuddy", "version": "", "context": "512K", "status": "已测试" }
   ]
 }

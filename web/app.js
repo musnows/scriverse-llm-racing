@@ -266,6 +266,12 @@ const models = [
     tool: "Cursor Agent View",
     images: [],
   },
+  {
+    id: 17,
+    name: "MiniMax-M3",
+    tool: "WorkBuddy",
+    images: [],
+  },
 ];
 
 const features = [
@@ -299,7 +305,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=46";
+const leaderboardDataUrl = "/source/leaderboard.json?v=47";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
