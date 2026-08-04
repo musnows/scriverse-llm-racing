@@ -2463,11 +2463,20 @@ dialog[open]::backdrop {
 }
 
 .leaderboard-test__feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   color: #858880;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+.leaderboard-test__feedback-icon {
+  width: 13px;
+  height: 13px;
+  color: #f4f4f1;
 }
 
 .case-vote-controls {

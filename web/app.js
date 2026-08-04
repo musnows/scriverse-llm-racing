@@ -2048,7 +2048,19 @@ function createCaseVoteSummary(testCase) {
     ? caseVoteState.values.get(testCase.id)
     : null;
   const upvoteCount = Number(value?.upvoteCount) || 0;
-  summary.textContent = `${upvoteCount} 人点赞`;
+  const count = document.createElement("span");
+  count.className = "leaderboard-test__feedback-count";
+  count.textContent = String(upvoteCount);
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.classList.add("leaderboard-test__feedback-icon");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("aria-hidden", "true");
+  icon.setAttribute("focusable", "false");
+  icon.setAttribute("fill", "currentColor");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M2 21h4V9H2v12Zm20-11c0-1.1-.9-2-2-2h-6.3l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L13.17 1 6.59 7.59C6.22 7.95 6 8.45 6 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2Z");
+  icon.append(path);
+  summary.append(count, icon);
   summary.setAttribute("aria-label", `${testCase.id} 共有 ${upvoteCount} 人点赞`);
   return summary;
 }
