@@ -63,7 +63,7 @@ bash <skill_dir>/scripts/create_worktree.sh
 
 脚本会输出类似：
 ```
-TARGET_PATH=/Users/mothra/.worktree/a3f2b1/my-project
+TARGET_PATH=/Users/<username>/.worktree/a3f2b1/my-project
 ```
 
 从中提取 `TARGET_PATH` 使用。如果目标路径已存在，脚本会自动重新生成 hash。
