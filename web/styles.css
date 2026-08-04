@@ -518,22 +518,24 @@ h2 {
   font-size: 11px;
 }
 
+.model-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  margin: 12px 0 0;
+}
+
 .model-test-time,
 .model-token-usage {
+  flex: 0 0 auto;
+  margin: 0;
   color: #969791;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
   line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.model-test-time {
-  margin: 12px 0 0;
-}
-
-.model-token-usage {
-  margin: 4px 0 0;
+  white-space: nowrap;
 }
 
 .model-rating-row {
@@ -3117,6 +3119,16 @@ dialog[open]::backdrop {
 }
 
 @media (max-width: 420px) {
+  .model-meta-row {
+    gap: 8px;
+  }
+
+  .model-test-time,
+  .model-token-usage {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+
   .leaderboard-card {
     gap: 8px 12px;
     padding: 14px;
