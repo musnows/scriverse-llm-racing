@@ -1405,6 +1405,7 @@ const state = {
   requirementsTab: "requirement",
   dialogItems: [],
   dialogIndex: 0,
+  leaderboardDetailCaseVoteId: null,
 };
 
 let activeViewTransition = null;
@@ -1447,6 +1448,8 @@ const elements = {
   leaderboardDetailDialogReasonSection: document.getElementById("leaderboard-detail-dialog-reason-section"),
   leaderboardDetailDialogReasonTitle: document.getElementById("leaderboard-detail-dialog-reason-title"),
   leaderboardDetailDialogReason: document.getElementById("leaderboard-detail-dialog-reason"),
+  leaderboardDetailDialogCaseVoteSection: document.getElementById("leaderboard-detail-dialog-case-vote-section"),
+  leaderboardDetailDialogCaseVote: document.getElementById("leaderboard-detail-dialog-case-vote"),
   leaderboardDetailDialogClose: document.getElementById("leaderboard-detail-dialog-close"),
   pageHeaderControls: document.querySelector(".page-header__controls"),
   viewSwitch: document.querySelector(".view-switch"),
@@ -1953,6 +1956,7 @@ async function submitCaseVote(testCaseId, reaction) {
   }
   caseVoteState.pending.add(pendingKey);
   renderLeaderboard();
+  renderLeaderboardDetailCaseVote();
   try {
     const response = await fetch(apiUrl("/api/case-votes/vote"), {
       method: "POST",
@@ -1988,21 +1992,21 @@ async function submitCaseVote(testCaseId, reaction) {
     caseVoteState.pending.delete(pendingKey);
     if (state.requirementId === requirementId && state.view === "leaderboard") {
       renderLeaderboard();
+      renderLeaderboardDetailCaseVote();
     }
   }
 }
 
-function createCaseVoteControls(testCase) {
+function createCaseVoteControls(testCase, { showLabel = true, dialog = false } = {}) {
   const controls = document.createElement("div");
   controls.className = "case-vote-controls";
+  if (dialog) {
+    controls.classList.add("case-vote-controls--dialog");
+  }
   controls.setAttribute("aria-label", `${testCase.id} 用例反馈`);
   controls.setAttribute("aria-live", "polite");
   const loading = caseVoteState.requirementId === state.requirementId && caseVoteState.loading;
   controls.setAttribute("aria-busy", String(loading));
-
-  const label = document.createElement("span");
-  label.className = "case-vote-controls__label";
-  label.textContent = loading && !caseVoteState.loaded ? "反馈加载中" : "用例反馈";
 
   const value = caseVoteState.requirementId === state.requirementId
     ? caseVoteState.values.get(testCase.id)
@@ -2027,12 +2031,47 @@ function createCaseVoteControls(testCase) {
     return button;
   };
 
-  controls.append(
-    label,
-    createButton("up", "赞", upvoteCount),
-    createButton("down", "踩", downvoteCount),
-  );
+  if (showLabel) {
+    const label = document.createElement("span");
+    label.className = "case-vote-controls__label";
+    label.textContent = loading && !caseVoteState.loaded ? "反馈加载中" : "用例反馈";
+    controls.append(label);
+  }
+  controls.append(createButton("up", "赞", upvoteCount), createButton("down", "踩", downvoteCount));
   return controls;
+}
+
+function createCaseVoteSummary(testCase) {
+  const summary = document.createElement("span");
+  summary.className = "leaderboard-test__feedback";
+  const value = caseVoteState.requirementId === state.requirementId
+    ? caseVoteState.values.get(testCase.id)
+    : null;
+  const upvoteCount = Number(value?.upvoteCount) || 0;
+  summary.textContent = `${upvoteCount} 人点赞`;
+  summary.setAttribute("aria-label", `${testCase.id} 共有 ${upvoteCount} 人点赞`);
+  return summary;
+}
+
+function renderLeaderboardDetailCaseVote() {
+  const testCaseId = state.leaderboardDetailCaseVoteId;
+  elements.leaderboardDetailDialogCaseVote.replaceChildren();
+  elements.leaderboardDetailDialogCaseVoteSection.hidden = !testCaseId;
+  if (!testCaseId) {
+    return;
+  }
+
+  const testCase = getRequirementTestCases(getCurrentRequirement())
+    .find((item) => item.id === testCaseId);
+  if (!testCase) {
+    state.leaderboardDetailCaseVoteId = null;
+    elements.leaderboardDetailDialogCaseVoteSection.hidden = true;
+    return;
+  }
+  elements.leaderboardDetailDialogCaseVote.append(createCaseVoteControls(testCase, {
+    showLabel: false,
+    dialog: true,
+  }));
 }
 
 function renderModelView() {
@@ -2282,6 +2321,7 @@ function openLeaderboardDetail({
   detail,
   detailTitle,
   detailFallback,
+  showCaseVote = false,
 }) {
   elements.leaderboardDetailDialogLabel.textContent = label;
   elements.leaderboardDetailDialogTitle.textContent = title;
@@ -2300,6 +2340,8 @@ function openLeaderboardDetail({
     elements.leaderboardDetailDialogReasonTitle.textContent = "";
     elements.leaderboardDetailDialogReason.textContent = "";
   }
+  state.leaderboardDetailCaseVoteId = showCaseVote ? testCaseId : null;
+  renderLeaderboardDetailCaseVote();
   elements.leaderboardDetailDialog.showModal();
 }
 
@@ -2328,8 +2370,8 @@ function renderLeaderboard() {
   }
 
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
-  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。每个测试用例均可点赞或踩。`;
-  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明，也可为测试用例点赞或踩。";
+  elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。在测试用例“查看说明”中可点赞或踩。`;
+  elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。";
   const visibleEntries = rankingData.slice(0, 3);
   const hiddenEntries = rankingData.slice(3);
   elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
@@ -2414,8 +2456,12 @@ function renderLeaderboard() {
       testCaseId: testCase.id,
       priority: testCase.priority,
       scenario: testCase.scenario,
+      showCaseVote: true,
     }));
-    testCell.append(identity, scenario, createCaseVoteControls(testCase));
+    const actions = document.createElement("div");
+    actions.className = "leaderboard-test__actions";
+    actions.append(scenario, createCaseVoteSummary(testCase));
+    testCell.append(identity, actions);
     row.append(testCell);
     for (const entry of rankingData) {
       row.append(createLeaderboardResultCell(entry, testCase));

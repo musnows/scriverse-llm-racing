@@ -2455,11 +2455,35 @@ dialog[open]::backdrop {
   outline-offset: 2px;
 }
 
+.leaderboard-test__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.leaderboard-test__feedback {
+  color: #858880;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .case-vote-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-top: 10px;
+}
+
+.case-vote-controls--dialog {
+  gap: 8px;
+}
+
+.leaderboard-detail-dialog__section .case-vote-controls__button {
+  min-height: 34px;
+  padding: 8px 12px;
+  font-size: 13px;
 }
 
 .case-vote-controls__label {
