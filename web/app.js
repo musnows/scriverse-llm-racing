@@ -1330,7 +1330,6 @@ const elements = {
   testMethodFirstPrompt: document.getElementById("test-method-first-prompt"),
   copyTestMethodFirstPrompt: document.getElementById("copy-test-method-first-prompt"),
   requirementTitle: document.getElementById("requirement-title"),
-  requirementSummary: document.getElementById("requirement-summary"),
   requirementRepository: document.getElementById("requirement-repository"),
   requirementCommit: document.getElementById("requirement-commit"),
   copyRequirementCommit: document.getElementById("copy-requirement-commit"),
@@ -2212,7 +2211,6 @@ function renderRequirementsView() {
     elements.requirementTabs.replaceChildren();
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "正在加载测试需求……";
-    elements.requirementSummary.textContent = "需求信息来自 source/leaderboard.json。";
     elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
@@ -2224,7 +2222,6 @@ function renderRequirementsView() {
     elements.requirementTabs.replaceChildren();
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "暂无测试需求";
-    elements.requirementSummary.textContent = "可以在 leaderboard.json 的 requirements 数组中继续添加需求。";
     elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
@@ -2236,7 +2233,6 @@ function renderRequirementsView() {
     return;
   }
   elements.requirementTitle.textContent = requirement.title;
-  elements.requirementSummary.textContent = `基于 ${requirement.baseRepository} 的 commit ${requirement.baseCommit}，用于记录本轮测试基线与参赛配置。`;
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
   elements.requirementRepository.textContent = requirement.baseRepository;
   elements.requirementCommit.textContent = requirement.baseCommit;
