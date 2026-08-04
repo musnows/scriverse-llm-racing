@@ -260,6 +260,12 @@ const models = [
     testedAt: "2026-08-04T10:56:21+08:00",
     images: [],
   },
+  {
+    id: 16,
+    name: "Claude Opus 5 Max",
+    tool: "Cursor Agent View",
+    images: [],
+  },
 ];
 
 const features = [
@@ -293,7 +299,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=45";
+const leaderboardDataUrl = "/source/leaderboard.json?v=46";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
