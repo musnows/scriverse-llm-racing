@@ -44,6 +44,8 @@ npm run build
 - `build-meta.js`：footer 显示的最近更新时间。
 - `baidu-statistics-config.js`：百度统计 ID；未设置 `BAIDU_STATISTICS_ID` 时不加载统计脚本。
 
+单个需求对象可以配置 `finalAdoptedModelId`，在该模型的单需求排行榜卡片名称后显示“最终采纳”标识；也可以配置可选的 `finalAdoptedPrUrl`，点击标识后的说明 Toast 会提供合入主仓 PR 链接。
+
 如果前后端同域部署，`API_BASE` 可以留空；如果前端部署在 Netlify、后端独立部署，则必须设置后端完整 URL。
 如果需要启用百度统计，在前端构建环境中设置 `BAIDU_STATISTICS_ID`，统计 ID 只会在构建产物中注入，不会写死在源代码中。
 

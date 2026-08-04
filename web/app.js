@@ -340,6 +340,26 @@ function getCurrentRequirement() {
   return requirements.find((requirement) => requirement.id === state.requirementId) ?? requirements[0] ?? null;
 }
 
+function getFinalAdoptedModelId(requirement) {
+  const modelId = Number(requirement?.finalAdoptedModelId);
+  return Number.isSafeInteger(modelId) && modelId > 0 ? modelId : null;
+}
+
+function getFinalAdoptedPrUrl(requirement) {
+  const configuredUrl = typeof requirement?.finalAdoptedPrUrl === "string"
+    ? requirement.finalAdoptedPrUrl.trim()
+    : "";
+  if (!configuredUrl) {
+    return "";
+  }
+  try {
+    const url = new URL(configuredUrl, window.location.origin);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function getRequirementScoring(requirement) {
   return requirement?.scoring ?? { initial: 200, deductionByPriority: {} };
 }
@@ -1577,11 +1597,18 @@ function showToast(message, tone = "info") {
   }
   window.clearTimeout(toastTimer);
   elements.toast.className = `toast toast--${tone}`;
-  elements.toast.textContent = message;
+  elements.toast.replaceChildren();
+  if (typeof message === "string") {
+    elements.toast.textContent = message;
+  } else if (message instanceof Node) {
+    elements.toast.append(message);
+  } else {
+    elements.toast.textContent = String(message);
+  }
   elements.toast.hidden = false;
   toastTimer = window.setTimeout(() => {
     elements.toast.hidden = true;
-    elements.toast.textContent = "";
+    elements.toast.replaceChildren();
   }, 3200);
 }
 
@@ -2290,7 +2317,30 @@ function renderFeatureView() {
   });
 }
 
-function createLeaderboardSummaryCard(entry) {
+function createFinalAdoptedBanner(modelName, pullRequestUrl = "") {
+  const banner = document.createElement("button");
+  banner.type = "button";
+  banner.className = "leaderboard-final-adopted-banner";
+  banner.textContent = "最终采纳";
+  banner.title = "查看“最终采纳”的含义";
+  banner.setAttribute("aria-label", `${modelName}：最终采纳`);
+  banner.addEventListener("click", () => {
+    const toast = document.createElement("span");
+    toast.append("“最终采纳”表示作者最终采用了该模型的实现，并将其合入叙界主仓。 ");
+    if (pullRequestUrl) {
+      const link = document.createElement("a");
+      link.href = pullRequestUrl;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.textContent = "查看合入 PR";
+      toast.append(link);
+    }
+    showToast(toast, "info");
+  });
+  return banner;
+}
+
+function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAdoptedPrUrl = "") {
   const card = document.createElement("article");
   card.className = "leaderboard-card";
   card.style.setProperty("--item-index", String(Math.max(0, entry.rank - 1)));
@@ -2302,6 +2352,9 @@ function createLeaderboardSummaryCard(entry) {
   const name = document.createElement("h3");
   name.className = "leaderboard-card__name";
   appendModelName(name, entry.model, entry.modelId);
+  if (entry.modelId === finalAdoptedModelId) {
+    name.append(createFinalAdoptedBanner(entry.model?.name ?? entry.modelId, finalAdoptedPrUrl));
+  }
   const branchCell = document.createElement("div");
   branchCell.className = "leaderboard-card__branch";
   const branchLink = createResultBranchLink(entry);
@@ -2338,11 +2391,11 @@ function createLeaderboardSummaryCard(entry) {
   return card;
 }
 
-function createLeaderboardSummaryList(entries, className = "leaderboard-summary__list") {
+function createLeaderboardSummaryList(entries, className = "leaderboard-summary__list", finalAdoptedModelId = null, finalAdoptedPrUrl = "") {
   const list = document.createElement("div");
   list.className = className;
   for (const entry of entries) {
-    list.append(createLeaderboardSummaryCard(entry));
+    list.append(createLeaderboardSummaryCard(entry, finalAdoptedModelId, finalAdoptedPrUrl));
   }
   return list;
 }
@@ -2457,10 +2510,22 @@ function renderLeaderboard() {
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。";
   const visibleEntries = rankingData.slice(0, leaderboardTopN);
   const hiddenEntries = rankingData.slice(leaderboardTopN);
-  elements.leaderboardSummary.append(createLeaderboardSummaryList(visibleEntries));
+  const finalAdoptedModelId = getFinalAdoptedModelId(currentRequirement);
+  const finalAdoptedPrUrl = getFinalAdoptedPrUrl(currentRequirement);
+  elements.leaderboardSummary.append(createLeaderboardSummaryList(
+    visibleEntries,
+    "leaderboard-summary__list",
+    finalAdoptedModelId,
+    finalAdoptedPrUrl,
+  ));
 
   if (hiddenEntries.length > 0) {
-    const hiddenList = createLeaderboardSummaryList(hiddenEntries, "leaderboard-summary__list leaderboard-summary__list--additional");
+    const hiddenList = createLeaderboardSummaryList(
+      hiddenEntries,
+      "leaderboard-summary__list leaderboard-summary__list--additional",
+      finalAdoptedModelId,
+      finalAdoptedPrUrl,
+    );
     hiddenList.hidden = true;
     const toggle = document.createElement("button");
     toggle.type = "button";

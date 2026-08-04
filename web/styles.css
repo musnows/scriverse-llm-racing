@@ -176,6 +176,16 @@ main {
   background: #30201b;
 }
 
+.toast a {
+  color: #f3c76b;
+  font-weight: 650;
+  text-decoration: underline;
+}
+
+.toast a:hover {
+  color: #fff3c4;
+}
+
 .site-footer a {
   color: #989b94;
   text-decoration: none;
@@ -1423,6 +1433,35 @@ a.requirement-meta-card__value:hover {
   overflow-wrap: anywhere;
   font-size: 15px;
   line-height: 1.35;
+}
+
+.leaderboard-final-adopted-banner {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding: 3px 6px;
+  border: 1px solid #8c6f39;
+  border-radius: 5px;
+  color: #f3c76b;
+  background: rgba(243, 199, 107, .12);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.leaderboard-final-adopted-banner:hover {
+  border-color: #c19b4c;
+  color: #fff3c4;
+  background: rgba(243, 199, 107, .2);
+}
+
+.leaderboard-final-adopted-banner:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
 }
 
 .model-multimodal-icon {
