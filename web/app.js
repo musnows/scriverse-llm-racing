@@ -177,6 +177,12 @@ const models = [
     tool: "Kimi Code",
     images: [],
   },
+  {
+    id: 13,
+    name: "GPT-5.6 Sol Max",
+    tool: "Codex CLI",
+    images: [],
+  },
 ];
 
 const features = [
@@ -210,7 +216,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=42";
+const leaderboardDataUrl = "/source/leaderboard.json?v=43";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;

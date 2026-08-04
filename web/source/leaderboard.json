@@ -313,6 +313,22 @@
         "TC-18": "S3 服务端原始响应未经当前目标 AK/SK 值级别脱敏便进入日志、last_error、执行 API 和 Toast，服务端回显凭证时会造成泄露。",
         "TC-21": "备份流程只上传数据库快照和可选图片，并明确不包含 master.key；新环境无法解密数据库中已有的 S3 与 AI 凭证。"
       }
+    },
+    {
+      "modelId": 13,
+      "durationSeconds": 2852,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-sol-max",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有连接或请求超时，单目标永久挂起时会阻塞后续目标；手动执行接口还允许对停用目标发起备份。",
+        "TC-08": "分页和每批 1000 个删除已经实现，但留存清理只检查当前 db/ 前缀和 .db 后缀，可能删除 manual.db、嵌套目录等不符合快照命名规则的对象。",
+        "TC-21": "备份流程只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      }
     }
   ],
   "agents": [
@@ -324,7 +340,7 @@
     { "modelName": "Doubao-Seed-2.1-Pro", "supportsMultimodal": true, "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂不测试" },
     { "modelId": 9, "modelName": "Grok 4.5 High", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "已测试" },
     { "modelId": 8, "modelName": "Composer 2.5", "supportsMultimodal": true, "software": "Cursor IDE", "version": "3.14.7", "context": "256K", "status": "已测试" },
-    { "modelName": "GPT-5.6 Sol Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "暂无测试数据" },
+    { "modelId": 13, "modelName": "GPT-5.6 Sol Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelName": "GPT-5.6 Terra Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "暂无测试数据" },
     { "modelName": "GPT-5.5", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "暂无测试数据" },
