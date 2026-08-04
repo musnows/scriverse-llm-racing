@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=97">
+    <link rel="stylesheet" href="/styles.css?v=96">
   </head>
   <body>
     <div class="app-shell">
@@ -119,6 +119,7 @@
               <div>
                 <p class="section-kicker">效率与质量</p>
                 <h3 id="model-overall-chart-title">加权平均耗时与加权通过率</h3>
+                <p class="section-description">横轴为各需求按需求权重计算的加权平均耗时，纵轴为各需求加权通过率的需求权重平均值。点击图表空白处可放大，点击散点可查看该模型已测试的需求。</p>
                 <p class="model-overall-chart__reading-tip">阅读方式：越靠左上越好，代表耗时更短、加权通过率更高。</p>
               </div>
               <div class="model-overall-chart-heading__actions">
@@ -141,7 +142,6 @@
                 <p id="model-overall-chart-empty" class="model-overall-chart__empty" hidden></p>
               </div>
             </div>
-            <p class="model-overall-chart__description">横轴为各需求按需求权重计算的加权平均耗时，纵轴为各需求加权通过率的需求权重平均值。点击图表空白处可放大，点击散点可查看该模型已测试的需求。</p>
           </section>
           <div id="model-overall-list" class="model-overall-list"></div>
         </section>
@@ -168,7 +168,6 @@
               <p class="dialog-model">效率与质量</p>
               <h2 id="model-overall-chart-dialog-title">加权平均耗时与加权通过率</h2>
               <p class="model-overall-chart-dialog__note">阅读方式：越靠左上越好；短线连接模型名称与对应散点。</p>
-              <p id="model-overall-chart-dialog-best" class="model-overall-chart-dialog__best" hidden></p>
             </div>
             <button type="button" id="model-overall-chart-dialog-close" class="icon-button dialog-close-button" aria-label="关闭散点图大图" title="关闭">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -281,6 +280,7 @@
                 <div>
                   <p class="section-kicker">测试基线</p>
                   <h2 id="requirement-title"></h2>
+                  <p id="requirement-summary" class="section-description"></p>
                 </div>
               </div>
 

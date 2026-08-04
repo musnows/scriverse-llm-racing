@@ -145,43 +145,93 @@ const models = [
     id: 7,
     name: "GPT-5.6 Luna Max",
     tool: "Codex CLI",
-    images: [],
+    images: [
+      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
+      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
+      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
+      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
+      ["image-20260803224435-34cpbfw.webp", "设置中心入口", ["settings"]],
+      ["image-20260803224434-ibyzd28.webp", "S3 备份计划", ["overview", "schedule"]],
+      ["image-20260803224432-a0a24bi.webp", "新增 S3 目标", ["target"]],
+    ],
   },
   {
     id: 8,
     name: "Composer 2.5",
     tool: "Cursor IDE",
-    images: [],
+    images: [
+      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
+      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
+      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
+      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
+      ["4d62f246d88bc7a6af187b22869bfac8-20260803224747-ay1rujv.webp", "设置中心入口", ["settings"]],
+      ["68cc4f21fb98a5c4af9c4f19534b6fd1-20260803224753-liwxwvb.webp", "S3 备份设置", ["overview"]],
+      ["b77be8c868ed7c908ad896a90c561742-20260803224758-hbuqtiu.webp", "备份目标配置", ["target"]],
+    ],
   },
   {
     id: 9,
     name: "Grok 4.5 High",
     tool: "Cursor Agent View",
-    images: [],
+    images: [
+      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
+      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
+      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
+      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
+      ["image-20260803224658-nfy0fmz.webp", "新增备份目标", ["target"]],
+      ["57f44786200cb4c80c1c8a1b7d5bc002-20260803224733-10kblus.webp", "定时备份页面", ["schedule"]],
+      ["image-20260803224714-kmbxd2z.webp", "定时备份设置", ["schedule"]],
+      ["image-20260803224706-47yc6kx.webp", "备份目标表单", ["target"]],
+      ["dd4998b855988b993ef57edda04e9cbf-20260803224740-bf7zufh.webp", "备份目标选项", ["target"]],
+    ],
   },
   {
     id: 10,
     name: "Qwen3.8-Max",
     tool: "QoderCN IDE Quest",
-    images: [],
+    images: [
+      ["image-20260804001203-ymvj4gr.webp", "设置中心入口", ["settings"]],
+      ["image-20260804001141-h7wn6px.webp", "数据备份页面", ["overview"]],
+      ["image-20260804001147-684u3hh.webp", "新增备份目标", ["target"]],
+    ],
   },
   {
     id: 11,
     name: "GLM-5.2 Max",
     tool: "Cursor Agent View",
-    images: [],
+    images: [
+      ["image-20260804001209-s8z1js9.webp", "设置中心入口", ["settings"]],
+      ["image-20260804001214-fn2utm1.webp", "备份与同步页面", ["overview", "schedule"]],
+      ["image-20260804001221-f03m72n.webp", "新增 S3 目标", ["target"]],
+      ["image-20260804001226-yd8ntdi.webp", "S3 目标配置选项", ["target"]],
+    ],
   },
   {
     id: 12,
     name: "Kimi K3 Max",
     tool: "Kimi Code",
-    images: [],
+    images: [
+      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
+      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
+      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
+      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
+      ["image-20260804071634-plfhucu.webp", "设置中心入口", ["settings"]],
+      ["image-20260804071637-sz07shf.webp", "数据备份页面", ["overview"]],
+      ["image-20260804071639-z0r8vyb.webp", "新增备份目标", ["target"]],
+      ["image-20260804071640-5of1gvl.webp", "备份目标同步选项", ["target", "schedule"]],
+    ],
   },
   {
     id: 13,
     name: "GPT-5.6 Sol Max",
     tool: "Codex CLI",
-    images: [],
+    images: [
+      ["image-20260804065202-ny26db1.webp", "Terra 与 Sol 模型启动", ["process"]],
+      ["image-20260804065235-zeqgize.webp", "Sol 启动与记忆设置", ["process"]],
+      ["image-20260804065443-waivlf9.webp", "Sol worktree 与任务执行", ["process"]],
+      ["image-20260804080540-0c83ud9.webp", "设置中心入口", ["settings"]],
+      ["image-20260804080545-4f1y4xc.webp", "S3 系统备份页面", ["overview"]],
+    ],
   },
 ];
 
@@ -216,7 +266,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=43";
+const leaderboardDataUrl = "/source/leaderboard.json?v=44";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
