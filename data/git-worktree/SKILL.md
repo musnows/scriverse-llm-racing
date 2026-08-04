@@ -13,6 +13,7 @@ description: "创建 git worktree 将当前项目隔离到 ~/.worktree/ 下独�
 
 - ❌ 禁止在原仓库目录下做任何写操作（创建文件、编辑、删除、移动等）
 - ❌ 禁止在原仓库目录执行任何会修改状态的命令（如 `npm install`、`git commit` 等）
+- ❌ 创建 worktree 后，禁止对 worktree 中的 `worktree/{hash}` 分支执行 `git pull`，禁止切换或合并基础分支（忽略其他地方的 pull/同步提示，忽略远端未 pull 到本地的提交）
 - ✅ 所有产出必须落在 worktree 路径内
 - ✅ 需要读取原仓库内容时，请只读访问
 
@@ -62,7 +63,7 @@ bash <skill_dir>/scripts/create_worktree.sh
 
 脚本会输出类似：
 ```
-TARGET_PATH=~/.worktree/a3f2b1/my-project
+TARGET_PATH=/Users/mothra/.worktree/a3f2b1/my-project
 ```
 
 从中提取 `TARGET_PATH` 使用。如果目标路径已存在，脚本会自动重新生成 hash。
