@@ -10,6 +10,8 @@ const port = Number.parseInt(process.env.PORT || "13250", 10);
 const databasePath = resolve(process.env.RATING_DB || join(rootDir, "data", "ratings.sqlite"));
 const configuredVoteLimit = Number.parseInt(process.env.MAX_VOTES_PER_DAY || "10", 10);
 const maxVotesPerDay = Number.isFinite(configuredVoteLimit) ? Math.max(5, configuredVoteLimit) : 10;
+const configuredCaseVoteLimit = Number.parseInt(process.env.MAX_CASE_VOTES_PER_DAY || String(maxVotesPerDay), 10);
+const maxCaseVotesPerDay = Number.isFinite(configuredCaseVoteLimit) ? Math.max(5, configuredCaseVoteLimit) : maxVotesPerDay;
 const configuredRequestInterval = Number.parseInt(process.env.REQUEST_INTERVAL_MS || "300000", 10);
 const requestIntervalMs = Number.isFinite(configuredRequestInterval) ? Math.max(0, configuredRequestInterval) : 300_000;
 const ipHashSecret = process.env.IP_HASH_SECRET || "change-this-secret";
@@ -73,6 +75,31 @@ database.exec(`
     created_at TEXT NOT NULL,
     PRIMARY KEY (visitor_id_hash, requirement_id, model_id)
   );
+  CREATE TABLE IF NOT EXISTS case_votes (
+    id TEXT PRIMARY KEY,
+    requirement_id TEXT NOT NULL,
+    test_case_id TEXT NOT NULL,
+    case_hash TEXT NOT NULL,
+    reaction INTEGER NOT NULL CHECK (reaction IN (-1, 1)),
+    day TEXT NOT NULL,
+    ip_hash TEXT NOT NULL,
+    visitor_id_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE (visitor_id_hash, requirement_id, test_case_id, case_hash)
+  );
+  CREATE INDEX IF NOT EXISTS case_votes_daily_limit_idx
+    ON case_votes (day, requirement_id, test_case_id, case_hash, ip_hash);
+  CREATE INDEX IF NOT EXISTS case_votes_totals_idx
+    ON case_votes (requirement_id, test_case_id, case_hash);
+  CREATE TABLE IF NOT EXISTS case_vote_rate_limits (
+    ip_hash TEXT NOT NULL,
+    requirement_id TEXT NOT NULL,
+    test_case_id TEXT NOT NULL,
+    case_hash TEXT NOT NULL,
+    last_request_at INTEGER NOT NULL,
+    PRIMARY KEY (ip_hash, requirement_id, test_case_id, case_hash)
+  );
   CREATE TABLE IF NOT EXISTS catalog_snapshot (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     version INTEGER NOT NULL,
@@ -134,13 +161,96 @@ function migrateRequestRateLimitsTable() {
   `);
 }
 
+function migrateCaseVotesTable() {
+  const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'case_votes'").get();
+  if (!table?.sql || /case_hash\s+TEXT/i.test(table.sql)) {
+    return;
+  }
+  database.exec(`
+    BEGIN IMMEDIATE;
+    DROP INDEX IF EXISTS case_votes_daily_limit_idx;
+    DROP INDEX IF EXISTS case_votes_totals_idx;
+    ALTER TABLE case_votes RENAME TO case_votes_legacy;
+    CREATE TABLE case_votes (
+      id TEXT PRIMARY KEY,
+      requirement_id TEXT NOT NULL,
+      test_case_id TEXT NOT NULL,
+      case_hash TEXT NOT NULL,
+      reaction INTEGER NOT NULL CHECK (reaction IN (-1, 1)),
+      day TEXT NOT NULL,
+      ip_hash TEXT NOT NULL,
+      visitor_id_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (visitor_id_hash, requirement_id, test_case_id, case_hash)
+    );
+    INSERT INTO case_votes (
+      id,
+      requirement_id,
+      test_case_id,
+      case_hash,
+      reaction,
+      day,
+      ip_hash,
+      visitor_id_hash,
+      created_at,
+      updated_at
+    )
+    SELECT
+      id,
+      requirement_id,
+      test_case_id,
+      'legacy',
+      reaction,
+      day,
+      ip_hash,
+      visitor_id_hash,
+      created_at,
+      updated_at
+    FROM case_votes_legacy;
+    DROP TABLE case_votes_legacy;
+    CREATE INDEX case_votes_daily_limit_idx
+      ON case_votes (day, requirement_id, test_case_id, case_hash, ip_hash);
+    CREATE INDEX case_votes_totals_idx
+      ON case_votes (requirement_id, test_case_id, case_hash);
+    COMMIT;
+  `);
+}
+
+function migrateCaseVoteRateLimitsTable() {
+  const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'case_vote_rate_limits'").get();
+  if (!table?.sql || /case_hash\s+TEXT/i.test(table.sql)) {
+    return;
+  }
+  database.exec(`
+    BEGIN IMMEDIATE;
+    ALTER TABLE case_vote_rate_limits RENAME TO case_vote_rate_limits_legacy;
+    CREATE TABLE case_vote_rate_limits (
+      ip_hash TEXT NOT NULL,
+      requirement_id TEXT NOT NULL,
+      test_case_id TEXT NOT NULL,
+      case_hash TEXT NOT NULL,
+      last_request_at INTEGER NOT NULL,
+      PRIMARY KEY (ip_hash, requirement_id, test_case_id, case_hash)
+    );
+    INSERT INTO case_vote_rate_limits (ip_hash, requirement_id, test_case_id, case_hash, last_request_at)
+      SELECT ip_hash, requirement_id, test_case_id, 'legacy', last_request_at
+      FROM case_vote_rate_limits_legacy;
+    DROP TABLE case_vote_rate_limits_legacy;
+    COMMIT;
+  `);
+}
+
 migrateVotesTable();
 migrateRequestRateLimitsTable();
+migrateCaseVotesTable();
+migrateCaseVoteRateLimitsTable();
 
 let catalogSnapshot = null;
 let requirementIds = new Set();
 let modelIds = new Set();
 let requirementModelIds = new Map();
+let requirementTestCases = new Map();
 let catalogEtag = null;
 let catalogSyncInFlight = null;
 let catalogSyncTimer = null;
@@ -263,7 +373,32 @@ function normalizeRatingCatalog(payload) {
       seenModels.add(modelId);
       return modelId;
     });
-    return { id: item.id, modelIds: modelIdsForRequirement };
+    if (item.testCases === undefined && version < 9) {
+      return { id: item.id, modelIds: modelIdsForRequirement, testCases: [] };
+    }
+    if (!Array.isArray(item.testCases) || item.testCases.length > 1000) {
+      throw new Error("catalog test cases must be an array with at most 1000 items");
+    }
+    const seenTestCases = new Set();
+    const testCasesForRequirement = item.testCases.map((testCase) => {
+      const testCaseId = testCase?.id;
+      const content = testCase?.content;
+      if (!testCase || typeof testCase !== "object" || Array.isArray(testCase)
+        || !safeId(testCaseId)
+        || seenTestCases.has(testCaseId)
+        || typeof content !== "string"
+        || content.length === 0
+        || content.length > 20_000) {
+        throw new Error("catalog test cases must have unique safe ids and non-empty content");
+      }
+      seenTestCases.add(testCaseId);
+      return { id: testCaseId, content };
+    });
+    return {
+      id: item.id,
+      modelIds: modelIdsForRequirement,
+      testCases: testCasesForRequirement,
+    };
   });
   return { version, requirements };
 }
@@ -272,6 +407,13 @@ function setCatalogMemory(snapshot) {
   catalogSnapshot = snapshot;
   requirementIds = new Set(snapshot.requirements.map((item) => item.id));
   requirementModelIds = new Map(snapshot.requirements.map((item) => [item.id, new Set(item.modelIds)]));
+  requirementTestCases = new Map(snapshot.requirements.map((item) => [
+    item.id,
+    new Map(item.testCases.map((testCase) => [
+      testCase.id,
+      hashCaseVote(item.id, testCase.id, testCase.content),
+    ])),
+  ]));
   modelIds = new Set(snapshot.requirements.flatMap((item) => item.modelIds));
 }
 
@@ -455,12 +597,43 @@ function logVote(request, result, status, body, fields = {}) {
   }, result === "accepted" ? "info" : "warn");
 }
 
+function getCaseVoteLogFields(body) {
+  const fields = {};
+  if (typeof body?.requirementId === "string") {
+    fields.requirementId = body.requirementId.slice(0, 80);
+  }
+  if (typeof body?.testCaseId === "string") {
+    fields.testCaseId = body.testCaseId.slice(0, 80);
+  }
+  if (body?.reaction === "up" || body?.reaction === "down") {
+    fields.reaction = body.reaction;
+  }
+  return fields;
+}
+
+function logCaseVote(request, result, status, body, fields = {}) {
+  logEvent("case_vote", {
+    requestId: request.requestId,
+    ip: request.clientIp,
+    result,
+    status,
+    ...getCaseVoteLogFields(body),
+    ...fields,
+  }, ["accepted", "updated", "unchanged"].includes(result) ? "info" : "warn");
+}
+
 function getDailyKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
 function hashIp(ip, day) {
   return createHash("sha256").update(`${ipHashSecret}:${day}:${ip}`).digest("hex");
+}
+
+function hashCaseVote(requirementId, testCaseId, content) {
+  return createHash("sha256")
+    .update(`${requirementId}\n${testCaseId}\n${content}`)
+    .digest("hex");
 }
 
 function hashRateLimitIp(ip) {
@@ -494,6 +667,32 @@ function takeRequestSlot(ip, requirementId, modelId) {
     VALUES (?, ?, ?, ?)
     ON CONFLICT(ip_hash, requirement_id, model_id) DO UPDATE SET last_request_at = excluded.last_request_at
   `).run(ipHash, requirementId, modelId, now);
+  return { allowed: true };
+}
+
+function takeCaseVoteRequestSlot(ip, requirementId, testCaseId, caseHash) {
+  if (requestIntervalMs === 0) {
+    return { allowed: true };
+  }
+
+  const now = Date.now();
+  const ipHash = hashRateLimitIp(ip);
+  const previous = database.prepare(`
+    SELECT last_request_at
+    FROM case_vote_rate_limits
+    WHERE ip_hash = ? AND requirement_id = ? AND test_case_id = ? AND case_hash = ?
+  `).get(ipHash, requirementId, testCaseId, caseHash);
+  const lastRequestAt = Number(previous?.last_request_at);
+  if (Number.isFinite(lastRequestAt) && now - lastRequestAt < requestIntervalMs) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((requestIntervalMs - (now - lastRequestAt)) / 1000));
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  database.prepare(`
+    INSERT INTO case_vote_rate_limits (ip_hash, requirement_id, test_case_id, case_hash, last_request_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(ip_hash, requirement_id, test_case_id, case_hash) DO UPDATE SET last_request_at = excluded.last_request_at
+  `).run(ipHash, requirementId, testCaseId, caseHash, now);
   return { allowed: true };
 }
 
@@ -545,6 +744,80 @@ function recordVote({ voteId, requirementId, modelId, starsHalf, day, ipHash, vi
       INSERT INTO visitor_ratings (visitor_id_hash, requirement_id, model_id, vote_id, created_at)
       VALUES (?, ?, ?, ?, ?)
     `).run(visitorIdHash, requirementId, modelId, voteId, createdAt);
+    database.exec("COMMIT");
+    return { type: "accepted" };
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+function recordCaseVote({ voteId, requirementId, testCaseId, caseHash, reaction, day, ipHash, visitorIdHash, createdAt }) {
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    const previous = database.prepare(`
+      SELECT reaction
+      FROM case_votes
+      WHERE visitor_id_hash = ? AND requirement_id = ? AND test_case_id = ? AND case_hash = ?
+    `).get(visitorIdHash, requirementId, testCaseId, caseHash);
+
+    if (previous) {
+      if (Number(previous.reaction) === reaction) {
+        database.exec("COMMIT");
+        return { type: "unchanged" };
+      }
+      database.prepare(`
+        UPDATE case_votes
+        SET reaction = ?, day = ?, ip_hash = ?, updated_at = ?
+        WHERE visitor_id_hash = ? AND requirement_id = ? AND test_case_id = ? AND case_hash = ?
+      `).run(reaction, day, ipHash, createdAt, visitorIdHash, requirementId, testCaseId, caseHash);
+      database.exec("COMMIT");
+      return { type: "updated" };
+    }
+
+    const result = database.prepare(`
+      INSERT INTO case_votes (
+        id,
+        requirement_id,
+        test_case_id,
+        case_hash,
+        reaction,
+        day,
+        ip_hash,
+        visitor_id_hash,
+        created_at,
+        updated_at
+      )
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      WHERE (
+        SELECT COUNT(*)
+        FROM case_votes
+        WHERE day = ? AND requirement_id = ? AND test_case_id = ? AND case_hash = ? AND ip_hash = ?
+      ) < ?
+    `).run(
+      voteId,
+      requirementId,
+      testCaseId,
+      caseHash,
+      reaction,
+      day,
+      ipHash,
+      visitorIdHash,
+      createdAt,
+      createdAt,
+      day,
+      requirementId,
+      testCaseId,
+      caseHash,
+      ipHash,
+      maxCaseVotesPerDay,
+    );
+
+    if (Number(result.changes) !== 1) {
+      database.exec("ROLLBACK");
+      return { type: "daily_limit_reached" };
+    }
+
     database.exec("COMMIT");
     return { type: "accepted" };
   } catch (error) {
@@ -680,6 +953,137 @@ async function createVote(request, response) {
   sendJson(request, response, { data: { voteId, requirementId, modelId, starsHalf } }, 201);
 }
 
+function getCaseVoteData(requirementId, visitorIdHash) {
+  const testCases = requirementTestCases.get(requirementId) ?? new Map();
+  const rows = database.prepare(`
+    SELECT
+      test_case_id,
+      case_hash,
+      SUM(CASE WHEN reaction = 1 THEN 1 ELSE 0 END) AS upvote_count,
+      SUM(CASE WHEN reaction = -1 THEN 1 ELSE 0 END) AS downvote_count
+    FROM case_votes
+    WHERE requirement_id = ?
+    GROUP BY test_case_id, case_hash
+  `).all(requirementId);
+  const totals = new Map(rows.map((row) => [`${row.test_case_id}:${row.case_hash}`, {
+    upvoteCount: Number(row.upvote_count),
+    downvoteCount: Number(row.downvote_count),
+  }]));
+  const visitorRows = visitorIdHash
+    ? database.prepare(`
+      SELECT test_case_id, case_hash, reaction
+      FROM case_votes
+      WHERE requirement_id = ? AND visitor_id_hash = ?
+    `).all(requirementId, visitorIdHash)
+    : [];
+  const visitorReactions = new Map(visitorRows.map((row) => [
+    `${row.test_case_id}:${row.case_hash}`,
+    Number(row.reaction),
+  ]));
+
+  return [...testCases].map(([testCaseId, caseHash]) => {
+    const key = `${testCaseId}:${caseHash}`;
+    const reaction = visitorReactions.get(key);
+    return {
+      testCaseId,
+      upvoteCount: totals.get(key)?.upvoteCount ?? 0,
+      downvoteCount: totals.get(key)?.downvoteCount ?? 0,
+      viewerReaction: reaction === 1 ? "up" : reaction === -1 ? "down" : null,
+    };
+  });
+}
+
+function getCaseVotes(request, response, url) {
+  if (!catalogSnapshot) {
+    sendJson(request, response, { error: "catalog_not_ready" }, 503);
+    return;
+  }
+  const requirementId = url.searchParams.get("requirementId") || "";
+  if (!safeId(requirementId) || !requirementIds.has(requirementId)) {
+    sendJson(request, response, { error: "invalid_requirement_id" }, 400);
+    return;
+  }
+  sendJson(request, response, { data: getCaseVoteData(requirementId, request.visitorIdHash) });
+}
+
+async function createCaseVote(request, response) {
+  let body;
+  try {
+    body = await parseBody(request);
+  } catch {
+    logCaseVote(request, "invalid_json", 400, null);
+    sendJson(request, response, { error: "invalid_json" }, 400);
+    return;
+  }
+
+  const requirementId = body?.requirementId;
+  const testCaseId = body?.testCaseId;
+  const reaction = body?.reaction;
+  const allowedTestCases = requirementTestCases.get(requirementId);
+  if (!catalogSnapshot) {
+    logCaseVote(request, "catalog_not_ready", 503, body);
+    sendJson(request, response, { error: "catalog_not_ready" }, 503);
+    return;
+  }
+  if (!safeId(requirementId)
+    || !requirementIds.has(requirementId)
+    || !safeId(testCaseId)
+    || !allowedTestCases?.has(testCaseId)
+    || (reaction !== "up" && reaction !== "down")) {
+    logCaseVote(request, "invalid_case_vote", 400, body);
+    sendJson(request, response, { error: "invalid_case_vote" }, 400);
+    return;
+  }
+
+  const caseHash = allowedTestCases.get(testCaseId);
+  const requestSlot = takeCaseVoteRequestSlot(request.clientIp, requirementId, testCaseId, caseHash);
+  if (!requestSlot.allowed) {
+    logCaseVote(request, "request_rate_limited", 429, body, {
+      intervalMs: requestIntervalMs,
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    });
+    sendJson(request, response, {
+      error: "request_rate_limited",
+      retryAfterSeconds: requestSlot.retryAfterSeconds,
+    }, 429, {
+      "Retry-After": String(requestSlot.retryAfterSeconds),
+    });
+    return;
+  }
+
+  const day = getDailyKey();
+  const voteId = randomUUID();
+  const createdAt = new Date().toISOString();
+  const result = recordCaseVote({
+    voteId,
+    requirementId,
+    testCaseId,
+    caseHash,
+    reaction: reaction === "up" ? 1 : -1,
+    day,
+    ipHash: hashIp(request.clientIp, day),
+    visitorIdHash: request.visitorIdHash,
+    createdAt,
+  });
+
+  if (result.type === "daily_limit_reached") {
+    logCaseVote(request, "daily_limit_reached", 429, body, { limit: maxCaseVotesPerDay });
+    sendJson(request, response, { error: "daily_limit_reached", limit: maxCaseVotesPerDay }, 429);
+    return;
+  }
+
+  const item = getCaseVoteData(requirementId, request.visitorIdHash)
+    .find((entry) => entry.testCaseId === testCaseId);
+  const status = result.type === "accepted" ? 201 : 200;
+  logCaseVote(request, result.type, status, body, { voteId });
+  sendJson(request, response, {
+    data: {
+      ...item,
+      result: result.type,
+    },
+  }, status);
+}
+
 function serveStatic(request, response, url) {
   const requestedPath = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
   const absolutePath = resolve(rootDir, `.${normalize(requestedPath)}`);
@@ -718,6 +1122,7 @@ const server = createServer(async (request, response) => {
           turnstileRequired: false,
           turnstileSiteKey: null,
           maxVotesPerDay,
+          maxCaseVotesPerDay,
           requestIntervalMs,
         },
       });
@@ -729,6 +1134,14 @@ const server = createServer(async (request, response) => {
     }
     if (url.pathname === "/api/ratings/vote" && request.method === "POST") {
       await createVote(request, response);
+      return;
+    }
+    if (url.pathname === "/api/case-votes" && request.method === "GET") {
+      getCaseVotes(request, response, url);
+      return;
+    }
+    if (url.pathname === "/api/case-votes/vote" && request.method === "POST") {
+      await createCaseVote(request, response);
       return;
     }
     if (url.pathname.startsWith("/api/")) {

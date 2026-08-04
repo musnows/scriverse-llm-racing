@@ -91,7 +91,7 @@ node server.mjs
 
 ## 评分允许列表同步
 
-`rating-catalog.json` 是前端公开的评分允许列表，只包含需求 ID、该需求允许评分的模型 ID 和一个单调递增的 `version`。后端启动时会加载评分数据库中最后一次有效快照，然后同步这个 JSON；默认每 10 分钟同步一次。
+`rating-catalog.json` 是前端公开的评分允许列表，包含需求 ID、该需求允许评分的模型 ID、可反馈的测试用例内容和一个单调递增的 `version`。后端启动时会加载评分数据库中最后一次有效快照，然后同步这个 JSON；默认每 10 分钟同步一次。
 
 如果前后端分别部署，需要把允许列表文件的公开地址配置给后端：
 
@@ -101,7 +101,7 @@ CATALOG_SYNC_INTERVAL_MS=600000 \
 node server.mjs
 ```
 
-后端只先比较顶层 `version`：版本号没有变化时不会遍历需求和模型，也不会写数据库；版本号变更后才校验并替换快照。网络错误、格式错误或回退版本会保留上一次有效快照；如果从未同步成功，评分接口会返回 `catalog_not_ready`，不会接受未知的需求或模型组合。
+后端只先比较顶层 `version`：版本号没有变化时不会遍历需求和模型，也不会写数据库；版本号变更后才校验并替换快照。测试用例反馈使用 `SHA-256(需求 ID + case ID + case 内容)` 聚合，因此修改 case 内容时必须同步更新 catalog 内容并递增 `version`，旧内容的反馈不会计入新内容。网络错误、格式错误或回退版本会保留上一次有效快照；如果从未同步成功，评分接口会返回 `catalog_not_ready`，不会接受未知的需求、模型或测试用例。
 
 ## 反向代理
 
@@ -162,6 +162,8 @@ sudo systemctl status agent-evaluation
 
 - `GET /api/ratings?requirementId=s3-backup-v1`
 - `POST /api/ratings/vote`
+- `GET /api/case-votes?requirementId=s3-backup-v1`
+- `POST /api/case-votes/vote`
 - `GET /api/rating-config`
 
 前端已经接入这些接口；本地使用静态服务器时会显示“评分服务尚未部署”，切换到这个 Node 服务后即可写入评分。

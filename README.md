@@ -77,10 +77,14 @@ node server.mjs
 - `GET /api/rating-config`
 - `GET /api/ratings?requirementId=s3-backup-v1`
 - `POST /api/ratings/vote`
+- `GET /api/case-votes?requirementId=s3-backup-v1`
+- `POST /api/case-votes/vote`
 
 评分使用稳定的数字 `modelId` 标识具体模型，不按厂商或工具归类。当前模型 ID 为：`1` Doubao-Seed-2.1-Turbo、`2` Qwen3.8-Max-Preview、`3` LongCat-2.0、`4` Hy3。后续新增模型或模型版本必须追加新的数字 ID，不能修改、删除或复用旧 ID。
 
-后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。
+后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。测试用例的赞、踩同样使用 Cookie 和 IP 限流；同一访客可在限流间隔后切换反馈。
+
+每条测试用例反馈都会使用 `SHA-256(需求 ID + case ID + case 内容)` 作为归属键。case 内容变更并同步更新 catalog、递增 catalog `version` 后，历史反馈会保留在数据库中，但不会计入新内容的计数。
 
 也可以直接使用 Docker 镜像运行后端：
 
