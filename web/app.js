@@ -589,40 +589,89 @@ function createModelOverallChartExportSvg() {
     return null;
   }
 
-  const exportSvg = svg.cloneNode(true);
-  exportSvg.setAttribute("xmlns", chartSvgNamespace);
-  exportSvg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-  exportSvg.setAttribute("width", String(viewBox.width));
-  exportSvg.setAttribute("height", String(viewBox.height));
-  exportSvg.insertBefore(
+  const headerHeight = 112;
+  const exportHeight = viewBox.height + headerHeight;
+  const exportSvg = createChartSvgElement("svg", {
+    xmlns: chartSvgNamespace,
+    "xmlns:xlink": "http://www.w3.org/1999/xlink",
+    width: viewBox.width,
+    height: exportHeight,
+    viewBox: `0 0 ${viewBox.width} ${exportHeight}`,
+  });
+  exportSvg.append(
     createChartSvgElement("rect", {
       x: 0,
       y: 0,
       width: viewBox.width,
-      height: viewBox.height,
+      height: exportHeight,
       fill: "#111210",
     }),
-    exportSvg.firstChild,
+    createChartSvgElement("rect", {
+      class: "model-overall-chart-export__header",
+      x: 0,
+      y: 0,
+      width: viewBox.width,
+      height: headerHeight,
+    }),
+    createChartSvgElement("line", {
+      class: "model-overall-chart-export__header-divider",
+      x1: 0,
+      y1: headerHeight,
+      x2: viewBox.width,
+      y2: headerHeight,
+    }),
+    createChartSvgElement(
+      "text",
+      { class: "model-overall-chart-export__title", x: 32, y: 36 },
+      "叙界真实需求 Agent 评测娱乐榜",
+    ),
+    createChartSvgElement(
+      "text",
+      { class: "model-overall-chart-export__subtitle", x: 32, y: 63 },
+      "模型总榜｜加权平均耗时与加权通过率",
+    ),
+    createChartSvgElement(
+      "text",
+      { class: "model-overall-chart-export__description", x: 32, y: 88 },
+      "阅读方式：越靠左上越好；横轴为加权平均耗时，纵轴为加权通过率。",
+    ),
+    createChartSvgElement(
+      "text",
+      { class: "model-overall-chart-export__domain", x: viewBox.width - 32, y: 36, "text-anchor": "end" },
+      "https://llm-racing.scriverse.top/",
+    ),
   );
-  exportSvg.insertBefore(
+
+  const chartGroup = createChartSvgElement("g", { transform: `translate(0 ${headerHeight})` });
+  [...svg.childNodes].forEach((node) => chartGroup.append(node.cloneNode(true)));
+  exportSvg.append(
     createChartSvgElement(
       "style",
       {},
       `
+        .model-overall-chart-export__header { fill: #171816; }
+        .model-overall-chart-export__header-divider { stroke: #30322f; stroke-width: 1; }
+        .model-overall-chart-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 22px; font-weight: 700; }
+        .model-overall-chart-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 14px; font-weight: 700; }
+        .model-overall-chart-export__description { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; }
+        .model-overall-chart-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__grid line { stroke: #292b28; stroke-width: 1; stroke-dasharray: 3 6; }
         .model-overall-chart__axes line { stroke: #686b66; stroke-width: 1.2; }
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
+        .model-overall-chart__point--best { stroke: #f3c76b; filter: drop-shadow(0 0 5px rgba(243, 199, 107, .8)); }
         .model-overall-chart__label-connectors--expanded { display: none; }
         .model-overall-chart__label-connector { stroke: #686b66; stroke-width: 0.75; stroke-dasharray: 2 2; opacity: 0.7; }
         .model-overall-chart__point-label { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 8px; }
-        .model-overall-chart__best-marker { display: none; }
+        .model-overall-chart__best-marker { display: inline; }
+        .model-overall-chart__best-marker-label { fill: #f3c76b; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 7px; font-weight: 700; paint-order: stroke; stroke: #111210; stroke-linejoin: round; stroke-width: 2px; }
+        .model-overall-chart__best-marker-connector { stroke: #f3c76b; stroke-width: 0.8; stroke-dasharray: 1.5 1.5; opacity: 0.85; }
       `,
     ),
-    exportSvg.firstChild,
+    chartGroup,
   );
-  return { svg: exportSvg, width: viewBox.width, height: viewBox.height };
+  return { svg: exportSvg, width: viewBox.width, height: exportHeight };
 }
 
 function downloadModelOverallChartPng() {
