@@ -1074,10 +1074,7 @@ function renderModelOverallChart(ranking = []) {
       transform: `translate(${xPosition(bestChartItem.weightedAverageDurationSeconds)} ${yPosition(bestChartItem.weightedPassRate)})`,
       "aria-hidden": "true",
     });
-    bestMarker.append(
-      createChartSvgElement("circle", { class: "model-overall-chart__best-marker-ring", r: 9 }),
-      createChartSvgElement("text", { class: "model-overall-chart__best-marker-label", x: 0, y: -14, "text-anchor": "middle" }, "最强"),
-    );
+    bestMarker.append(createChartSvgElement("text", { class: "model-overall-chart__best-marker-label", x: 0, y: -14, "text-anchor": "middle" }, "最强"));
     elements.modelOverallChart.append(bestMarker);
   }
 

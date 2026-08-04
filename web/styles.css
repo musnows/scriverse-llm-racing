@@ -1785,12 +1785,6 @@ a.requirement-meta-card__value:hover {
   pointer-events: none;
 }
 
-.model-overall-chart__best-marker-ring {
-  fill: none;
-  stroke: #f3c76b;
-  stroke-width: 2;
-}
-
 .model-overall-chart__best-marker-label {
   fill: #f3c76b;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
