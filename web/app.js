@@ -233,6 +233,18 @@ const models = [
       ["image-20260804080545-4f1y4xc.webp", "S3 系统备份页面", ["overview"]],
     ],
   },
+  {
+    id: 14,
+    name: "GPT-5.5",
+    tool: "Codex CLI",
+    images: [],
+  },
+  {
+    id: 15,
+    name: "GPT-5.6 Terra Max",
+    tool: "Codex CLI",
+    images: [],
+  },
 ];
 
 const features = [
@@ -266,7 +278,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=44";
+const leaderboardDataUrl = "/source/leaderboard.json?v=45";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;

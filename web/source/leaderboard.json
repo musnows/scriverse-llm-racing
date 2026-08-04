@@ -329,6 +329,40 @@
         "TC-08": "分页和每批 1000 个删除已经实现，但留存清理只检查当前 db/ 前缀和 .db 后缀，可能删除 manual.db、嵌套目录等不符合快照命名规则的对象。",
         "TC-21": "备份流程只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
       }
+    },
+    {
+      "modelId": 14,
+      "durationSeconds": 2566,
+      "resultBranchUrl": "",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "272K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有超时控制，单个目标挂起会阻断后续目标；停用目标仍可被手动执行，同一触发时间也不能保证按配置顺序执行。",
+        "TC-08": "留存清理仅按目标前缀和 .db 后缀筛选，没有严格校验快照命名规则，可能误删其他数据库对象或嵌套路径对象。",
+        "TC-21": "备份流程只上传数据库和可选图片，没有上传 master.key 或等价恢复密钥。"
+      }
+    },
+    {
+      "modelId": 15,
+      "durationSeconds": 2683,
+      "resultBranchUrl": "",
+      "unexpectedCases": [
+        "这是 GPT-5.6 Terra Max 的第二次重测结果。完整测试还会命中基线已有的版本号不一致（src/version.ts 为 0.6.5、package.json 为 0.6.6），与本次 S3 改动无关。"
+      ],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有 AbortSignal 或超时控制，真实挂起的目标会阻断串行队列，后续目标无法继续执行。",
+        "TC-18": "S3 服务端响应正文只做通用字段和格式脱敏，没有按当前目标的实际 AK/SK 值处理；服务端回显凭证时仍可能进入错误日志。",
+        "TC-21": "备份流程只上传数据库和可选图片，没有上传 master.key 或等价恢复密钥；新环境无法用原主密钥解密数据库中的 S3 与 AI 凭证。"
+      }
     }
   ],
   "agents": [
@@ -342,8 +376,8 @@
     { "modelId": 8, "modelName": "Composer 2.5", "supportsMultimodal": true, "software": "Cursor IDE", "version": "3.14.7", "context": "256K", "status": "已测试" },
     { "modelId": 13, "modelName": "GPT-5.6 Sol Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
-    { "modelName": "GPT-5.6 Terra Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "暂无测试数据" },
-    { "modelName": "GPT-5.5", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "暂无测试数据" },
+    { "modelId": 15, "modelName": "GPT-5.6 Terra Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
+    { "modelId": 14, "modelName": "GPT-5.5", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "supportsMultimodal": false, "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
