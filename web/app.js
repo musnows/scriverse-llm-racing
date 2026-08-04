@@ -248,7 +248,7 @@ const models = [
   },
   {
     id: 14,
-    name: "GPT-5.5 Xhigh",
+    name: "GPT-5.5 xhigh",
     tool: "Codex CLI",
     testedAt: "2026-08-04T10:56:21+08:00",
     images: [],
@@ -305,7 +305,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=51";
+const leaderboardDataUrl = "/source/leaderboard.json?v=52";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;

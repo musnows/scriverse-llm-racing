@@ -417,7 +417,7 @@
     { "modelId": 13, "modelName": "GPT-5.6 Sol Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 15, "modelName": "GPT-5.6 Terra Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
-    { "modelId": 14, "modelName": "GPT-5.5 Xhigh", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "已测试" },
+    { "modelId": 14, "modelName": "GPT-5.5 xhigh", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "已测试" },
     { "modelId": 16, "modelName": "Claude Opus 5 Max", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
