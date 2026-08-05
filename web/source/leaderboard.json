@@ -95,6 +95,7 @@
     {
       "modelId": 4,
       "durationSeconds": 2698,
+      "tokenUsage": 0,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/hy3",
       "unexpectedCases": [
         "有独立的文件删除用户验证，npm build 会触发这个验证，需要在设置中关闭。",
@@ -117,6 +118,8 @@
     {
       "modelId": 2,
       "durationSeconds": 1260,
+      "tokenUsage": 914.97,
+      "tokenUsageUnit": "credit",
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max-preview",
       "unexpectedCases": [
         "启动时就进入限流，任务很难排队成功，必须终止任务并 continue 才能继续。"
@@ -137,6 +140,7 @@
     {
       "modelId": 3,
       "durationSeconds": 2747,
+      "tokenUsage": 0,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/longcat-2.0",
       "unexpectedCases": [
         "首轮测试时，模型直接把修改写到了主仓库，绕过了 git-worktree 要求必须在 worktree 目录下工作的强约束。",
@@ -168,6 +172,8 @@
     {
       "modelId": 1,
       "durationSeconds": 1920,
+      "tokenUsage": 444.8,
+      "tokenUsageUnit": "credit",
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/seed-2.1-turbo",
       "unexpectedCases": [
         "出现权限认证请求（rm 请求）时，页面没有自动滚动到底部，用户无法感知当前任务已经被阻塞。"
@@ -195,6 +201,7 @@
     {
       "modelId": 5,
       "durationSeconds": 4140,
+      "tokenUsage": 54945337,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-flash-0731",
       "unexpectedCases": [
         "TC-21 意外情况：密钥备份在特定配置下可能失效。使用 AI_NOVEL_MASTER_KEY 时，磁盘 master.key 可能不存在或已经过期；DATABASE_PATH 与 DATA_DIR 分离时还可能读取错误路径。密钥文件缺失会被静默跳过，导致数据库快照无法完整恢复已保存的加密凭证。",
@@ -215,6 +222,7 @@
     {
       "modelId": 6,
       "durationSeconds": 1136,
+      "tokenUsage": 15098172,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-pro-preview",
       "unexpectedCases": [],
       "agent": {
@@ -238,6 +246,7 @@
     {
       "modelId": 7,
       "durationSeconds": 2117,
+      "tokenUsage": 36810362,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-luna-max",
       "unexpectedCases": [],
       "agent": {
@@ -255,6 +264,7 @@
     {
       "modelId": 8,
       "durationSeconds": 1104,
+      "tokenUsage": 7393000,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/composer-2.5",
       "unexpectedCases": [
         "测试过程中居然用了 Cursor 的指定 subagent 模型能力，还喊了 Claude Sonnet 5 来当外援。这样测出来的结果暂时不能信，得重测。（8 月 3 日记录）"
@@ -280,6 +290,7 @@
     {
       "modelId": 9,
       "durationSeconds": 628,
+      "tokenUsage": 83550000,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high-test2",
       "unexpectedCases": [
         "首次测试 Grok 4.5 High 时，Grok 通过 Cursor 的 subagent 能力点名使用了 Claude Sonnet 5 当外援，测试结果因此失真，第一次得分是 170。当前平台展示的是第二次重新测试的结果，这次全程只使用纯 Grok 4.5，得分 180，耗时 10 分 28 秒。（8 月 3 日记录）"
@@ -298,6 +309,8 @@
     {
       "modelId": 10,
       "durationSeconds": 1963,
+      "tokenUsage": 525.11,
+      "tokenUsageUnit": "credit",
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max",
       "unexpectedCases": [
         "测试期间碰到了两次服务端错误，每次都得我手动点“继续”才能跑下去。你就不能自己重试吗？"
@@ -318,6 +331,7 @@
     {
       "modelId": 11,
       "durationSeconds": 2145,
+      "tokenUsage": 22000000,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.2-max-cursor",
       "unexpectedCases": [
         "Cursor 里只能给 GLM-5.2 开到 200K 上下文，测试中间还 compact 了好几次。这个结果和官方 1M 上下文的 GLM-5.2 应该还是有点差距。"
@@ -341,6 +355,7 @@
     {
       "modelId": 12,
       "durationSeconds": 7792,
+      "tokenUsage": 27195391,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
       "unexpectedCases": [
         "首轮跑了 45 分钟，结果连代码分析都没做完，还吃掉了 5 小时额度的 6%。现在这份数据是我重新测第二遍的结果。",
@@ -363,6 +378,7 @@
     {
       "modelId": 13,
       "durationSeconds": 2852,
+      "tokenUsage": 31837326,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-sol-max",
       "unexpectedCases": [],
       "agent": {
@@ -379,6 +395,7 @@
     {
       "modelId": 14,
       "durationSeconds": 2566,
+      "tokenUsage": 25601459,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.5-xhigh",
       "unexpectedCases": [],
       "agent": {
@@ -395,6 +412,7 @@
     {
       "modelId": 15,
       "durationSeconds": 2683,
+      "tokenUsage": 41646413,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-terra-max",
       "unexpectedCases": [
         "这是 GPT-5.6 Terra Max 的第二次重测结果。完整测试还会命中基线已有的版本号不一致（src/version.ts 为 0.6.5、package.json 为 0.6.6），与本次 S3 改动无关。"
@@ -413,6 +431,7 @@
     {
       "modelId": 16,
       "durationSeconds": 3051,
+      "tokenUsage": 91813000,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/claude-opus-5-max",
       "unexpectedCases": [
         "工作区文档和测试仍把不上传 master.key 当成预期，与当前 TC-21 要求存在冲突；本次按最新用例判定。"
@@ -431,6 +450,8 @@
     {
       "modelId": 17,
       "durationSeconds": 1628,
+      "tokenUsage": 371,
+      "tokenUsageUnit": "credit",
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/minimax-m3",
       "unexpectedCases": [],
       "agent": {
