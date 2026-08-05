@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -108,6 +108,29 @@
           "content": "S3 系统备份同时包含用于解密 CredentialVault 凭证的 master.key 或等价恢复密钥，使数据库快照能够在新环境中恢复已保存的加密凭证。"
         }
       ]
+    },
+    {
+      "id": "sidebar-ai-write-approval-v1",
+      "modelIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "testCases": []
     }
   ]
 }

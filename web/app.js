@@ -323,7 +323,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=55";
+const leaderboardDataUrl = "/source/leaderboard.json?v=56";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
