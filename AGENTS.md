@@ -27,6 +27,11 @@
 - `finalAdoptedPrUrl` 是可选的合入主仓 PR 链接；只有用户提供或明确指定真实链接时才能填写，未配置或为空时不显示链接，禁止编造 URL。
 - 前端必须从当前需求 JSON 动态读取这两个字段：只在对应模型的单需求排行榜卡片名称后显示“最终采纳”标识，表格表头不得显示；点击标识显示含义说明，并在 `finalAdoptedPrUrl` 有效时提供 PR 链接。
 
+### 模型测试时间与用量
+
+- `web/app.js` 的 `models[]` 中，每个已测试模型必须填写带时区的 ISO 8601 `testedAt`；如果没有单独记录测试时间，使用该模型实现提交到 worktree 分支的 commit 时间，并在更新时一并填写，禁止留空。
+- `web/source/leaderboard.json` 的已测试结果必须填写 `durationSeconds` 和 `tokenUsage`。用量为 credit 时保留数字并设置 `tokenUsageUnit: "credit"`，不得把 credit 当作 token；普通 token 用量省略该字段或设置为 `"token"`。
+
 ## 后端修改
 
 - 后端只使用 Node.js 内置模块，保持 Node.js 22.5 或更高版本可运行。

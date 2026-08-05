@@ -270,6 +270,7 @@ const models = [
     id: 16,
     name: "Claude Opus 5 Max",
     tool: "Cursor Agent View",
+    testedAt: "2026-08-04T19:48:42+08:00",
     images: [
       ["image-20260804234905-kja60nb.webp", "创建 worktree 并等待下一步", ["process"]],
       ["image-20260804234913-e1j6gzp.webp", "确认基于 main 创建 worktree", ["process"]],
@@ -288,6 +289,7 @@ const models = [
     id: 17,
     name: "MiniMax-M3",
     tool: "WorkBuddy",
+    testedAt: "2026-08-05T00:01:31+08:00",
     images: [],
   },
 ];
@@ -323,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=59";
+const leaderboardDataUrl = "/source/leaderboard.json?v=60";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
