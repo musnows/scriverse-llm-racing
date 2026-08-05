@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=66";
+const leaderboardDataUrl = "/source/leaderboard.json?v=67";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -527,9 +527,12 @@ function formatBuildUpdatedAt(value) {
 }
 
 function formatTestedAt(value) {
+  if (value === null || value === undefined || value === "" || value === 0 || value === "0") {
+    return "暂未记录";
+  }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "未记录";
+    return "暂未记录";
   }
   return new Intl.DateTimeFormat("zh-CN", {
     timeZone: "Asia/Shanghai",
