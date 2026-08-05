@@ -2603,7 +2603,7 @@ function getRequirementFirstTestAt(requirement) {
 
 function estimateLeaderboardExportTextWidth(value, fontSize) {
   return [...String(value)].reduce(
-    (total, character) => total + (character.codePointAt(0) > 0xff ? fontSize : fontSize * 0.58),
+    (total, character) => total + (character.codePointAt(0) > 0xff ? fontSize : fontSize * 0.5),
     0,
   );
 }
@@ -2710,13 +2710,15 @@ function createLeaderboardExportSvg() {
       : formatTokenUsage(usageValue, usageUnit, "compact");
     const modelName = entry.model?.name ?? entry.modelId;
     const modelX = cardX + 180;
-    const modelTextWidth = estimateLeaderboardExportTextWidth(modelName, 26);
     const hasMultimodalIcon = Boolean(entry.model?.supportsMultimodal);
-    const multimodalIconX = modelX + modelTextWidth + 12;
-    const adoptedPillX = multimodalIconX + (hasMultimodalIcon ? 32 : 0) + 12;
     const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
     const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
     const metaText = `通过 ${passCount} / ${entry.testCaseCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
+    const modelTextElement = createChartSvgElement("text", {
+      class: "leaderboard-export__model",
+      x: modelX,
+      y: textY,
+    }, modelName);
 
     exportSvg.append(
       createChartSvgElement("rect", {
@@ -2732,11 +2734,7 @@ function createLeaderboardExportSvg() {
         x: cardX + 18,
         y: textY,
       }, `第 ${entry.rank} 名`),
-      createChartSvgElement("text", {
-        class: "leaderboard-export__model",
-        x: modelX,
-        y: textY,
-      }, modelName),
+      modelTextElement,
       createChartSvgElement("text", {
         class: "leaderboard-export__agent",
         x: cardX + 560,
@@ -2760,6 +2758,15 @@ function createLeaderboardExportSvg() {
         "text-anchor": "end",
       }, metaText),
     );
+
+    const renderedModelTextWidth = typeof modelTextElement.getComputedTextLength === "function"
+      ? modelTextElement.getComputedTextLength()
+      : 0;
+    const modelTextWidth = renderedModelTextWidth > 0
+      ? renderedModelTextWidth
+      : estimateLeaderboardExportTextWidth(modelName, 26);
+    const multimodalIconX = modelX + modelTextWidth + 6;
+    const adoptedPillX = multimodalIconX + (hasMultimodalIcon ? 22 : 0) + 4;
 
     if (hasMultimodalIcon) {
       const icon = createChartSvgElement("g", {
@@ -2823,7 +2830,8 @@ function createLeaderboardExportSvg() {
         .leaderboard-export__rank { fill: #d77855; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 20px; }
         .leaderboard-export__model { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 26px; font-weight: 650; }
         .leaderboard-export__multimodal-icon { fill: none; stroke: #e58b66; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
-        .leaderboard-export__agent, .leaderboard-export__context, .leaderboard-export__meta-text { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
+        .leaderboard-export__agent, .leaderboard-export__context { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
+        .leaderboard-export__meta-text { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
         .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 34px; font-weight: 700; }
         .leaderboard-export__adopted-pill { fill: #4a3c1f; stroke: #b59445; stroke-width: 1; }
         .leaderboard-export__adopted { fill: #f3c76b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 13px; font-weight: 700; }
