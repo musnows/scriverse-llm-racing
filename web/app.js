@@ -2677,7 +2677,7 @@ function createLeaderboardExportSvg() {
       class: "leaderboard-export__legend-adopted",
       x: 390,
       y: 161,
-    }, "金色模型名 = 最终采纳"),
+    }, "金色模型名 = 最终采纳合入主仓"),
     createChartSvgElement("text", {
       class: "leaderboard-export__domain",
       x: width - 36,
