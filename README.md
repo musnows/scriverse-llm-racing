@@ -44,7 +44,19 @@ npm run build
 - `build-meta.js`：footer 显示的最近更新时间。
 - `baidu-statistics-config.js`：百度统计 ID；未设置 `BAIDU_STATISTICS_ID` 时不加载统计脚本。
 
-单个需求对象可以配置 `finalAdoptedModelId`，在该模型的单需求排行榜卡片名称后显示“最终采纳”标识；也可以配置可选的 `finalAdoptedPrUrl`，点击标识后的说明 Toast 会提供合入主仓 PR 链接。
+单个需求对象可以配置最终采纳信息。字段必须写在 `web/source/leaderboard.json` 对应的 `requirements[]` 对象中：
+
+```json
+{
+  "id": "s3-backup-v1",
+  "finalAdoptedModelId": 13,
+  "finalAdoptedPrUrl": "https://github.com/musnows/Scriverse/pull/123"
+}
+```
+
+- `finalAdoptedModelId` 必须引用同一 JSON 顶层 `models[]` 中已有的 `modelId`。只有用户明确指定时才能设置或修改，不能根据排名或分数推断。
+- `finalAdoptedPrUrl` 是可选的真实合入主仓 PR 链接；不配置时，Toast 只显示“最终采纳”的含义，不显示链接。
+- 前端会动态读取字段，在单需求排行榜对应模型名称后显示“最终采纳”标识，表格表头不会显示该标识。
 
 如果前后端同域部署，`API_BASE` 可以留空；如果前端部署在 Netlify、后端独立部署，则必须设置后端完整 URL。
 如果需要启用百度统计，在前端构建环境中设置 `BAIDU_STATISTICS_ID`，统计 ID 只会在构建产物中注入，不会写死在源代码中。
