@@ -600,6 +600,11 @@ function formatChartDuration(durationSeconds) {
   return `${minutes.toFixed(minutes >= 10 ? 0 : 1)} min`;
 }
 
+function formatChartExportTimestamp(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${String(date.getFullYear()).slice(-2)}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+}
+
 function formatChartAxisDuration(durationSeconds) {
   return `${Math.round(Number(durationSeconds) / 60)} min`;
 }
@@ -660,7 +665,7 @@ function createModelOverallChartExportSvg() {
     createChartSvgElement(
       "text",
       { class: "model-overall-chart-export__domain", x: viewBox.width - 32, y: 36, "text-anchor": "end" },
-      "https://llm-racing.scriverse.top/",
+      "llm-racing.scriverse.top",
     ),
   );
 
@@ -730,7 +735,7 @@ function downloadModelOverallChartPng() {
       const downloadUrl = URL.createObjectURL(pngBlob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = "model-overall-scatter.png";
+      link.download = `scriverse-llm-overall-${formatChartExportTimestamp()}.png`;
       link.hidden = true;
       document.body.append(link);
       link.click();
