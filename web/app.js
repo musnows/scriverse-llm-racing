@@ -323,7 +323,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=56";
+const leaderboardDataUrl = "/source/leaderboard.json?v=57";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -431,7 +431,9 @@ function getRankingData() {
   const scoring = getRequirementScoring(requirement);
   const scoreByPriority = scoring.deductionByPriority;
   const testCaseIds = new Set(testCases.map((testCase) => testCase.id));
-  rankingDataCache = leaderboardData.models
+  const requirementEntries = getRequirementModelEntries(requirement);
+  const entries = requirementEntries ?? leaderboardData.models;
+  rankingDataCache = entries
     .map((entry) => {
       const failedIds = new Set(Object.keys(entry.failures ?? {}).filter((testCaseId) => testCaseIds.has(testCaseId)));
       const deductions = testCases.reduce(
@@ -569,9 +571,11 @@ function getWeightedAverageDurationSeconds(modelId) {
     return null;
   }
   const requirements = leaderboardData.requirements ?? [];
-  const hasPerRequirementResults = requirements.some((requirement) => getRequirementModelEntries(requirement));
+  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
   const durationRecords = hasPerRequirementResults
-    ? requirements.flatMap((requirement) => (getRequirementModelEntries(requirement) ?? [])
+    ? requirements.flatMap((requirement) => (hasExplicitRequirementModelEntries(requirement)
+      ? (getRequirementModelEntries(requirement) ?? [])
+      : leaderboardData.models)
       .filter((entry) => (entry.modelId ?? entry.id) === modelId)
       .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })))
     : leaderboardData.models
@@ -1225,15 +1229,26 @@ function getRequirementModelEntries(requirement) {
   ].find(Array.isArray);
 }
 
+function hasExplicitRequirementModelEntries(requirement) {
+  return [
+    requirement?.models,
+    requirement?.results,
+    requirement?.evaluations,
+    requirement?.modelResults,
+  ].some(Array.isArray);
+}
+
 function getTestedRequirements(modelId) {
   const requirements = leaderboardData?.requirements ?? [];
-  const hasPerRequirementResults = requirements.some((requirement) => getRequirementModelEntries(requirement));
+  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
   if (!hasPerRequirementResults) {
     return requirements.length > 0 && leaderboardData.models.some((entry) => entry.modelId === modelId) ? requirements : [];
   }
 
   return requirements.filter((requirement) => {
-    const entries = getRequirementModelEntries(requirement) ?? [];
+    const entries = hasExplicitRequirementModelEntries(requirement)
+      ? (getRequirementModelEntries(requirement) ?? [])
+      : leaderboardData.models;
     return entries.some((entry) => (entry.modelId ?? entry.id) === modelId);
   });
 }
@@ -1244,7 +1259,7 @@ function getTestedRequirementCount(modelId) {
 
 function getRequirementModelEntry(requirement, modelId) {
   const entries = getRequirementModelEntries(requirement);
-  if (entries) {
+  if (hasExplicitRequirementModelEntries(requirement)) {
     return entries.find((entry) => (entry.modelId ?? entry.id) === modelId) ?? null;
   }
   return leaderboardData?.models.find((entry) => entry.modelId === modelId) ?? null;
@@ -2600,6 +2615,12 @@ function renderLeaderboard() {
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。在测试用例“查看说明”中可点赞或踩。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。";
+  if (rankingData.length === 0) {
+    const message = document.createElement("p");
+    message.className = "leaderboard-loading";
+    message.textContent = "该需求尚未有测试结果，参赛选手已在需求信息中列出。";
+    elements.leaderboardSummary.append(message);
+  }
   const visibleEntries = rankingData.slice(0, leaderboardTopN);
   const hiddenEntries = rankingData.slice(leaderboardTopN);
   const finalAdoptedModelId = getFinalAdoptedModelId(currentRequirement);
@@ -2862,6 +2883,10 @@ function renderRequirementsView() {
   elements.requirementWeightNote.textContent = "相对系数，1.0 为基准";
   elements.requirementPrompt.textContent = requirement.prompt;
 
+  const hasExplicitResults = hasExplicitRequirementModelEntries(requirement);
+  const testedModelIds = new Set((hasExplicitResults
+    ? (getRequirementModelEntries(requirement) ?? [])
+    : leaderboardData.models).map((entry) => entry.modelId ?? entry.id));
   const agentRows = (leaderboardData.agents ?? []).map((agent) => {
     const row = document.createElement("tr");
     const model = document.createElement("th");
@@ -2879,8 +2904,11 @@ function renderRequirementsView() {
     const context = document.createElement("td");
     context.textContent = agent.context || "未记录";
     const status = document.createElement("td");
-    status.className = `agent-status ${agent.status === "已测试" ? "agent-status--tested" : "agent-status--pending"}`;
-    status.textContent = agent.status;
+    const statusText = hasExplicitResults
+      ? (testedModelIds.has(agent.modelId) ? "已测试" : "待测试")
+      : agent.status;
+    status.className = `agent-status ${statusText === "已测试" ? "agent-status--tested" : "agent-status--pending"}`;
+    status.textContent = statusText;
     if (agent.note) {
       status.title = agent.note;
     }
