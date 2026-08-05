@@ -602,7 +602,7 @@ function formatChartDuration(durationSeconds) {
 
 function formatChartExportTimestamp(date = new Date()) {
   const pad = (value) => String(value).padStart(2, "0");
-  return `${String(date.getFullYear()).slice(-2)}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
 }
 
 function formatChartAxisDuration(durationSeconds) {
@@ -735,7 +735,7 @@ function downloadModelOverallChartPng() {
       const downloadUrl = URL.createObjectURL(pngBlob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `scriverse-llm-overall-${formatChartExportTimestamp()}.png`;
+      link.download = `scriverse-llm-ranking-${formatChartExportTimestamp()}.png`;
       link.hidden = true;
       document.body.append(link);
       link.click();
