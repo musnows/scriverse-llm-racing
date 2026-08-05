@@ -2722,7 +2722,6 @@ function createLeaderboardExportSvg() {
     const isFinalAdopted = entry.modelId === finalAdoptedModelId;
     const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
     const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
-    const metaText = `通过 ${passCount} / ${entry.testCaseCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
     const modelTextElement = createChartSvgElement("text", {
       class: `leaderboard-export__model${isFinalAdopted ? " leaderboard-export__model--adopted" : isMultimodal ? " leaderboard-export__model--multimodal" : ""}`,
       x: modelX,
@@ -2761,11 +2760,47 @@ function createLeaderboardExportSvg() {
         "text-anchor": "middle",
       }, `${entry.score} / ${entry.maxScore}`),
       createChartSvgElement("text", {
-        class: "leaderboard-export__meta-text",
+        class: "leaderboard-export__meta-column",
+        x: cardX + 1450,
+        y: textY,
+        "text-anchor": "end",
+      }, `通过 ${passCount} / ${entry.testCaseCount}`),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-separator",
+        x: cardX + 1472,
+        y: textY,
+        "text-anchor": "middle",
+      }, "·"),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-column",
+        x: cardX + 1700,
+        y: textY,
+        "text-anchor": "end",
+      }, `加权通过率 ${weightedPassRate}`),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-separator",
+        x: cardX + 1718,
+        y: textY,
+        "text-anchor": "middle",
+      }, "·"),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-column",
+        x: cardX + 1830,
+        y: textY,
+        "text-anchor": "end",
+      }, durationText),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-separator",
+        x: cardX + 1848,
+        y: textY,
+        "text-anchor": "middle",
+      }, "·"),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-column",
         x: cardX + 1964,
         y: textY,
         "text-anchor": "end",
-      }, metaText),
+      }, usageText),
     );
 
   });
@@ -2803,7 +2838,8 @@ function createLeaderboardExportSvg() {
         .leaderboard-export__model--multimodal { fill: #e58b66; }
         .leaderboard-export__model--adopted { fill: #f3c76b; }
         .leaderboard-export__agent, .leaderboard-export__context { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
-        .leaderboard-export__meta-text { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
+        .leaderboard-export__meta-column { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
+        .leaderboard-export__meta-separator { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
         .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 34px; font-weight: 700; }
         .leaderboard-export__empty { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 15px; }
       `,
