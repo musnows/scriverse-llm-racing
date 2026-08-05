@@ -671,6 +671,10 @@ function createModelOverallChartExportSvg() {
 
   const chartGroup = createChartSvgElement("g", { transform: `translate(0 ${headerHeight})` });
   [...svg.childNodes].forEach((node) => chartGroup.append(node.cloneNode(true)));
+  chartGroup.querySelectorAll(".model-overall-chart__point").forEach((point) => {
+    point.setAttribute("r", "3");
+    point.setAttribute("stroke-width", "1.2");
+  });
   exportSvg.append(
     createChartSvgElement(
       "style",
