@@ -176,6 +176,34 @@ main {
   background: #30201b;
 }
 
+.toast--anchored {
+  right: auto;
+  bottom: auto;
+  z-index: 30;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.toast--anchored::after {
+  position: absolute;
+  left: var(--toast-arrow-left, 50%);
+  bottom: -7px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid #211c19;
+  border-right: 7px solid transparent;
+  border-left: 7px solid transparent;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.toast--anchored-below::after {
+  top: -7px;
+  bottom: auto;
+  border-top: 0;
+  border-bottom: 7px solid #211c19;
+}
+
 .toast a {
   color: #f3c76b;
   font-weight: 650;

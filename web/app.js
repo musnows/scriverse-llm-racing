@@ -1591,12 +1591,19 @@ const elements = {
 
 let toastTimer = null;
 
-function showToast(message, tone = "info") {
+function showToast(message, tone = "info", options = {}) {
   if (!elements.toast) {
     return;
   }
   window.clearTimeout(toastTimer);
   elements.toast.className = `toast toast--${tone}`;
+  elements.toast.style.removeProperty("left");
+  elements.toast.style.removeProperty("top");
+  elements.toast.style.removeProperty("--toast-arrow-left");
+  const toastAnchor = options.anchor instanceof Element ? options.anchor : null;
+  if (toastAnchor) {
+    elements.toast.classList.add("toast--anchored");
+  }
   elements.toast.replaceChildren();
   if (typeof message === "string") {
     elements.toast.textContent = message;
@@ -1606,10 +1613,42 @@ function showToast(message, tone = "info") {
     elements.toast.textContent = String(message);
   }
   elements.toast.hidden = false;
+  if (toastAnchor) {
+    positionAnchoredToast(toastAnchor);
+  }
   toastTimer = window.setTimeout(() => {
     elements.toast.hidden = true;
     elements.toast.replaceChildren();
+    elements.toast.classList.remove("toast--anchored", "toast--anchored-below");
+    elements.toast.style.removeProperty("left");
+    elements.toast.style.removeProperty("top");
+    elements.toast.style.removeProperty("--toast-arrow-left");
   }, 3200);
+}
+
+function positionAnchoredToast(anchor) {
+  const anchorRect = anchor.getBoundingClientRect();
+  const toastRect = elements.toast.getBoundingClientRect();
+  const viewportPadding = 8;
+  const gap = 10;
+  const centeredLeft = anchorRect.left + anchorRect.width / 2 - toastRect.width / 2;
+  const left = Math.min(
+    Math.max(viewportPadding, centeredLeft),
+    Math.max(viewportPadding, window.innerWidth - toastRect.width - viewportPadding),
+  );
+  const preferredTop = anchorRect.top - toastRect.height - gap;
+  const isBelow = preferredTop < viewportPadding;
+  const top = isBelow
+    ? Math.min(anchorRect.bottom + gap, window.innerHeight - toastRect.height - viewportPadding)
+    : preferredTop;
+  const arrowLeft = Math.min(
+    Math.max(12, anchorRect.left + anchorRect.width / 2 - left),
+    Math.max(12, toastRect.width - 12),
+  );
+  elements.toast.classList.toggle("toast--anchored-below", isBelow);
+  elements.toast.style.left = `${left}px`;
+  elements.toast.style.top = `${Math.max(viewportPadding, top)}px`;
+  elements.toast.style.setProperty("--toast-arrow-left", `${arrowLeft}px`);
 }
 
 function createScreenshotCard(image, items, index, compact = false) {
@@ -2335,7 +2374,7 @@ function createFinalAdoptedBanner(modelName, pullRequestUrl = "") {
       link.textContent = "查看合入 PR";
       toast.append(link);
     }
-    showToast(toast, "info");
+    showToast(toast, "info", { anchor: banner });
   });
   return banner;
 }
