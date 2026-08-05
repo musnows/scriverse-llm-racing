@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=60";
+const leaderboardDataUrl = "/source/leaderboard.json?v=61";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -1272,6 +1272,9 @@ function getRequirementModelEntry(requirement, modelId) {
 function getRequirementModelImages(requirement, modelId) {
   const model = models.find((item) => item.id === modelId);
   const screenshotMap = requirement?.screenshots;
+  if (hasExplicitRequirementModelEntries(requirement) && !screenshotMap) {
+    return [];
+  }
   if (!screenshotMap || !Object.prototype.hasOwnProperty.call(screenshotMap, String(modelId))) {
     return model?.images ?? [];
   }
