@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=112">
+    <link rel="stylesheet" href="/styles.css?v=113">
   </head>
   <body>
     <div class="app-shell">
@@ -262,7 +262,10 @@
               <h2>需求排行榜</h2>
               <p id="leaderboard-description" class="section-description">按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。</p>
             </div>
-            <p id="leaderboard-test-count" class="count-label">测试用例数量读取中</p>
+            <div class="leaderboard-heading__actions">
+              <p id="leaderboard-test-count" class="count-label">测试用例数量读取中</p>
+              <button type="button" id="leaderboard-export" class="leaderboard-export-button" aria-label="下载完整需求排行榜 PNG">下载完整榜单 PNG</button>
+            </div>
           </div>
           <p id="leaderboard-note" class="leaderboard-note"></p>
           <div id="leaderboard-summary" class="leaderboard-summary"></div>
@@ -500,6 +503,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=139"></script>
+    <script src="/app.js?v=140"></script>
   </body>
 </html>

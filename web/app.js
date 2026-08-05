@@ -1662,6 +1662,7 @@ const elements = {
   leaderboardRequirement: document.getElementById("leaderboard-requirement"),
   leaderboardDescription: document.getElementById("leaderboard-description"),
   leaderboardTestCount: document.getElementById("leaderboard-test-count"),
+  leaderboardExport: document.getElementById("leaderboard-export"),
   leaderboardSummary: document.getElementById("leaderboard-summary"),
   leaderboardNote: document.getElementById("leaderboard-note"),
   leaderboardTable: document.querySelector(".leaderboard-table"),
@@ -2575,6 +2576,304 @@ function createLeaderboardSummaryList(entries, className = "leaderboard-summary_
   return list;
 }
 
+function formatLeaderboardExportDateTime(date) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date).replaceAll("/", "-");
+}
+
+function getRequirementFirstTestAt(requirement) {
+  const dates = models
+    .map((model) => getRequirementTestedAt(requirement, model.id))
+    .map((value) => {
+      const date = value ? new Date(value) : null;
+      return date && !Number.isNaN(date.getTime()) && date.getTime() >= earliestRecordedTestAt ? date : null;
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.getTime() - right.getTime());
+  return dates[0] ?? null;
+}
+
+function createLeaderboardExportSvg() {
+  const requirement = getCurrentRequirement();
+  if (!requirement) {
+    return null;
+  }
+
+  const entries = getRankingData();
+  const generatedAt = new Date();
+  const firstTestAt = getRequirementFirstTestAt(requirement);
+  const testedAtText = firstTestAt
+    ? formatLeaderboardExportDateTime(firstTestAt)
+    : formatLeaderboardExportDateTime(generatedAt);
+  const finalAdoptedModelId = getFinalAdoptedModelId(requirement);
+  const width = 2048;
+  const headerHeight = 142;
+  const cardHeight = 76;
+  const cardGap = 10;
+  const horizontalPadding = 28;
+  const footerHeight = 46;
+  const contentHeight = entries.length > 0
+    ? entries.length * cardHeight + (entries.length - 1) * cardGap
+    : 62;
+  const height = headerHeight + contentHeight + footerHeight + horizontalPadding;
+  const exportSvg = createChartSvgElement("svg", {
+    xmlns: chartSvgNamespace,
+    width,
+    height,
+    viewBox: `0 0 ${width} ${height}`,
+  });
+
+  exportSvg.append(
+    createChartSvgElement("rect", { x: 0, y: 0, width, height, fill: "#111210" }),
+    createChartSvgElement("rect", { class: "leaderboard-export__header", x: 0, y: 0, width, height: headerHeight }),
+    createChartSvgElement("line", {
+      class: "leaderboard-export__divider",
+      x1: 0,
+      y1: headerHeight,
+      x2: width,
+      y2: headerHeight,
+    }),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__title",
+      x: 36,
+      y: 38,
+    }, "叙界真实需求 Agent 评测娱乐榜"),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__subtitle",
+      x: 36,
+      y: 70,
+    }, `${requirement.title}｜需求排行榜`),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__meta",
+      x: 36,
+      y: 101,
+    }, `测试时间：${testedAtText}`),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__domain",
+      x: width - 36,
+      y: 38,
+      "text-anchor": "end",
+    }, "llm-racing.scriverse.top"),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__domain-note",
+      x: width - 36,
+      y: 60,
+      "text-anchor": "end",
+    }, "更多详情见站点"),
+  );
+
+  if (entries.length === 0) {
+    exportSvg.append(createChartSvgElement("text", {
+      class: "leaderboard-export__empty",
+      x: width / 2,
+      y: headerHeight + 38,
+      "text-anchor": "middle",
+    }, "该需求暂无测试结果"));
+  }
+
+  entries.forEach((entry, index) => {
+    const top = headerHeight + index * (cardHeight + cardGap);
+    const cardWidth = width - horizontalPadding * 2;
+    const cardX = horizontalPadding;
+    const textY = top + 47;
+    const passCount = entry.passCount ?? entry.testCaseCount - (entry.failureCount ?? Object.keys(entry.failures ?? {}).length);
+    const weightedPassRate = formatWeightedPassRate(entry.weightedPassRate);
+    const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
+      ? "耗时未记录"
+      : formatDurationSeconds(entry.durationSeconds);
+    const usageUnit = entry.tokenUsageUnit ?? entry.agent?.tokenUsageUnit ?? "token";
+    const usageValue = entry.tokenUsage ?? entry.agent?.tokenUsage;
+    const usageText = usageValue === null || usageValue === undefined
+      ? "用量未记录"
+      : formatTokenUsage(usageValue, usageUnit, "compact");
+    const modelName = entry.model?.name ?? entry.modelId;
+    const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
+    const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
+    const metaText = `通过 ${passCount} / ${entry.testCaseCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
+
+    exportSvg.append(
+      createChartSvgElement("rect", {
+        class: "leaderboard-export__card",
+        x: cardX,
+        y: top,
+        width: cardWidth,
+        height: cardHeight,
+        rx: 12,
+      }),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__rank",
+        x: cardX + 18,
+        y: textY,
+      }, `第 ${entry.rank} 名`),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__model",
+        x: cardX + 180,
+        y: textY,
+      }, modelName),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__agent",
+        x: cardX + 580,
+        y: textY,
+      }, modelTool),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__context",
+        x: cardX + 990,
+        y: textY,
+      }, `上下文 ${contextValue}`),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__score",
+        x: cardX + 1225,
+        y: textY + 1,
+        "text-anchor": "middle",
+      }, `${entry.score} / ${entry.maxScore}`),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__meta-text",
+        x: cardX + 1400,
+        y: textY,
+      }, metaText),
+      createChartSvgElement("rect", {
+        class: "leaderboard-export__source-pill",
+        x: cardX + 1870,
+        y: top + 24,
+        width: 108,
+        height: 28,
+        rx: 7,
+      }),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__source",
+        x: cardX + 1924,
+        y: top + 43,
+        "text-anchor": "middle",
+      }, entry.resultBranchUrl ? "查看源码" : "源码未记录"),
+    );
+
+    if (entry.modelId === finalAdoptedModelId) {
+      exportSvg.append(
+        createChartSvgElement("rect", {
+          class: "leaderboard-export__adopted-pill",
+          x: cardX + 440,
+          y: top + 24,
+          width: 76,
+          height: 28,
+          rx: 7,
+        }),
+        createChartSvgElement("text", {
+          class: "leaderboard-export__adopted",
+          x: cardX + 478,
+          y: top + 43,
+          "text-anchor": "middle",
+        }, "最终采纳"),
+      );
+    }
+  });
+
+  exportSvg.append(
+    createChartSvgElement("line", {
+      class: "leaderboard-export__divider",
+      x1: 0,
+      y1: height - footerHeight,
+      x2: width,
+      y2: height - footerHeight,
+    }),
+    createChartSvgElement("text", {
+      class: "leaderboard-export__footer",
+      x: width / 2,
+      y: height - 17,
+      "text-anchor": "middle",
+    }, `共 ${entries.length} 个模型 · 图片生成于 ${formatLeaderboardExportDateTime(generatedAt)}`),
+    createChartSvgElement(
+      "style",
+      {},
+      `
+        .leaderboard-export__header { fill: #171816; }
+        .leaderboard-export__divider { stroke: #30322f; stroke-width: 1; }
+        .leaderboard-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 23px; font-weight: 700; }
+        .leaderboard-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 15px; font-weight: 700; }
+        .leaderboard-export__meta, .leaderboard-export__footer { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; }
+        .leaderboard-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; }
+        .leaderboard-export__domain-note { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; }
+        .leaderboard-export__card { fill: #151614; stroke: #30322f; stroke-width: 1; }
+        .leaderboard-export__rank { fill: #d77855; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 14px; }
+        .leaderboard-export__model { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 17px; font-weight: 650; }
+        .leaderboard-export__agent, .leaderboard-export__context, .leaderboard-export__meta-text { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; }
+        .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 22px; font-weight: 700; }
+        .leaderboard-export__source-pill { fill: #211c19; stroke: #8d533f; stroke-width: 1; }
+        .leaderboard-export__source { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; }
+        .leaderboard-export__adopted-pill { fill: #4a3c1f; stroke: #b59445; stroke-width: 1; }
+        .leaderboard-export__adopted { fill: #f3c76b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; font-weight: 700; }
+        .leaderboard-export__empty { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 15px; }
+      `,
+    ),
+  );
+  return {
+    svg: exportSvg,
+    width,
+    height,
+    filename: `llm-ranking-${requirement.id}-${formatChartExportTimestamp(generatedAt)}.png`,
+  };
+}
+
+function downloadLeaderboardPng() {
+  const exportData = createLeaderboardExportSvg();
+  if (!exportData) {
+    showToast("需求榜单 PNG 生成失败", "error");
+    return;
+  }
+
+  const serializer = new XMLSerializer();
+  const svgBlob = new Blob([serializer.serializeToString(exportData.svg)], {
+    type: "image/svg+xml;charset=utf-8",
+  });
+  const svgUrl = URL.createObjectURL(svgBlob);
+  const image = new Image();
+  image.onload = () => {
+    URL.revokeObjectURL(svgUrl);
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = exportData.width * scale;
+    canvas.height = exportData.height * scale;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      showToast("需求榜单 PNG 生成失败", "error");
+      return;
+    }
+    context.fillStyle = "#111210";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((pngBlob) => {
+      if (!pngBlob) {
+        showToast("需求榜单 PNG 生成失败", "error");
+        return;
+      }
+      const downloadUrl = URL.createObjectURL(pngBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = exportData.filename;
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      window.setTimeout(() => {
+        link.remove();
+        URL.revokeObjectURL(downloadUrl);
+      }, 1000);
+      showToast("需求榜单 PNG 已下载", "success");
+    }, "image/png");
+  };
+  image.onerror = () => {
+    URL.revokeObjectURL(svgUrl);
+    showToast("需求榜单 PNG 生成失败", "error");
+  };
+  image.src = svgUrl;
+}
+
 function createLeaderboardResultCell(entry, testCase) {
   const failed = Object.prototype.hasOwnProperty.call(entry.failures, testCase.id);
   const cell = document.createElement("td");
@@ -3379,6 +3678,7 @@ elements.testMethodTab.addEventListener("click", () => {
 elements.copyRequirementCommit.addEventListener("click", copyRequirementCommit);
 elements.copyRequirementPrompt.addEventListener("click", copyRequirementPrompt);
 elements.copyTestMethodFirstPrompt.addEventListener("click", copyTestMethodFirstPrompt);
+elements.leaderboardExport.addEventListener("click", downloadLeaderboardPng);
 elements.modelOverallChartExpand.addEventListener("click", openModelOverallChartDialog);
 elements.modelOverallChartShell.addEventListener("click", (event) => {
   if (!event.target.closest?.(".model-overall-chart__point")) {

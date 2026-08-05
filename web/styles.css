@@ -475,6 +475,7 @@ h2 {
 .view-switch__button:hover,
 .tab-button:hover,
 .feature-tab:hover,
+.leaderboard-export-button:hover,
 .dialog-nav:hover,
 .icon-button:hover {
   color: #fffaf6;
@@ -483,6 +484,7 @@ h2 {
 .view-switch__button:focus-visible,
 .tab-button:focus-visible,
 .feature-tab:focus-visible,
+.leaderboard-export-button:focus-visible,
 .image-button:focus-visible,
 .dialog-nav:focus-visible,
 .icon-button:focus-visible {
@@ -1411,6 +1413,35 @@ a.requirement-meta-card__value:hover {
 
 .leaderboard-heading {
   margin: 0 0 8px;
+}
+
+.leaderboard-heading__actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  min-width: 170px;
+}
+
+.leaderboard-export-button {
+  padding: 7px 12px;
+  border: 1px solid #8d533f;
+  border-radius: 7px;
+  color: #e0a084;
+  background: #211c19;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.leaderboard-export-button:hover {
+  border-color: #e58b66;
+  color: #fffaf6;
+  background: #2a211d;
+}
+
+.leaderboard-export-button:focus-visible {
+  outline: 2px solid #e58b66;
+  outline-offset: 2px;
 }
 
 .leaderboard-summary {
@@ -2984,6 +3015,12 @@ dialog[open]::backdrop {
   }
 
   .model-heading-actions {
+    justify-items: start;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .leaderboard-heading__actions {
     justify-items: start;
     width: 100%;
     min-width: 0;
