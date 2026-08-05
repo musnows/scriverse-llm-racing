@@ -51,7 +51,7 @@
       "id": "sidebar-ai-write-approval-v1",
       "title": "叙界侧边栏 AI 可写工具与持久化审批",
       "summary": "为叙界侧边栏 AI 增加受控可写工具、AskUserQuestions 与持久化审批工作流。",
-      "weight": 1.0,
+      "weight": 1.6,
       "baseRepository": "musnows/Scriverse",
       "baseRepositoryUrl": "https://github.com/musnows/Scriverse",
       "baseVersion": "v0.6.9",
