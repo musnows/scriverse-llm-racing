@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=64";
+const leaderboardDataUrl = "/source/leaderboard.json?v=65";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -487,14 +487,25 @@ function formatDurationSeconds(durationSeconds) {
   return parts.join("");
 }
 
-function formatTokenUsage(tokenUsage, unit = "token") {
+function formatTokenUsage(tokenUsage, unit = "token", display = "detailed") {
   const normalizedUnit = unit === "credit" ? "credit" : "token";
-  const unitLabel = normalizedUnit === "credit" ? "c" : "tk";
   if (tokenUsage === null || tokenUsage === undefined) {
     return "未记录";
   }
   if (typeof tokenUsage === "number" && Number.isFinite(tokenUsage)) {
-    return `${new Intl.NumberFormat("en-US").format(tokenUsage)} ${unitLabel}`;
+    if (normalizedUnit === "credit") {
+      return `${new Intl.NumberFormat("en-US").format(tokenUsage)} c`;
+    }
+    if (tokenUsage >= 1_000_000) {
+      if (display === "compact") {
+        return `${(Math.floor((tokenUsage / 1_000_000) * 100) / 100).toFixed(2)} M`;
+      }
+      return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tk`;
+    }
+    if (tokenUsage >= 1_000) {
+      return `${(Math.floor((tokenUsage / 1_000) * 100) / 100).toFixed(2)} k`;
+    }
+    return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tk`;
   }
   const text = String(tokenUsage).trim();
   return text || "未记录";
@@ -2343,7 +2354,7 @@ function renderModelView() {
   elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(getRequirementTestedAt(requirement, model.id))}`;
   elements.modelCount.textContent = `${images.length} 张 · 原文顺序`;
   const usageUnit = modelEntry?.tokenUsageUnit ?? modelEntry?.agent?.tokenUsageUnit ?? "token";
-  elements.modelTokenUsage.textContent = formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage, usageUnit);
+  elements.modelTokenUsage.textContent = formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage, usageUnit, "detailed");
   renderModelRating();
   loadRatingsForRequirement();
   const showScreenshots = state.modelContentTab === "screenshots";
@@ -2543,7 +2554,7 @@ function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAd
   const usageValue = entry.tokenUsage ?? entry.agent?.tokenUsage;
   const usageText = usageValue === null || usageValue === undefined
     ? "用量未记录"
-    : formatTokenUsage(usageValue, usageUnit);
+    : formatTokenUsage(usageValue, usageUnit, "compact");
   meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
 
   card.append(rank, name, agent, context, score, meta, branchCell);
