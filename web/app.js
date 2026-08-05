@@ -1596,6 +1596,19 @@ const elements = {
 
 let toastTimer = null;
 
+function hideToast() {
+  if (!elements.toast) {
+    return;
+  }
+  window.clearTimeout(toastTimer);
+  elements.toast.hidden = true;
+  elements.toast.replaceChildren();
+  elements.toast.classList.remove("toast--anchored", "toast--anchored-below");
+  elements.toast.style.removeProperty("left");
+  elements.toast.style.removeProperty("top");
+  elements.toast.style.removeProperty("--toast-arrow-left");
+}
+
 function showToast(message, tone = "info", options = {}) {
   if (!elements.toast) {
     return;
@@ -1621,14 +1634,7 @@ function showToast(message, tone = "info", options = {}) {
   if (toastAnchor) {
     positionAnchoredToast(toastAnchor);
   }
-  toastTimer = window.setTimeout(() => {
-    elements.toast.hidden = true;
-    elements.toast.replaceChildren();
-    elements.toast.classList.remove("toast--anchored", "toast--anchored-below");
-    elements.toast.style.removeProperty("left");
-    elements.toast.style.removeProperty("top");
-    elements.toast.style.removeProperty("--toast-arrow-left");
-  }, 3200);
+  toastTimer = window.setTimeout(hideToast, 3200);
 }
 
 function positionAnchoredToast(anchor) {
@@ -1655,6 +1661,17 @@ function positionAnchoredToast(anchor) {
   elements.toast.style.top = `${Math.max(viewportPadding, top)}px`;
   elements.toast.style.setProperty("--toast-arrow-left", `${arrowLeft}px`);
 }
+
+document.addEventListener("click", (event) => {
+  if (!elements.toast || elements.toast.hidden || !elements.toast.classList.contains("toast--anchored")) {
+    return;
+  }
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target || elements.toast.contains(target) || target.closest(".leaderboard-final-adopted-banner")) {
+    return;
+  }
+  hideToast();
+});
 
 function createScreenshotCard(image, items, index, compact = false) {
   const article = document.createElement("article");
@@ -2369,6 +2386,10 @@ function createFinalAdoptedBanner(modelName, pullRequestUrl = "") {
   banner.title = "查看“最终采纳”的含义";
   banner.setAttribute("aria-label", `${modelName}：最终采纳`);
   banner.addEventListener("click", () => {
+    if (!elements.toast.hidden && elements.toast.classList.contains("toast--anchored")) {
+      hideToast();
+      return;
+    }
     const toast = document.createElement("span");
     toast.append("“最终采纳”表示作者最终采用了该模型的实现，并将其合入叙界主仓。 ");
     if (pullRequestUrl) {

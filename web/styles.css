@@ -188,20 +188,23 @@ main {
   position: absolute;
   left: var(--toast-arrow-left, 50%);
   bottom: -7px;
-  width: 0;
-  height: 0;
-  border-top: 7px solid #211c19;
-  border-right: 7px solid transparent;
-  border-left: 7px solid transparent;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #4a4039;
+  border-top: 0;
+  border-left: 0;
+  background: #211c19;
   content: "";
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .toast--anchored-below::after {
   top: -7px;
   bottom: auto;
-  border-top: 0;
-  border-bottom: 7px solid #211c19;
+  border: 1px solid #4a4039;
+  border-right: 0;
+  border-bottom: 0;
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .toast a {
