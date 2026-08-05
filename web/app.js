@@ -616,7 +616,7 @@ function createModelOverallChartExportSvg() {
     return null;
   }
 
-  const headerHeight = 112;
+  const headerHeight = 82;
   const exportHeight = viewBox.height + headerHeight;
   const exportSvg = createChartSvgElement("svg", {
     xmlns: chartSvgNamespace,
@@ -649,22 +649,22 @@ function createModelOverallChartExportSvg() {
     }),
     createChartSvgElement(
       "text",
-      { class: "model-overall-chart-export__title", x: 32, y: 36 },
+      { class: "model-overall-chart-export__title", x: 32, y: 25 },
       "叙界真实需求 Agent 评测娱乐榜",
     ),
     createChartSvgElement(
       "text",
-      { class: "model-overall-chart-export__subtitle", x: 32, y: 63 },
+      { class: "model-overall-chart-export__subtitle", x: 32, y: 45 },
       "模型总榜｜加权平均耗时与加权通过率",
     ),
     createChartSvgElement(
       "text",
-      { class: "model-overall-chart-export__description", x: 32, y: 88 },
+      { class: "model-overall-chart-export__description", x: 32, y: 64 },
       "阅读方式：越靠左上越好；横轴为加权平均耗时，纵轴为加权通过率。",
     ),
     createChartSvgElement(
       "text",
-      { class: "model-overall-chart-export__domain", x: viewBox.width - 32, y: 36, "text-anchor": "end" },
+      { class: "model-overall-chart-export__domain", x: viewBox.width - 32, y: 25, "text-anchor": "end" },
       "llm-racing.scriverse.top",
     ),
   );
