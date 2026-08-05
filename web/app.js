@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=65";
+const leaderboardDataUrl = "/source/leaderboard.json?v=66";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -502,7 +502,7 @@ function formatTokenUsage(tokenUsage, unit = "token", display = "detailed") {
       }
       return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tk`;
     }
-    if (tokenUsage >= 1_000) {
+    if (display === "compact" && tokenUsage >= 1_000) {
       return `${(Math.floor((tokenUsage / 1_000) * 100) / 100).toFixed(2)} k`;
     }
     return `${new Intl.NumberFormat("en-US").format(tokenUsage)} tk`;
