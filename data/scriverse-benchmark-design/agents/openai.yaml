@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scriverse Benchmark Design"
+  short_description: "为叙界设计可评分的 LLM 功能需求、用例与扣分规则"
+  default_prompt: "使用 $scriverse-benchmark-design 为叙界设计一项可用于模型对比的复杂需求、功能用例与评分规则。"
