@@ -430,9 +430,10 @@ function getRankingData() {
   const testCases = getRequirementTestCases(requirement);
   const scoring = getRequirementScoring(requirement);
   const scoreByPriority = scoring.deductionByPriority;
+  const testCaseIds = new Set(testCases.map((testCase) => testCase.id));
   rankingDataCache = leaderboardData.models
     .map((entry) => {
-      const failedIds = new Set(Object.keys(entry.failures));
+      const failedIds = new Set(Object.keys(entry.failures ?? {}).filter((testCaseId) => testCaseIds.has(testCaseId)));
       const deductions = testCases.reduce(
         (total, testCase) => total + (failedIds.has(testCase.id) ? scoreByPriority[testCase.priority] : 0),
         0,
@@ -2468,7 +2469,7 @@ function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAd
   score.textContent = `${entry.score} / ${entry.maxScore}`;
 
   const totalCount = entry.testCaseCount;
-  const failureCount = Object.keys(entry.failures).length;
+  const failureCount = entry.failureCount ?? Object.keys(entry.failures ?? {}).length;
   const passCount = totalCount - failureCount;
   const weightedPassRate = formatWeightedPassRate(entry.weightedPassRate);
   const meta = document.createElement("p");
