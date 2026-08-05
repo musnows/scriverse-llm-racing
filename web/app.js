@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=62";
+const leaderboardDataUrl = "/source/leaderboard.json?v=63";
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -2540,7 +2540,13 @@ function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAd
   const durationText = entry.durationSeconds === null || entry.durationSeconds === undefined
     ? "耗时未记录"
     : formatDurationSeconds(entry.durationSeconds);
-  meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText}`;
+  const usageUnit = entry.tokenUsageUnit ?? entry.agent?.tokenUsageUnit ?? "token";
+  const usageValue = entry.tokenUsage ?? entry.agent?.tokenUsage;
+  const usageLabel = usageUnit === "credit" ? "credit usage" : "token usage";
+  const usageText = usageValue === null || usageValue === undefined
+    ? "用量未记录"
+    : `${usageLabel} ${formatTokenUsage(usageValue, usageUnit)}`;
+  meta.textContent = `通过 ${passCount} / ${totalCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
 
   card.append(rank, name, agent, context, score, meta, branchCell);
   return card;
