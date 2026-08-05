@@ -379,7 +379,7 @@ function getFinalAdoptedPrUrl(requirement) {
 }
 
 function getRequirementScoring(requirement) {
-  return requirement?.scoring ?? { initial: 200, deductionByPriority: {} };
+  return requirement?.scoring ?? { initial: 0, deductionByPriority: {} };
 }
 
 function getRequirementTestCases(requirement) {
@@ -2935,7 +2935,10 @@ function renderRequirementsView() {
   const testedModelIds = new Set((hasExplicitResults
     ? (getRequirementModelEntries(requirement) ?? [])
     : leaderboardData.models).map((entry) => entry.modelId ?? entry.id));
-  const agentRows = (leaderboardData.agents ?? []).map((agent) => {
+  const participants = Array.isArray(requirement.participants)
+    ? requirement.participants
+    : (leaderboardData.agents ?? []);
+  const agentRows = participants.map((agent) => {
     const row = document.createElement("tr");
     const model = document.createElement("th");
     model.scope = "row";
@@ -2976,13 +2979,15 @@ async function loadLeaderboardData() {
     const hasValidRequirementScoring = Array.isArray(payload?.requirements)
       && payload.requirements.length > 0
       && payload.requirements.every((requirement) => {
-        const scoring = requirement?.scoring;
+        const scoring = requirement?.scoring ?? { initial: 0, deductionByPriority: {} };
         const deductionByPriority = scoring?.deductionByPriority;
-        return scoring?.initial === 200
+        const testCases = requirement?.testCases ?? [];
+        return Number.isSafeInteger(scoring?.initial)
+          && scoring.initial >= 0
           && deductionByPriority
           && typeof deductionByPriority === "object"
-          && Array.isArray(requirement.testCases)
-          && requirement.testCases.every((testCase) => (
+          && Array.isArray(testCases)
+          && testCases.every((testCase) => (
             testCase?.id
             && testCase?.priority
             && Object.prototype.hasOwnProperty.call(deductionByPriority, testCase.priority)

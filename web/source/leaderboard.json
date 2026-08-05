@@ -57,38 +57,175 @@
       "baseVersion": "v0.6.9",
       "baseCommit": "54d9e85b4fccbb0c53925ad6c6976646fe62f39f",
       "models": [],
+      "participants": [
+        {
+          "modelId": 3,
+          "modelName": "LongCat-2.0",
+          "supportsMultimodal": false,
+          "software": "CatPaw",
+          "version": "2026.0729.1946",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 4,
+          "modelName": "Hy3",
+          "supportsMultimodal": false,
+          "software": "WorkBuddy",
+          "version": "5.3.8",
+          "context": "192K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 2,
+          "modelName": "Qwen3.8-Max-Preview",
+          "supportsMultimodal": true,
+          "software": "QoderCN IDE Quest",
+          "version": "1.9.1",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 10,
+          "modelName": "Qwen3.8-Max",
+          "supportsMultimodal": true,
+          "software": "QoderCN IDE Quest",
+          "version": "1.10.0",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 1,
+          "modelName": "Doubao-Seed-2.1-Turbo",
+          "supportsMultimodal": true,
+          "software": "TRAE SOLO",
+          "version": "3.3.83",
+          "context": "200K",
+          "status": "待测试"
+        },
+        {
+          "modelName": "Doubao-Seed-2.1-Pro",
+          "supportsMultimodal": true,
+          "software": "TRAE SOLO",
+          "version": "3.3.83",
+          "context": "200K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 9,
+          "modelName": "Grok 4.5 High",
+          "supportsMultimodal": true,
+          "software": "Cursor Agent View",
+          "version": "3.14.7",
+          "context": "256K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 8,
+          "modelName": "Composer 2.5",
+          "supportsMultimodal": true,
+          "software": "Cursor IDE",
+          "version": "3.14.7",
+          "context": "256K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 13,
+          "modelName": "GPT-5.6 Sol Max",
+          "supportsMultimodal": true,
+          "software": "Codex CLI",
+          "version": "0.146.0",
+          "context": "373K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 7,
+          "modelName": "GPT-5.6 Luna Max",
+          "supportsMultimodal": true,
+          "software": "Codex CLI",
+          "version": "0.146.0",
+          "context": "373K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 15,
+          "modelName": "GPT-5.6 Terra Max",
+          "supportsMultimodal": true,
+          "software": "Codex CLI",
+          "version": "0.146.0",
+          "context": "373K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 14,
+          "modelName": "GPT-5.5 xhigh",
+          "supportsMultimodal": true,
+          "software": "Codex CLI",
+          "version": "0.146.0",
+          "context": "272K",
+          "status": "待测试"
+        },
+        {
+          "modelId": 16,
+          "modelName": "Claude Opus 5 Max",
+          "supportsMultimodal": true,
+          "software": "Cursor Agent View",
+          "version": "3.14.7",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 5,
+          "modelName": "DeepSeek V4 Flash 0731",
+          "supportsMultimodal": false,
+          "software": "Claude Code",
+          "version": "2.1.220",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 6,
+          "modelName": "DeepSeek V4 Pro Preview",
+          "supportsMultimodal": false,
+          "software": "Claude Code",
+          "version": "2.1.220",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 11,
+          "modelName": "GLM-5.2 Max",
+          "supportsMultimodal": false,
+          "software": "Cursor Agent View",
+          "version": "3.14.7",
+          "context": "200K（Cursor 不支持 1M）",
+          "status": "待测试"
+        },
+        {
+          "modelId": 12,
+          "modelName": "Kimi K3 Max",
+          "supportsMultimodal": true,
+          "software": "Kimi Code",
+          "version": "0.31.1",
+          "context": "1M",
+          "status": "待测试"
+        },
+        {
+          "modelId": 17,
+          "modelName": "MiniMax-M3",
+          "supportsMultimodal": true,
+          "software": "WorkBuddy",
+          "version": "5.3.8",
+          "context": "512K",
+          "status": "待测试"
+        }
+      ],
       "prompt": "为当前项目的侧边栏 AI 增加“可写工具与持久化审批工作流”能力：\n1. 侧边栏 AI 可以新建和编辑作品中的世界设定、角色、种族、组织、时间线、人物关系、大纲和伏笔词条；不支持通过 AI 删除这些词条；\n2. 侧边栏 AI 可以触发项目已有的各种分析任务。分析任务创建后应进入既有任务队列，任务类型、模型和分析范围必须与用户确认的内容一致；\n3. 不支持 AI 编辑章节正文。AI 只能通过复用既有正文批注能力，为指定正文位置创建评论或待办；创建评论或待办不得改变正文内容、标题、章节顺序或分卷归属；\n4. 所有可写工具在执行前必须先请求用户确认。确认入口以 toast 形式出现，并明确展示操作对象和 AI 生成的简述；用户可点击独立按钮查看完整修改详情；\n5. 完整修改详情必须由系统根据当前数据库内容生成，不能依赖 AI 自述。详情至少展示受影响模块、目标对象、字段名称、修改前值、修改后值和 diff；新建词条应明确显示为“新增”，正文批注应展示评论或待办类型、引用正文与行号，分析任务应展示任务类型、模型和分析范围；\n6. 加入 `AskUserQuestions` 工具。该工具一次只能提出一个问题，必须提供至少两个预置选项，支持预置单选项和用户自定义回答，不支持多选；Agent 必须将最推荐的选项放在第一个，界面必须为第一个选项显示“（最推荐）”文字。用户未回答、拒绝、过期或失效时，Agent 不得伪造回答，也不得依赖该回答继续执行写操作；\n7. 所有可写工具默认关闭。只有拥有 AI 设置权限的用户才能在作品设置页主动开启工具；设置页必须分别控制世界设定、角色、种族、组织、时间线、人物关系、大纲/伏笔、正文评论/待办、分析任务和 `AskUserQuestions` 的可用性；\n8. 写权限必须同时继承当前操作用户与 AI 对话归属用户的作品权限，实际权限取两者交集。新建或编辑不同模块时必须分别校验对应模块写权限；创建正文评论或待办需要正文权限；创建分析任务需要 AI 分析权限及其分析范围所需资料的读取权限；\n9. 不得存在任何权限绕过。未登录、缺少同源请求校验、没有作品访问权限、没有模块权限、跨作品传入对象 ID、提示注入要求跳过确认、伪造确认请求等情况，均不得造成任何写入、任务创建或未授权内容泄露；\n10. AI 不能直接提交最终写入请求，只能提交一份修改计划。系统必须基于当前数据库内容生成不可变的计划内容，包括操作类型、目标作品、目标对象、目标版本、模块权限需求、AI 简述、系统 diff、发起用户、对话归属用户和创建时间；确认接口只能接收审批 ID，禁止由前端重新提交可修改的目标、字段或内容；\n11. 所有修改计划和提问交互必须持久化保存。刷新页面、重新登录或服务重启后，用户仍可在“AI 操作审批中心”查看和处理自己有权处理的记录。审批状态至少包括：待确认、已拒绝、已过期、已失效、执行中、执行成功和执行失败；\n12. 每份修改计划默认最多包含 5 项操作，可通过环境变量 `AI_WRITE_PLAN_MAX_OPERATIONS` 配置，但有效范围为 1–20，超过 20 必须拒绝。计划可同时包含词条新建、词条编辑、正文评论创建、正文待办创建和分析任务创建；用户只能整体确认或整体拒绝，确认后必须原子执行，任一操作因权限、版本、归属或输入问题失败时，整份计划不得留下任何部分写入；\n13. 执行审批前必须重新校验当前用户权限、AI 对话归属用户权限、当前工具开关、目标作品归属和所有目标版本。任一条件发生变化时，审批自动标记为“已失效”，展示具体失效原因，禁止继续执行；\n14. 每份审批只能成功执行一次。重复点击确认、网络重试、多个浏览器标签页同时确认、服务恢复后的重复请求，均不得产生重复词条、重复词条版本、重复正文评论、重复正文待办或重复分析任务；\n15. 审批执行成功后，用户可以在审批中心查看每项操作的最终结果、版本号、操作者和审计记录。对于编辑已有词条的操作，支持从审批详情发起“撤销本次审批”；撤销同样需要确认，并且仅当目标词条未被后续版本修改时允许执行。AI 新建的词条不支持通过撤销自动删除。审批详情、审计记录和错误信息不得包含模型密钥、会话令牌、系统提示词或未授权作品内容。\n\n所有任务由你自行决策完成，确保所有功能点完备。期间禁止咨询用户任何问题。",
       "scoring": {
-        "initial": 200,
-        "deductionByPriority": {
-          "P00": 14,
-          "P0": 6,
-          "P1": 4,
-          "P2": 0
-        }
+        "initial": 0,
+        "deductionByPriority": {}
       },
-      "testCases": [
-        { "id": "TC-01", "priority": "P00", "scenario": "未配置作品中，所有可写 AI 工具默认关闭；侧边栏 AI 不得新建或编辑词条、创建正文评论或待办、触发分析任务。" },
-        { "id": "TC-02", "priority": "P00", "scenario": "没有 AI 设置权限的用户不能开启、关闭或修改任一 AI 工具的可用性配置。" },
-        { "id": "TC-03", "priority": "P00", "scenario": "设置页可分别控制世界设定、角色、种族、组织、时间线、人物关系、大纲/伏笔、正文评论/待办、分析任务和 `AskUserQuestions`；只开启其中一项时，AI 只能使用该项能力。" },
-        { "id": "TC-04", "priority": "P00", "scenario": "当前操作用户与 AI 对话归属用户中任一方缺少目标模块权限时，AI 均不得新建、编辑、评论、创建待办或触发分析任务。" },
-        { "id": "TC-05", "priority": "P00", "scenario": "未登录、缺少有效同源请求校验或伪造确认请求时，均不能确认或执行任何 AI 修改计划。" },
-        { "id": "TC-06", "priority": "P00", "scenario": "用户不能查看、确认、拒绝或执行其他用户、其他对话或其他作品的修改计划和提问交互，也不得获得其中的词条、正文、diff 或回答内容。" },
-        { "id": "TC-07", "priority": "P00", "scenario": "AI 只能提交修改计划；用户确认前不得发生写入。确认时不能通过修改前端参数、提示注入或伪造请求改变计划中的目标、字段、内容、范围或操作类型。" },
-        { "id": "TC-08", "priority": "P00", "scenario": "修改计划待确认期间，如果工具开关、当前用户权限、对话归属用户权限、作品归属或目标词条版本发生变化，计划必须失效并不得执行。" },
-        { "id": "TC-09", "priority": "P00", "scenario": "AI 不得修改章节正文；正文相关操作只能创建既有评论或待办批注，不得修改标题、章节顺序或分卷归属。" },
-        { "id": "TC-10", "priority": "P0", "scenario": "AI 提出词条新建、词条编辑、正文评论、正文待办或分析任务时，确认 toast 展示操作对象和 AI 生成的简述。" },
-        { "id": "TC-11", "priority": "P0", "scenario": "完整修改详情由系统生成：新建词条显示“新增”及完整字段内容，编辑词条显示前后 diff，评论或待办显示类型、引用正文和行号，分析任务显示任务类型、模型和范围。" },
-        { "id": "TC-12", "priority": "P0", "scenario": "`AskUserQuestions` 一次只展示一个问题，至少有两个预置选项，第一个选项显示“（最推荐）”，且用户只能提交一个预置选项。" },
-        { "id": "TC-13", "priority": "P0", "scenario": "用户可以提交一个自定义回答；未回答、拒绝、过期或失效时，系统不得代替用户选择推荐项、伪造回答或据此执行后续写操作。" },
-        { "id": "TC-14", "priority": "P0", "scenario": "在已授权且确认后，AI 可以新建和编辑世界设定、角色、种族、组织、时间线、人物关系、大纲和伏笔；AI 不提供删除上述词条的能力。" },
-        { "id": "TC-15", "priority": "P0", "scenario": "在已授权且确认后，AI 可以创建项目已有的各种分析任务，实际任务类型、模型和分析范围必须与修改计划完全一致。" },
-        { "id": "TC-16", "priority": "P0", "scenario": "在已授权且确认后，AI 可通过既有正文批注能力，在指定位置创建评论或待办，正文内容保持不变。" },
-        { "id": "TC-17", "priority": "P1", "scenario": "修改计划和提问交互在刷新页面、重新登录或服务重启后仍可在审批中心查看和处理，并正确显示待确认、已拒绝、已过期、已失效、执行中、执行成功和执行失败状态。" },
-        { "id": "TC-18", "priority": "P1", "scenario": "修改计划默认最多包含 5 项操作；环境变量 `AI_WRITE_PLAN_MAX_OPERATIONS` 只能配置为 1–20。包含多项词条新建、编辑、评论、待办或任务创建的计划必须整体确认、整体拒绝并原子执行，任一项失败时不得留下部分写入。" },
-        { "id": "TC-19", "priority": "P1", "scenario": "计划执行成功后，审批中心展示每项操作结果、版本号、操作者和审计记录；已有词条的编辑可在无后续版本时通过二次确认撤销，AI 新建词条不得通过撤销自动删除。" },
-        { "id": "TC-20", "priority": "P2", "scenario": "同一份修改计划被重复确认、网络重试、多个浏览器标签页同时确认或服务恢复后再次提交时，只能成功执行一次，不得产生重复词条、评论、待办、版本或分析任务。" }
-      ]
+      "testCases": []
     }
   ],
   "models": [
