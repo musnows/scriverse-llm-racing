@@ -667,6 +667,11 @@ function createModelOverallChartExportSvg() {
       { class: "model-overall-chart-export__domain", x: viewBox.width - 32, y: 25, "text-anchor": "end" },
       "llm-racing.scriverse.top",
     ),
+    createChartSvgElement(
+      "text",
+      { class: "model-overall-chart-export__domain-note", x: viewBox.width - 32, y: 43, "text-anchor": "end" },
+      "更多详情见站点",
+    ),
   );
 
   const chartGroup = createChartSvgElement("g", { transform: `translate(0 ${headerHeight})` });
@@ -686,6 +691,7 @@ function createModelOverallChartExportSvg() {
         .model-overall-chart-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; font-weight: 700; }
         .model-overall-chart-export__description { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 9px; }
         .model-overall-chart-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 9px; }
+        .model-overall-chart-export__domain-note { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 8px; }
         .model-overall-chart__grid line { stroke: #292b28; stroke-width: 1; stroke-dasharray: 3 6; }
         .model-overall-chart__axes line { stroke: #686b66; stroke-width: 1.2; }
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
