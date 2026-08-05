@@ -32,6 +32,12 @@
 - `web/app.js` 的 `models[]` 中，每个已测试模型必须填写带时区的 ISO 8601 `testedAt`；如果没有单独记录测试时间，使用该模型实现提交到 worktree 分支的 commit 时间，并在更新时一并填写，禁止留空。
 - `web/source/leaderboard.json` 的已测试结果必须填写 `durationSeconds` 和 `tokenUsage`。用量为 credit 时保留数字并设置 `tokenUsageUnit: "credit"`，不得把 credit 当作 token；普通 token 用量省略该字段或设置为 `"token"`。
 
+### 需求级数据隔离
+
+- 每个需求必须独立保存自己的测试结果、截图、测试时间和用量；新需求尚未测试时，结果数组必须为空，不能回退显示其他需求的得分、失败原因、耗时或测试时间。
+- 新需求可以复制已有需求的参赛模型和截图作为初始资料，但必须写入该需求自己的字段；修改一个需求的结果或截图不得改变其他需求。
+- 前端读取需求级 `models`、`results`、`evaluations`、`modelResults` 和 `screenshots` 时，只有缺少对应字段的旧需求才允许使用全局兼容回退；显式空数组表示尚无结果，禁止当作全局数据回退。
+
 ## 后端修改
 
 - 后端只使用 Node.js 内置模块，保持 Node.js 22.5 或更高版本可运行。

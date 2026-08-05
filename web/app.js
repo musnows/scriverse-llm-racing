@@ -1269,6 +1269,43 @@ function getRequirementModelEntry(requirement, modelId) {
   return leaderboardData?.models.find((entry) => entry.modelId === modelId) ?? null;
 }
 
+function getRequirementModelImages(requirement, modelId) {
+  const model = models.find((item) => item.id === modelId);
+  const screenshotMap = requirement?.screenshots;
+  if (!screenshotMap || !Object.prototype.hasOwnProperty.call(screenshotMap, String(modelId))) {
+    return model?.images ?? [];
+  }
+  const rawImages = Array.isArray(screenshotMap[String(modelId)])
+    ? screenshotMap[String(modelId)]
+    : [];
+  return rawImages.map((image, index) => {
+    if (Array.isArray(image)) {
+      return {
+        file: image[0],
+        title: image[1],
+        tags: Array.isArray(image[2]) ? image[2] : [],
+        modelId,
+        modelName: model?.name,
+        sequence: index + 1,
+      };
+    }
+    return {
+      ...image,
+      tags: Array.isArray(image.tags) ? image.tags : [],
+      modelId,
+      modelName: model?.name,
+      sequence: image.sequence ?? index + 1,
+    };
+  });
+}
+
+function getRequirementTestedAt(requirement, modelId) {
+  if (hasExplicitRequirementModelEntries(requirement)) {
+    return getRequirementModelEntry(requirement, modelId)?.testedAt ?? null;
+  }
+  return models.find((model) => model.id === modelId)?.testedAt ?? null;
+}
+
 function getRequirementScore(entry, requirement) {
   if (!entry) {
     return null;
@@ -2293,13 +2330,15 @@ function renderLeaderboardDetailCaseVote() {
 
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
-  const modelEntry = getRequirementModelEntry(getCurrentRequirement(), model.id);
+  const requirement = getCurrentRequirement();
+  const modelEntry = getRequirementModelEntry(requirement, model.id);
+  const images = getRequirementModelImages(requirement, model.id);
   renderModelTabs();
   renderModelContentTabs();
   elements.modelKicker.textContent = model.tool;
   elements.modelTitle.textContent = model.name;
-  elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(model.testedAt)}`;
-  elements.modelCount.textContent = `${model.images.length} 张 · 原文顺序`;
+  elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(getRequirementTestedAt(requirement, model.id))}`;
+  elements.modelCount.textContent = `${images.length} 张 · 原文顺序`;
   const usageUnit = modelEntry?.tokenUsageUnit ?? modelEntry?.agent?.tokenUsageUnit ?? "token";
   const usageLabel = usageUnit === "credit" ? "credit usage" : "token usage";
   elements.modelTokenUsage.textContent = `${usageLabel}：${formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage, usageUnit)}`;
@@ -2313,15 +2352,15 @@ function renderModelView() {
     return;
   }
   elements.modelGallery.replaceChildren();
-  if (model.images.length === 0) {
+  if (images.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
     empty.textContent = "暂无截图资料";
     elements.modelGallery.append(empty);
     return;
   }
-  model.images.forEach((image, index) => {
-    elements.modelGallery.append(createScreenshotCard(image, model.images, index));
+  images.forEach((image, index) => {
+    elements.modelGallery.append(createScreenshotCard(image, images, index));
   });
 }
 
@@ -2346,8 +2385,8 @@ function renderModelUnexpectedCases(modelId) {
 }
 
 function getFeatureItems(featureId, modelId) {
-  const model = models.find((item) => item.id === modelId);
-  return model?.imagesByFeature.get(featureId) ?? [];
+  return getRequirementModelImages(getCurrentRequirement(), modelId)
+    .filter((image) => image.tags.includes(featureId));
 }
 
 function getFeatureCount(featureId) {
@@ -2953,7 +2992,15 @@ async function loadLeaderboardData() {
       ));
     const hasValidAgentCapabilities = Array.isArray(payload?.agents)
       && payload.agents.every((agent) => typeof agent?.supportsMultimodal === "boolean");
-    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases || !hasValidAgentCapabilities) {
+    const hasValidScreenshots = Array.isArray(payload?.requirements)
+      && payload.requirements.every((requirement) => (
+        requirement?.screenshots === undefined
+        || (requirement.screenshots
+          && typeof requirement.screenshots === "object"
+          && !Array.isArray(requirement.screenshots)
+          && Object.values(requirement.screenshots).every(Array.isArray))
+      ));
+    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases || !hasValidAgentCapabilities || !hasValidScreenshots) {
       throw new Error("Leaderboard data shape is invalid");
     }
     leaderboardData = payload;
