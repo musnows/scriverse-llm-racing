@@ -325,7 +325,8 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=67";
+const leaderboardDataUrl = "/source/leaderboard.json?v=68";
+const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
 let rankingDataCache = null;
@@ -531,7 +532,7 @@ function formatTestedAt(value) {
     return "暂未记录";
   }
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime()) || date.getTime() < earliestRecordedTestAt) {
     return "暂未记录";
   }
   return new Intl.DateTimeFormat("zh-CN", {
