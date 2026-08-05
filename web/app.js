@@ -682,10 +682,10 @@ function createModelOverallChartExportSvg() {
       `
         .model-overall-chart-export__header { fill: #171816; }
         .model-overall-chart-export__header-divider { stroke: #30322f; stroke-width: 1; }
-        .model-overall-chart-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 22px; font-weight: 700; }
-        .model-overall-chart-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 14px; font-weight: 700; }
-        .model-overall-chart-export__description { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; }
-        .model-overall-chart-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
+        .model-overall-chart-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 17px; font-weight: 700; }
+        .model-overall-chart-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 11px; font-weight: 700; }
+        .model-overall-chart-export__description { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 9px; }
+        .model-overall-chart-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 9px; }
         .model-overall-chart__grid line { stroke: #292b28; stroke-width: 1; stroke-dasharray: 3 6; }
         .model-overall-chart__axes line { stroke: #686b66; stroke-width: 1.2; }
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
