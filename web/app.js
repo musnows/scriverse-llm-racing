@@ -2601,6 +2601,13 @@ function getRequirementFirstTestAt(requirement) {
   return dates[0] ?? null;
 }
 
+function estimateLeaderboardExportTextWidth(value, fontSize) {
+  return [...String(value)].reduce(
+    (total, character) => total + (character.codePointAt(0) > 0xff ? fontSize : fontSize * 0.58),
+    0,
+  );
+}
+
 function createLeaderboardExportSvg() {
   const requirement = getCurrentRequirement();
   if (!requirement) {
@@ -2618,7 +2625,7 @@ function createLeaderboardExportSvg() {
   const finalAdoptedModelId = getFinalAdoptedModelId(requirement);
   const width = 2048;
   const headerHeight = 168;
-  const cardHeight = 86;
+  const cardHeight = 100;
   const cardGap = 12;
   const horizontalPadding = 28;
   const footerHeight = 46;
@@ -2702,6 +2709,11 @@ function createLeaderboardExportSvg() {
       ? "用量未记录"
       : formatTokenUsage(usageValue, usageUnit, "compact");
     const modelName = entry.model?.name ?? entry.modelId;
+    const modelX = cardX + 180;
+    const modelTextWidth = estimateLeaderboardExportTextWidth(modelName, 26);
+    const hasMultimodalIcon = Boolean(entry.model?.supportsMultimodal);
+    const multimodalIconX = modelX + modelTextWidth + 12;
+    const adoptedPillX = multimodalIconX + (hasMultimodalIcon ? 32 : 0) + 12;
     const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
     const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
     const metaText = `通过 ${passCount} / ${entry.testCaseCount} · 加权通过率 ${weightedPassRate} · ${durationText} · ${usageText}`;
@@ -2722,7 +2734,7 @@ function createLeaderboardExportSvg() {
       }, `第 ${entry.rank} 名`),
       createChartSvgElement("text", {
         class: "leaderboard-export__model",
-        x: cardX + 180,
+        x: modelX,
         y: textY,
       }, modelName),
       createChartSvgElement("text", {
@@ -2743,25 +2755,39 @@ function createLeaderboardExportSvg() {
       }, `${entry.score} / ${entry.maxScore}`),
       createChartSvgElement("text", {
         class: "leaderboard-export__meta-text",
-        x: cardX + 1370,
+        x: cardX + 1964,
         y: textY,
+        "text-anchor": "end",
       }, metaText),
     );
+
+    if (hasMultimodalIcon) {
+      const icon = createChartSvgElement("g", {
+        class: "leaderboard-export__multimodal-icon",
+        transform: `translate(${multimodalIconX} ${top + 37}) scale(1.35)`,
+      });
+      icon.append(
+        createChartSvgElement("rect", { x: 1.5, y: 2.5, width: 13, height: 11, rx: 2 }),
+        createChartSvgElement("circle", { cx: 5, cy: 6, r: 1 }),
+        createChartSvgElement("path", { d: "m2.7 11 3.1-3.1 2.3 2.2 1.7-1.7 3.5 3.4" }),
+      );
+      exportSvg.append(icon);
+    }
 
     if (entry.modelId === finalAdoptedModelId) {
       exportSvg.append(
         createChartSvgElement("rect", {
           class: "leaderboard-export__adopted-pill",
-          x: cardX + 440,
-          y: top + 24,
-          width: 76,
-          height: 28,
+          x: adoptedPillX,
+          y: top + 29,
+          width: 88,
+          height: 34,
           rx: 7,
         }),
         createChartSvgElement("text", {
           class: "leaderboard-export__adopted",
-          x: cardX + 478,
-          y: top + 43,
+          x: adoptedPillX + 44,
+          y: top + 53,
           "text-anchor": "middle",
         }, "最终采纳"),
       );
@@ -2788,16 +2814,17 @@ function createLeaderboardExportSvg() {
       `
         .leaderboard-export__header { fill: #171816; }
         .leaderboard-export__divider { stroke: #30322f; stroke-width: 1; }
-        .leaderboard-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 27px; font-weight: 700; }
-        .leaderboard-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 18px; font-weight: 700; }
-        .leaderboard-export__meta, .leaderboard-export__scoring, .leaderboard-export__footer { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 14px; }
-        .leaderboard-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 13px; }
-        .leaderboard-export__domain-note { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 12px; }
+        .leaderboard-export__title { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 30px; font-weight: 700; }
+        .leaderboard-export__subtitle { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 20px; font-weight: 700; }
+        .leaderboard-export__meta, .leaderboard-export__scoring, .leaderboard-export__footer { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 16px; }
+        .leaderboard-export__domain { fill: #e0a084; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 14px; }
+        .leaderboard-export__domain-note { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 13px; }
         .leaderboard-export__card { fill: #151614; stroke: #30322f; stroke-width: 1; }
-        .leaderboard-export__rank { fill: #d77855; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
-        .leaderboard-export__model { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 22px; font-weight: 650; }
-        .leaderboard-export__agent, .leaderboard-export__context, .leaderboard-export__meta-text { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 15px; }
-        .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 28px; font-weight: 700; }
+        .leaderboard-export__rank { fill: #d77855; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 20px; }
+        .leaderboard-export__model { fill: #f4f4f1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 26px; font-weight: 650; }
+        .leaderboard-export__multimodal-icon { fill: none; stroke: #e58b66; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+        .leaderboard-export__agent, .leaderboard-export__context, .leaderboard-export__meta-text { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
+        .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 34px; font-weight: 700; }
         .leaderboard-export__adopted-pill { fill: #4a3c1f; stroke: #b59445; stroke-width: 1; }
         .leaderboard-export__adopted { fill: #f3c76b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 13px; font-weight: 700; }
         .leaderboard-export__empty { fill: #969791; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 15px; }
