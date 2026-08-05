@@ -2358,7 +2358,8 @@ function renderModelView() {
   elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(getRequirementTestedAt(requirement, model.id))}`;
   elements.modelCount.textContent = `${images.length} 张 · 原文顺序`;
   const usageUnit = modelEntry?.tokenUsageUnit ?? modelEntry?.agent?.tokenUsageUnit ?? "token";
-  elements.modelTokenUsage.textContent = formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage, usageUnit, "detailed");
+  const usageLabel = usageUnit === "credit" ? "credit usage" : "token usage";
+  elements.modelTokenUsage.textContent = `${usageLabel}：${formatTokenUsage(modelEntry?.tokenUsage ?? modelEntry?.agent?.tokenUsage, usageUnit, "detailed")}`;
   renderModelRating();
   loadRatingsForRequirement();
   const showScreenshots = state.modelContentTab === "screenshots";
