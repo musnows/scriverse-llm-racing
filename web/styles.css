@@ -1554,6 +1554,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .leaderboard-card__branch {
+  justify-content: flex-end;
   min-width: 0;
 }
 
@@ -3119,6 +3120,7 @@ dialog[open]::backdrop {
     display: flex;
     grid-area: branch;
     align-items: center;
+    justify-content: flex-start;
     align-self: start;
   }
 
