@@ -64,11 +64,15 @@ bash <skill_dir>/scripts/create_worktree.sh
 脚本会输出类似：
 ```
 TARGET_PATH=/Users/<username>/.worktree/a3f2b1c4/my-project
+HASH=a3f2b1c4
 ```
 
-从中提取 `TARGET_PATH` 使用。如果目标路径已存在，脚本会自动重新生成 hash。
+从中提取 `TARGET_PATH` 与 `HASH`。脚本会同时避开：
 
-从中提取 hash 作为分支名后缀（本例中为 `a3f2b1c4`）。
+1. 已存在的目录 `~/.worktree/{hash}`
+2. 已存在的本地分支 `worktree/{hash}`
+
+任一冲突都会自动换新的 8 位 hash。hash 同时用作路径段与分支名后缀。
 
 ### 3. 询问基础分支
 
@@ -130,9 +134,11 @@ git worktree add -b worktree/{8位hash} {target_path} {base_branch}
 ```
 
 其中：
-- `worktree/{8位hash}`：新分支名，固定格式，hash 与目标路径中的 hash 一致
+- `worktree/{8位hash}`：新分支名，固定格式，hash 与步骤 2 输出的 `HASH` 一致
 - `{target_path}`：步骤 2 中脚本输出的路径
 - `{base_branch}`：步骤 3 中获得的分支
+
+若因并发出现 `already exists`（目录或分支被抢占），重新执行步骤 2 生成新 hash，再重试本步骤；不要手工复用旧 hash。
 
 ### 5. 回显结果
 
@@ -146,5 +152,5 @@ git worktree add -b worktree/{8位hash} {target_path} {base_branch}
 
 - 不要删除原仓库内容
 - 创建的 worktree 目录会出现在 `~/.worktree/` 下
-- 自动生成的 6 位 hash 确保每次 worktree 路径唯一
+- 自动生成的 8 位 hash 须同时保证路径与本地分支 `worktree/{hash}` 唯一；仅目录空闲但分支残留时也必须换 hash
 - 分支名格式 `worktree/{hash}` 方便溯源
