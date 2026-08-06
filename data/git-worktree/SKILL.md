@@ -7,6 +7,12 @@ description: "创建 git worktree 将当前项目隔离到 ~/.worktree/ 下独�
 
 将当前 git 项目通过 worktree 机制隔离到 `~/.worktree/` 目录下，让 AI 在独立工作区中操作。
 
+## Cursor 专用关联文档（仅限 Cursor 阅读）
+
+- 关联文档：[docs/CURSOR.md](./docs/CURSOR.md)
+- **仅当当前运行环境是 Cursor IDE / Cursor Agent 时**，必须阅读并遵循该文档中的冲突处理覆盖条款。
+- **非 Cursor 环境（Claude Code、Codex、其他 CLI/Agent 等）禁止阅读、引用或执行 `docs/CURSOR.md`**，只遵循本文主流程，以免把 Cursor 特有行为当成通用规则。
+
 ## ⚠️ 关键约束（必须遵守）
 
 **一旦触发此 skill，后续所有文件修改、代码编辑、命令执行必须在 worktree 目录中进行。**
@@ -63,7 +69,7 @@ bash <skill_dir>/scripts/create_worktree.sh
 
 脚本会输出类似：
 ```
-TARGET_PATH=/Users/<username>/.worktree/a3f2b1c4/my-project
+TARGET_PATH=/Users/mothra/.worktree/a3f2b1c4/my-project
 HASH=a3f2b1c4
 ```
 
@@ -139,6 +145,8 @@ git worktree add -b worktree/{8位hash} {target_path} {base_branch}
 - `{base_branch}`：步骤 3 中获得的分支
 
 若因并发出现 `already exists`（目录或分支被抢占），重新执行步骤 2 生成新 hash，再重试本步骤；不要手工复用旧 hash。
+
+> **Cursor 例外：** 若当前环境是 Cursor，`already exists` 的处理以 [docs/CURSOR.md](./docs/CURSOR.md) 为准，不要直接换 hash 重试。非 Cursor 环境忽略本提示。
 
 ### 5. 回显结果
 
