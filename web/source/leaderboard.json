@@ -93,6 +93,18 @@
             "TC-12": "同一对话可同时创建多个待回答问题。",
             "TC-13": "未决问题会在后续普通消息或其他问题回答后失去对写计划的阻断。"
           }
+        },
+        {
+          "modelId": 12,
+          "testedAt": "2026-08-06T08:40:45+08:00",
+          "durationSeconds": 11198,
+          "tokenUsage": 108739982,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/922ec4c1",
+          "failures": {
+            "TC-06": "审批和提问记录没有按创建用户或对话归属隔离；同作品协作者可查看、拒绝、确认或回答他人记录。",
+            "TC-12": "同一次模型响应可创建并展示多个待回答问题。",
+            "TC-13": "提问后的同批工具调用仍可创建依赖未回答内容的写计划。"
+          }
         }
       ],
       "participants": [
@@ -246,7 +258,7 @@
           "software": "Kimi Code",
           "version": "0.31.1",
           "context": "1M",
-          "status": "待测试"
+          "status": "已测试"
         },
         {
           "modelId": 17,
