@@ -107,6 +107,25 @@
           }
         }
       ],
+      "screenshotFeatures": [
+        {
+          "id": "ai-tools-settings",
+          "name": "AI 工具设置",
+          "description": "展示侧边栏 AI 可写工具与提问能力的配置开关。"
+        },
+        {
+          "id": "ask-user-questions",
+          "name": "AI 提问",
+          "description": "展示 AskUserQuestions 的待回答交互与已回答记录。"
+        }
+      ],
+      "screenshots": {
+        "12": [
+          ["image-20260806-kimi-ai-tools-settings.webp", "AI 工具设置：仅启用 AI 提问", ["ai-tools-settings"]],
+          ["image-20260806-kimi-ask-user-questions-pending.webp", "AskUserQuestions 待回答交互", ["ask-user-questions"]],
+          ["image-20260806-kimi-ask-user-questions-answered.webp", "AskUserQuestions 已回答记录", ["ask-user-questions"]]
+        ]
+      },
       "participants": [
         {
           "modelId": 3,

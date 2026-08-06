@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=70";
+const leaderboardDataUrl = "/source/leaderboard.json?v=71";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
@@ -1574,11 +1574,12 @@ function getRequirementModelEntry(requirement, modelId) {
 function getRequirementModelImages(requirement, modelId) {
   const model = models.find((item) => item.id === modelId);
   const screenshotMap = requirement?.screenshots;
-  if (hasExplicitRequirementModelEntries(requirement) && !screenshotMap) {
+  const hasExplicitModels = hasExplicitRequirementModelEntries(requirement);
+  if (hasExplicitModels && !screenshotMap) {
     return [];
   }
   if (!screenshotMap || !Object.prototype.hasOwnProperty.call(screenshotMap, String(modelId))) {
-    return model?.images ?? [];
+    return hasExplicitModels ? [] : (model?.images ?? []);
   }
   const rawImages = Array.isArray(screenshotMap[String(modelId)])
     ? screenshotMap[String(modelId)]
@@ -1602,6 +1603,24 @@ function getRequirementModelImages(requirement, modelId) {
       sequence: image.sequence ?? index + 1,
     };
   });
+}
+
+function getCurrentRequirementFeatures() {
+  const screenshotFeatures = getCurrentRequirement()?.screenshotFeatures;
+  if (!Array.isArray(screenshotFeatures)) {
+    return features;
+  }
+  const validFeatures = screenshotFeatures
+    .filter((feature) => feature
+      && typeof feature.id === "string"
+      && typeof feature.name === "string"
+      && typeof feature.description === "string")
+    .map((feature) => ({
+      id: feature.id,
+      name: feature.name,
+      description: feature.description,
+    }));
+  return validFeatures.length > 0 ? validFeatures : features;
 }
 
 function getRequirementTestedAt(requirement, modelId) {
@@ -2716,7 +2735,7 @@ function getFeatureCount(featureId) {
 
 function renderFeatureTabs() {
   elements.featureTabs.replaceChildren();
-  for (const feature of features) {
+  for (const feature of getCurrentRequirementFeatures()) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "feature-tab";
@@ -2771,7 +2790,12 @@ function createComparisonColumn(model, items, index = 0) {
 }
 
 function renderFeatureView() {
-  const feature = features.find((item) => item.id === state.featureId) ?? features[0];
+  const currentFeatures = getCurrentRequirementFeatures();
+  const feature = currentFeatures.find((item) => item.id === state.featureId) ?? currentFeatures[0];
+  if (!feature) {
+    return;
+  }
+  state.featureId = feature.id;
   renderFeatureTabs();
   elements.featureTitle.textContent = feature.name;
   elements.featureDescription.textContent = feature.description;
