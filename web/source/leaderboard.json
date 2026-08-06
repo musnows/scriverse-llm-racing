@@ -58,6 +58,31 @@
       "baseCommit": "54d9e85b4fccbb0c53925ad6c6976646fe62f39f",
       "models": [
         {
+          "modelId": 3,
+          "testedAt": "2026-08-07T06:04:57+08:00",
+          "durationSeconds": 4680,
+          "tokenUsage": 0,
+          "tokenUsageUnit": "credit",
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/5268bc1b",
+          "failures": {
+            "TC-03": "单项可写开关与会话工具暴露链路脱节；单独开启模块不会让对应工具可用。",
+            "TC-04": "审批执行未校验当前用户与对话归属用户的权限交集。",
+            "TC-06": "同作品具备 AI 设置权限的协作者可查看、确认、拒绝其他用户或对话的审批与提问。",
+            "TC-08": "确认前未重新校验工具开关、双方权限和所有目标版本。",
+            "TC-10": "确认 Toast 是固定文案，且前端判定 success、后端返回 completed，提示不会触发。",
+            "TC-11": "审批详情读取字段与持久化计划结构不一致，系统 diff、对象和简述无法正确展示。",
+            "TC-12": "同一对话可创建多个待回答问题，且未强制首项为唯一“最推荐”选项。",
+            "TC-13": "没有自定义回答输入，未回答问题也不阻断后续写计划。",
+            "TC-14": "仅支持设定、角色、种族、组织；时间线、关系、大纲、伏笔的审批执行会失败。",
+            "TC-15": "分析任务创建忽略计划中的模型和范围。",
+            "TC-17": "提问过期被记为 invalidated，且没有执行中计划的重启恢复机制。",
+            "TC-18": "未实现 AI_WRITE_PLAN_MAX_OPERATIONS 环境变量配置。",
+            "TC-19": "审批中心未展示结果、版本、操作者、审计，也没有二次确认撤销。",
+            "TC-20": "确认不是 CAS，并发确认可能重复执行。",
+            "TC-21": "propose_write 和 ask_user_question 被会话工具白名单过滤；开启设置后仍不会加入新建或空对话的 tools。"
+          }
+        },
+        {
           "modelId": 4,
           "testedAt": "2026-08-07T05:52:56+08:00",
           "durationSeconds": 4920,
