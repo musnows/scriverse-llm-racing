@@ -1831,6 +1831,10 @@ a.requirement-meta-card__value:hover {
   box-shadow: 0 0 0 1px rgba(229, 139, 102, .08);
 }
 
+.model-token-efficiency-chart-shell {
+  cursor: default;
+}
+
 .model-overall-chart {
   display: block;
   width: 100%;

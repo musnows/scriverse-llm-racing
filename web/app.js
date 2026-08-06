@@ -617,6 +617,42 @@ function getWeightedAverageDurationSeconds(modelId) {
   return totalWeight > 0 ? weightedDuration / totalWeight : null;
 }
 
+function getWeightedAverageTokenUsage(modelId) {
+  if (!leaderboardData) {
+    return null;
+  }
+  const requirements = leaderboardData.requirements ?? [];
+  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
+  const usageRecords = hasPerRequirementResults
+    ? requirements.flatMap((requirement) => (hasExplicitRequirementModelEntries(requirement)
+      ? (getRequirementModelEntries(requirement) ?? [])
+      : leaderboardData.models)
+      .filter((entry) => (entry.modelId ?? entry.id) === modelId)
+      .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })))
+    : leaderboardData.models
+      .filter((entry) => entry.modelId === modelId)
+      .map((entry) => ({ entry, weight: getRequirementWeight(requirements[0]) }));
+  const validRecords = usageRecords
+    .map(({ entry, weight }) => ({
+      tokenUsage: Number(entry.tokenUsage),
+      tokenUsageUnit: entry.tokenUsageUnit ?? entry.agent?.tokenUsageUnit ?? "token",
+      weight,
+    }))
+    .filter(({ tokenUsage, tokenUsageUnit }) => Number.isFinite(tokenUsage) && tokenUsageUnit === "token" && tokenUsage > 0);
+  const hasCreditRecord = usageRecords.some(({ entry }) => (
+    (entry.tokenUsageUnit ?? entry.agent?.tokenUsageUnit ?? "token") === "credit"
+  ));
+  if (hasCreditRecord || validRecords.length === 0) {
+    return null;
+  }
+  const totalWeight = validRecords.reduce((total, record) => total + record.weight, 0);
+  const weightedUsage = validRecords.reduce(
+    (total, record) => total + record.tokenUsage * record.weight,
+    0,
+  );
+  return totalWeight > 0 ? weightedUsage / totalWeight : null;
+}
+
 const chartSvgNamespace = "http://www.w3.org/2000/svg";
 const chartPointColors = ["#e58b66", "#9bc79e", "#8ba9d9", "#dca76a", "#ba91d6", "#70c5bd"];
 
@@ -1236,6 +1272,162 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChartNote.textContent = `${chartData.length} 个模型有完整加权平均耗时与加权通过率数据`;
 }
 
+function formatChartTokenUsage(tokenUsage) {
+  const value = Number(tokenUsage);
+  if (!Number.isFinite(value) || value < 0) {
+    return "0";
+  }
+  if (value >= 1_000_000) {
+    return `${Math.round(value / 1_000_000)} M`;
+  }
+  if (value >= 1_000) {
+    return `${Math.round(value / 1_000)} k`;
+  }
+  return String(Math.round(value));
+}
+
+function createModelTokenEfficiencyChartData(ranking) {
+  return ranking
+    .map((entry) => {
+      const tokenUsage = getWeightedAverageTokenUsage(entry.model.id);
+      const weightedPassRate = Number(entry.overallMetrics?.weightedPassRate);
+      if (!Number.isFinite(tokenUsage) || tokenUsage <= 0 || !Number.isFinite(weightedPassRate)) {
+        return null;
+      }
+      return {
+        entry,
+        tokenUsage,
+        weightedAverageDurationSeconds: tokenUsage,
+        weightedPassRate,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.tokenUsage - right.tokenUsage
+      || right.weightedPassRate - left.weightedPassRate
+      || left.entry.model.name.localeCompare(right.entry.model.name))
+    .map((entry, index) => ({
+      ...entry,
+      color: chartPointColors[index % chartPointColors.length],
+    }));
+}
+
+function renderModelTokenEfficiencyChart(ranking = []) {
+  elements.modelTokenEfficiencyChart.replaceChildren();
+  elements.modelTokenEfficiencyChartEmpty.hidden = true;
+  const chartData = createModelTokenEfficiencyChartData(ranking);
+  if (chartData.length === 0) {
+    elements.modelTokenEfficiencyChartNote.textContent = leaderboardData ? "暂无可绘制的 token 模型数据" : "正在加载数据";
+    elements.modelTokenEfficiencyChartEmpty.hidden = false;
+    elements.modelTokenEfficiencyChartEmpty.textContent = leaderboardData
+      ? "目前没有同时记录 token 用量和加权通过率的模型；credit usage 模型不计入。"
+      : "正在加载散点图数据……";
+    return;
+  }
+
+  const width = 900;
+  const height = 420;
+  const margin = { top: 24, right: 28, bottom: 44, left: 64 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const tokenWithPadding = Math.max(1_000_000, ...chartData.map((item) => item.tokenUsage)) * 1.12;
+  const tickStep = Math.max(1_000_000, Math.ceil((tokenWithPadding / 4) / 1_000_000) * 1_000_000);
+  const maxTokenUsage = tickStep * 4;
+  const xPosition = (tokenUsage) => margin.left + (tokenUsage / maxTokenUsage) * plotWidth;
+  const yPosition = (weightedPassRate) => margin.top + ((100 - weightedPassRate) / 100) * plotHeight;
+  const xTickValues = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ratio * maxTokenUsage);
+
+  elements.modelTokenEfficiencyChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  elements.modelTokenEfficiencyChart.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  const title = createChartSvgElement("title", { id: "model-token-efficiency-chart-svg-title" }, "模型 token 用量与加权通过率散点图");
+  elements.modelTokenEfficiencyChart.setAttribute("aria-labelledby", title.id);
+  elements.modelTokenEfficiencyChart.append(title);
+
+  const grid = createChartSvgElement("g", { class: "model-overall-chart__grid" });
+  [0, 25, 50, 75, 100].forEach((value) => {
+    const y = yPosition(value);
+    grid.append(createChartSvgElement("line", { x1: margin.left, y1: y, x2: width - margin.right, y2: y }));
+  });
+  xTickValues.forEach((value) => {
+    const x = xPosition(value);
+    grid.append(createChartSvgElement("line", { x1: x, y1: margin.top, x2: x, y2: margin.top + plotHeight }));
+  });
+  elements.modelTokenEfficiencyChart.append(grid);
+
+  const axes = createChartSvgElement("g", { class: "model-overall-chart__axes" });
+  axes.append(
+    createChartSvgElement("line", { x1: margin.left, y1: margin.top + plotHeight, x2: width - margin.right, y2: margin.top + plotHeight }),
+    createChartSvgElement("line", { x1: margin.left, y1: margin.top, x2: margin.left, y2: margin.top + plotHeight }),
+  );
+  elements.modelTokenEfficiencyChart.append(axes);
+
+  const labels = createChartSvgElement("g", { class: "model-overall-chart__labels" });
+  [0, 25, 50, 75, 100].forEach((value) => {
+    const y = yPosition(value);
+    labels.append(createChartSvgElement("text", { x: margin.left - 12, y: y + 4, "text-anchor": "end" }, `${value}%`));
+  });
+  xTickValues.forEach((value) => {
+    const x = xPosition(value);
+    labels.append(createChartSvgElement("text", { x, y: margin.top + plotHeight + 23, "text-anchor": "middle" }, formatChartTokenUsage(value)));
+  });
+  labels.append(
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", x: margin.left + plotWidth / 2, y: height - 6, "text-anchor": "middle" }, "加权平均 token 用量"),
+    createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "加权通过率"),
+  );
+  elements.modelTokenEfficiencyChart.append(labels);
+
+  const chartBounds = {
+    left: margin.left + 4,
+    right: margin.left + plotWidth - 4,
+    top: margin.top + 4,
+    bottom: margin.top + plotHeight - 4,
+  };
+  const pointLabelLayout = createModelOverallChartLabelLayout(chartData, xPosition, yPosition, chartBounds, {
+    fontSize: 8,
+    preferHorizontalLabels: true,
+  });
+  const connectors = createChartSvgElement("g", { class: "model-overall-chart__label-connectors" });
+  pointLabelLayout.forEach((label) => {
+    if (label.connector) {
+      connectors.append(createChartSvgElement("line", {
+        class: "model-overall-chart__label-connector",
+        ...label.connector,
+      }));
+    }
+  });
+  elements.modelTokenEfficiencyChart.append(connectors);
+
+  const points = createChartSvgElement("g", { class: "model-overall-chart__points" });
+  chartData.forEach((item) => {
+    const point = createChartSvgElement("circle", {
+      class: "model-overall-chart__point",
+      cx: xPosition(item.tokenUsage),
+      cy: yPosition(item.weightedPassRate),
+      r: 5,
+      fill: item.color,
+      tabindex: 0,
+      role: "button",
+      "data-model-id": item.entry.model.id,
+      "aria-label": `${item.entry.model.name}，加权平均 token 用量 ${formatTokenUsage(item.tokenUsage, "token", "compact")}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`,
+    });
+    point.append(createChartSvgElement("title", {}, `${item.entry.model.name}：加权平均 token 用量 ${formatTokenUsage(item.tokenUsage, "token", "compact")}，加权通过率 ${item.weightedPassRate.toFixed(0)}%`));
+    bindModelOverallChartPoint(point, item.entry);
+    points.append(point);
+  });
+  elements.modelTokenEfficiencyChart.append(points);
+
+  const pointLabels = createChartSvgElement("g", { class: "model-overall-chart__point-labels" });
+  pointLabelLayout.forEach((label) => {
+    pointLabels.append(createChartSvgElement("text", {
+      class: "model-overall-chart__point-label",
+      x: label.x,
+      y: label.y,
+      "text-anchor": label.anchor,
+    }, label.item.entry.model.name));
+  });
+  elements.modelTokenEfficiencyChart.append(pointLabels);
+  elements.modelTokenEfficiencyChartNote.textContent = `${chartData.length} 个 token 模型；credit usage 模型未纳入`;
+}
+
 function getRequirementModelEntries(requirement) {
   if (!requirement) {
     return undefined;
@@ -1565,11 +1757,13 @@ function renderModelOverall() {
   if (!leaderboardData) {
     elements.modelOverallNote.textContent = "正在加载";
     renderModelOverallChart();
+    renderModelTokenEfficiencyChart();
     return;
   }
 
   const ranking = getOverallRatingData();
   renderModelOverallChart(ranking);
+  renderModelTokenEfficiencyChart(ranking);
   ranking.forEach((entry) => elements.modelOverallList.append(createModelOverallRow(entry)));
   const ratedCount = ranking.filter((entry) => entry.rating).length;
   elements.modelOverallNote.textContent = ratingState.allLoading
@@ -1612,6 +1806,9 @@ const elements = {
   modelOverallChartShell: document.getElementById("model-overall-chart-shell"),
   modelOverallChartExpand: document.getElementById("model-overall-chart-expand"),
   modelOverallChartDownload: document.getElementById("model-overall-chart-download"),
+  modelTokenEfficiencyChart: document.getElementById("model-token-efficiency-chart"),
+  modelTokenEfficiencyChartEmpty: document.getElementById("model-token-efficiency-chart-empty"),
+  modelTokenEfficiencyChartNote: document.getElementById("model-token-efficiency-chart-note"),
   modelOverallChartDialog: document.getElementById("model-overall-chart-dialog"),
   modelOverallChartDialogClose: document.getElementById("model-overall-chart-dialog-close"),
   modelOverallChartDialogBest: document.getElementById("model-overall-chart-dialog-best"),
