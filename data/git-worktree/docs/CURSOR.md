@@ -9,7 +9,7 @@
 
 在 Cursor 中按 `SKILL.md` 执行：
 
-1. `create_worktree.sh` 生成 `TARGET_PATH` / `HASH`（脚本本身不创建 worktree）
+1. `get_worktree_hash.sh` 生成 `TARGET_PATH` / `HASH`（脚本本身不创建 worktree）
 2. 执行一次 `git worktree add -b worktree/{hash} {target_path} {base_branch}` 并成功
 3. 随后同一条 `git worktree add` 可能再次执行并报：
 
@@ -23,7 +23,7 @@ fatal: a branch named 'worktree/{hash}' already exists
 2. Cursor 的 `WorktreeManager` 发现 `~/.worktree/{hash}/...` 后切换 Agent workspace。
 3. 切仓可能导致**同一条 Shell 工具调用被重放/重跑**；第二次 `add` 撞上刚建好的分支。
 
-这不是 `create_worktree.sh` 预创建，也不是 `move_agent_to_root` 建分支，更不是外部并发操作。
+这不是 `get_worktree_hash.sh` 预创建，也不是 `move_agent_to_root` 建分支，更不是外部并发操作。
 
 ## Cursor 下必须遵守的处理
 

@@ -15,6 +15,14 @@ description: "创建 git worktree 将当前项目隔离到 ~/.worktree/ 下独�
 
 ## ⚠️ 关键约束（必须遵守）
 
+### IMPORTANT — 越权访问红线
+
+**`~/.worktree/` 下任何非本流程创建的目录（含子目录、文件）一律禁止读取、搜索、枚举、修改或删除。**
+
+- 仅当用户在本轮对话中**明确点名**具体目录/文件时才允许读取该目标；泛化表述（"查看一下"、"检查 worktree"、"看下有没有其他 worktree"等）不构成明确授权
+- 越权访问其他项目/其他会话的 worktree 会造成数据污染与信息泄露，是本 skill 最严重的违规行为
+- 该红线对本流程创建前的 `~/.worktree/` 既有目录同样生效
+
 **一旦触发此 skill，后续所有文件修改、代码编辑、命令执行必须在 worktree 目录中进行。**
 
 - ❌ 禁止在原仓库目录下做任何写操作（创建文件、编辑、删除、移动等）
@@ -25,8 +33,8 @@ description: "创建 git worktree 将当前项目隔离到 ~/.worktree/ 下独�
 
 ### Worktree 访问边界
 
-- 创建成功后，禁止枚举、搜索、读取、修改或删除 `~/.worktree/` 下除当前 `TARGET_PATH` 以外的任何 worktree
-- 不得通过绝对路径、父目录搜索、符号链接或跨目录命令访问其他 worktree
+- 除非用户明确指示，禁止枚举、搜索、读取、修改或删除 `~/.worktree/` 下任何非本流程创建的目录（含创建成功前已存在的其他 worktree）
+- 除非用户明确要求，不得通过绝对路径、父目录搜索、符号链接或跨目录命令访问其他 worktree 或 `~/.worktree/` 下的其他目录
 - 原仓库仅允许在确有必要时只读访问
 - Git 命令正常访问共享 Git 元数据不受此限制
 
@@ -64,7 +72,7 @@ basename $(git rev-parse --show-toplevel)
 执行脚本：
 
 ```bash
-bash <skill_dir>/scripts/create_worktree.sh
+bash <skill_dir>/scripts/get_worktree_hash.sh
 ```
 
 脚本会输出类似：
