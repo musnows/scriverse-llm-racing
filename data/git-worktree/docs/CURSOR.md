@@ -1,6 +1,6 @@
 # Cursor 专用说明（仅限 Cursor Agent 阅读）
 
-> **适用范围：** 仅 Cursor IDE / Cursor Agent。  
+> **适用范围：** 仅 Cursor IDE / Cursor Agent。
 > **其他工具（Claude Code、Codex、CLI 等）必须忽略本文件**，继续只遵循 `SKILL.md` 主流程。
 
 本文件记录 Cursor 下创建 `~/.worktree/` 时的已知行为差异。主流程仍以 `SKILL.md` 为准；下列条款仅在 Cursor 中覆盖冲突处理。
