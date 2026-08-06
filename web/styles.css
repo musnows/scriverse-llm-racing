@@ -1832,7 +1832,7 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-token-efficiency-chart-shell {
-  cursor: default;
+  cursor: zoom-in;
 }
 
 .model-overall-chart {

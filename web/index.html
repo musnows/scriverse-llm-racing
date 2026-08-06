@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=114">
+    <link rel="stylesheet" href="/styles.css?v=115">
   </head>
   <body>
     <div class="app-shell">
@@ -151,10 +151,22 @@
                 <p class="section-description">横轴为按需求权重计算的加权平均 token 用量，纵轴为按需求权重计算的加权通过率；credit usage 模型不计入。</p>
                 <p class="model-overall-chart__reading-tip">阅读方式：越靠左上越好，代表 token 更少、加权通过率更高。</p>
               </div>
-              <p id="model-token-efficiency-chart-note" class="count-label"></p>
+              <div class="model-overall-chart-heading__actions">
+                <p id="model-token-efficiency-chart-note" class="count-label"></p>
+                <button type="button" id="model-token-efficiency-chart-expand" class="model-overall-chart__action model-overall-chart__expand" aria-label="放大 Token 效率散点图" title="放大查看" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                  </svg>
+                </button>
+                <button type="button" id="model-token-efficiency-chart-download" class="model-overall-chart__action model-overall-chart__download" aria-label="下载 Token 效率散点图 PNG" title="下载 PNG" disabled>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 18h14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="model-overall-chart-layout">
-              <div class="model-overall-chart-shell model-token-efficiency-chart-shell">
+              <div id="model-token-efficiency-chart-shell" class="model-overall-chart-shell model-token-efficiency-chart-shell">
                 <svg id="model-token-efficiency-chart" class="model-overall-chart model-token-efficiency-chart" role="img" aria-labelledby="model-token-efficiency-chart-title"></svg>
                 <p id="model-token-efficiency-chart-empty" class="model-overall-chart__empty" hidden></p>
               </div>
@@ -184,7 +196,7 @@
             <div>
               <p class="dialog-model">效率与质量</p>
               <h2 id="model-overall-chart-dialog-title">加权平均耗时与加权通过率</h2>
-              <p class="model-overall-chart-dialog__note">阅读方式：越靠左上越好；短线连接模型名称与对应散点。</p>
+              <p id="model-overall-chart-dialog-note" class="model-overall-chart-dialog__note">阅读方式：越靠左上越好；短线连接模型名称与对应散点。</p>
             </div>
             <p id="model-overall-chart-dialog-best" class="model-overall-chart-dialog__best" hidden></p>
             <button type="button" id="model-overall-chart-dialog-close" class="icon-button dialog-close-button" aria-label="关闭散点图大图" title="关闭">
@@ -520,6 +532,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=149"></script>
+    <script src="/app.js?v=150"></script>
   </body>
 </html>
