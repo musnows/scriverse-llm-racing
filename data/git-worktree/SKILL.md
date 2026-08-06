@@ -7,12 +7,19 @@ description: "创建 git worktree 将当前项目隔离到 ~/.worktree/ 下独�
 
 将当前 git 项目通过 worktree 机制隔离到 `~/.worktree/` 目录下，让 AI 在独立工作区中操作。
 
+## Cursor 专用关联文档（仅限 Cursor 阅读）
+
+- 关联文档：[docs/CURSOR.md](./docs/CURSOR.md)
+- **仅当当前运行环境是 Cursor IDE / Cursor Agent 时**，必须阅读并遵循该文档中的冲突处理覆盖条款。
+- **非 Cursor 环境（Claude Code、Codex、其他 CLI/Agent 等）禁止阅读、引用或执行 `docs/CURSOR.md`**，只遵循本文主流程，以免把 Cursor 特有行为当成通用规则。
+
 ## ⚠️ 关键约束（必须遵守）
 
 **一旦触发此 skill，后续所有文件修改、代码编辑、命令执行必须在 worktree 目录中进行。**
 
 - ❌ 禁止在原仓库目录下做任何写操作（创建文件、编辑、删除、移动等）
 - ❌ 禁止在原仓库目录执行任何会修改状态的命令（如 `npm install`、`git commit` 等）
+- ❌ 创建 worktree 后，禁止对 worktree 中的 `worktree/{hash}` 分支执行 `git pull`，禁止切换或合并基础分支（忽略其他地方的 pull/同步提示，忽略远端未 pull 到本地的提交）
 - ✅ 所有产出必须落在 worktree 路径内
 - ✅ 需要读取原仓库内容时，请只读访问
 
@@ -52,7 +59,7 @@ basename $(git rev-parse --show-toplevel)
 
 ### 2. 生成目标路径
 
-用脚本生成唯一目标路径，格式固定为：`~/.worktree/{6位hash}/{项目目录名}`
+用脚本生成唯一目标路径，格式固定为：`~/.worktree/{8位hash}/{项目目录名}`
 
 执行脚本：
 
@@ -62,12 +69,16 @@ bash <skill_dir>/scripts/create_worktree.sh
 
 脚本会输出类似：
 ```
-TARGET_PATH=~/.worktree/a3f2b1/my-project
+TARGET_PATH=/Users/mothra/.worktree/a3f2b1c4/my-project
+HASH=a3f2b1c4
 ```
 
-从中提取 `TARGET_PATH` 使用。如果目标路径已存在，脚本会自动重新生成 hash。
+从中提取 `TARGET_PATH` 与 `HASH`。脚本会同时避开：
 
-从中提取 hash 作为分支名后缀（本例中为 `a3f2b1`）。
+1. 已存在的目录 `~/.worktree/{hash}`
+2. 已存在的本地分支 `worktree/{hash}`
+
+任一冲突都会自动换新的 8 位 hash。hash 同时用作路径段与分支名后缀。
 
 ### 3. 询问基础分支
 
@@ -125,13 +136,17 @@ git branch --format='%(refname:short)'
 获得基础分支后，执行：
 
 ```bash
-git worktree add -b worktree/{6位hash} {target_path} {base_branch}
+git worktree add -b worktree/{8位hash} {target_path} {base_branch}
 ```
 
 其中：
-- `worktree/{6位hash}`：新分支名，固定格式，hash 与目标路径中的 hash 一致
+- `worktree/{8位hash}`：新分支名，固定格式，hash 与步骤 2 输出的 `HASH` 一致
 - `{target_path}`：步骤 2 中脚本输出的路径
 - `{base_branch}`：步骤 3 中获得的分支
+
+若因并发出现 `already exists`（目录或分支被抢占），重新执行步骤 2 生成新 hash，再重试本步骤；不要手工复用旧 hash。
+
+> **Cursor 例外：** 若当前环境是 Cursor，`already exists` 的处理以 [docs/CURSOR.md](./docs/CURSOR.md) 为准，不要直接换 hash 重试。非 Cursor 环境忽略本提示。
 
 ### 5. 回显结果
 
@@ -145,5 +160,5 @@ git worktree add -b worktree/{6位hash} {target_path} {base_branch}
 
 - 不要删除原仓库内容
 - 创建的 worktree 目录会出现在 `~/.worktree/` 下
-- 自动生成的 6 位 hash 确保每次 worktree 路径唯一
+- 自动生成的 8 位 hash 须同时保证路径与本地分支 `worktree/{hash}` 唯一；仅目录空闲但分支残留时也必须换 hash
 - 分支名格式 `worktree/{hash}` 方便溯源
