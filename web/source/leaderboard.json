@@ -60,7 +60,7 @@
         {
           "modelId": 1,
           "testedAt": "2026-08-07T07:37:54+08:00",
-          "durationSeconds": null,
+          "durationSeconds": 4543,
           "tokenUsage": 955.30,
           "tokenUsageUnit": "credit",
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/bd5fb9b4",
