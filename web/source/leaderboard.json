@@ -58,6 +58,25 @@
       "baseCommit": "54d9e85b4fccbb0c53925ad6c6976646fe62f39f",
       "models": [
         {
+          "modelId": 9,
+          "testedAt": "2026-08-07T08:43:47+08:00",
+          "durationSeconds": 3010,
+          "tokenUsage": 25362000,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d66ba8f6",
+          "unexpectedCases": [
+            "Grok 4.5 High 在进行首次测试时，直接越权读取了 ~/.worktree 下其他 Agent 的已实现代码，并将其拷贝至自己的目录视作任务已完成。本平台上传的是封堵越权后的二次测试结果。"
+          ],
+          "failures": {
+            "TC-02": "创建种族可在仅校验种族权限时通过 replaceRaceMembers 修改角色 race_id，未同时校验角色权限。",
+            "TC-04": "同作品协作者可读取、处理其他用户或对话的审批和提问记录，并获得其中的计划、diff、正文引用和回答内容。",
+            "TC-09": "任一实体工具开启后都会暴露统一 submit_write_plan，模型仍可见全部词条、正文批注和分析任务能力。",
+            "TC-11": "确认 Toast 只展示 AI 简述和操作数，未展示操作对象或模块。",
+            "TC-16": "分析任务错误要求模型属于当前作品，并绕过既有 AiManager.createTask 的模型解析链路；平台可用模型会创建失败。",
+            "TC-21": "审批详情未展示每项最终结果、版本号、操作者或审计记录。",
+            "TC-22": "可写 tools 每次均按当前设置动态生成；已有交互的会话之后开关工具仍会改变 tools，破坏 prompt cache。"
+          }
+        },
+        {
           "modelId": 1,
           "testedAt": "2026-08-07T07:37:54+08:00",
           "durationSeconds": 4543,
@@ -268,7 +287,7 @@
           "software": "Cursor Agent View",
           "version": "3.14.7",
           "context": "256K",
-          "status": "待测试"
+          "status": "已测试"
         },
         {
           "modelId": 8,
