@@ -60,7 +60,8 @@
         {
           "modelId": 11,
           "testedAt": "2026-08-07T13:01:28+08:00",
-          "durationSeconds": null,
+          "durationSeconds": 5412,
+          "tokenUsage": 22600000,
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d064c99f",
           "failures": {
             "TC-02": "组织等操作只校验主模块权限，却可通过成员 ID 改写角色成员关系，未同时校验角色权限。",
@@ -80,7 +81,9 @@
         {
           "modelId": 17,
           "testedAt": "2026-08-07T12:44:34+08:00",
-          "durationSeconds": null,
+          "durationSeconds": 2311,
+          "tokenUsage": 1145.73,
+          "tokenUsageUnit": "credit",
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/12b533b9",
           "failures": {
             "TC-02": "分析任务范围只校验对话归属用户，且误用写权限；当前操作用户缺少范围所需读取权限时仍可借对话归属用户权限创建任务。",
