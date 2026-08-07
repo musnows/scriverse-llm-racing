@@ -60,3 +60,12 @@ test -d "$TARGET_PATH" \
 - 不要因为 Cursor 切工作区就怀疑脚本已创建 worktree
 - 不要把切仓后的二次 `already exists` 当成外部异步占用
 - 不要对刚成功的目标执行 `rm -rf` 或 `git branch -D` 后重来
+
+---
+
+## 额外约束（与 worktree 流程无关）
+
+### subagent 模型约束
+
+- 默认情况下，启动 subagent 时**禁止**通过 `model` 参数指定其他模型，subagent 一律继承当前会话的默认模型。
+- 仅当用户在本轮对话中**明确点名**要使用某个特定模型时，才允许传 `model` 指定模型；泛化表述（"用个更好的模型"、"按需选择"等）不构成授权。
