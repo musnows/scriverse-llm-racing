@@ -58,6 +58,26 @@
       "baseCommit": "54d9e85b4fccbb0c53925ad6c6976646fe62f39f",
       "models": [
         {
+          "modelId": 11,
+          "testedAt": "2026-08-07T13:01:28+08:00",
+          "durationSeconds": null,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d064c99f",
+          "failures": {
+            "TC-02": "组织等操作只校验主模块权限，却可通过成员 ID 改写角色成员关系，未同时校验角色权限。",
+            "TC-04": "计划、提问列表按整部作品查询；确认、拒绝、回答接口未校验发起用户或对话归属，协作者可处理他人记录。",
+            "TC-06": "正文批注未保存或重校验章节、正文版本；正文变化后仍会按旧行号创建评论或待办。",
+            "TC-09": "任一写开关开启即暴露通用 submit_write_plan，其工具定义仍声明全部实体、批注和分析任务能力。",
+            "TC-11": "Toast 只显示 AI 简述，未展示操作对象；跳转按钮也不是系统完整 diff 的独立入口。",
+            "TC-13": "后端和工具 schema 允许仅一个选项，未限制同一对话只有一个待回答问题，推荐项也可不在第一个。",
+            "TC-14": "审批中心没有自定义回答输入；接口还接受空回答并标为 answered。",
+            "TC-16": "分析任务直接调用 Store.createTask，绕过既有 AiManager.createTask 的模型解析、可用性和默认值校验，任务类型也未受控。",
+            "TC-18": "提问作为普通 completed 工具结果后，循环仍继续同批工具和下一轮模型；无持久化 continuation 或回答后恢复链路。",
+            "TC-19": "过期处理未接入运行时调度；审批中心只渲染 pending 提问，无法查看 answered、dismissed、expired 历史状态。",
+            "TC-21": "审批详情未展示操作者或审计记录；撤销未校验后续版本，可能覆盖之后的人为编辑。",
+            "TC-22": "会话快照只包含只读工具；可写 tools 每次按当前设置动态生成，已交互会话也会变化。"
+          }
+        },
+        {
           "modelId": 17,
           "testedAt": "2026-08-07T12:44:34+08:00",
           "durationSeconds": null,
@@ -389,7 +409,7 @@
           "software": "Cursor Agent View",
           "version": "3.14.7",
           "context": "200K（Cursor 不支持 1M）",
-          "status": "待测试"
+          "status": "已测试"
         },
         {
           "modelId": 12,
