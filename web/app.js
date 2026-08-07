@@ -505,6 +505,51 @@ function formatTokenUsage(tokenUsage, unit = "token", display = "detailed") {
   return text || "未记录";
 }
 
+const leaderboardExportUsageScales = [
+  { divisor: 1e24, suffix: "Y" },
+  { divisor: 1e21, suffix: "Z" },
+  { divisor: 1e18, suffix: "E" },
+  { divisor: 1e15, suffix: "P" },
+  { divisor: 1e12, suffix: "T" },
+  { divisor: 1e9, suffix: "B" },
+  { divisor: 1e6, suffix: "M" },
+  { divisor: 1e3, suffix: "k" },
+  { divisor: 1, suffix: "" },
+];
+
+function formatLeaderboardExportUsageNumber(value) {
+  const signLength = value < 0 ? 1 : 0;
+  const integerLength = String(Math.floor(Math.abs(value))).length;
+  const decimalLength = Math.max(0, Math.min(2, 5 - signLength - integerLength - 1));
+  const multiplier = 10 ** decimalLength;
+  const truncatedValue = Math.floor(Math.abs(value) * multiplier) / multiplier;
+  const numberText = decimalLength > 0 && !Number.isInteger(truncatedValue)
+    ? truncatedValue.toFixed(decimalLength)
+    : String(Math.floor(truncatedValue));
+  return `${value < 0 ? "-" : ""}${numberText}`;
+}
+
+function formatLeaderboardExportUsage(tokenUsage, unit = "token") {
+  if (tokenUsage === null || tokenUsage === undefined) {
+    return "用量未记录";
+  }
+
+  const normalizedText = String(tokenUsage).trim().replaceAll(",", "");
+  const numericValue = Number(normalizedText);
+  if (!Number.isFinite(numericValue)) {
+    return normalizedText || "用量未记录";
+  }
+
+  const scale = leaderboardExportUsageScales.find(({ divisor }) => (
+    Math.abs(numericValue) >= divisor
+  )) ?? leaderboardExportUsageScales[leaderboardExportUsageScales.length - 1];
+  const numberText = formatLeaderboardExportUsageNumber(numericValue / scale.divisor);
+  if (unit === "credit") {
+    return `${numberText} ${scale.suffix ? `${scale.suffix} ` : ""}c`;
+  }
+  return `${numberText} ${scale.suffix || "tk"}`;
+}
+
 function formatBuildUpdatedAt(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -3032,9 +3077,7 @@ function createLeaderboardExportSvg() {
       : formatDurationSeconds(entry.durationSeconds);
     const usageUnit = entry.tokenUsageUnit ?? entry.agent?.tokenUsageUnit ?? "token";
     const usageValue = entry.tokenUsage ?? entry.agent?.tokenUsage;
-    const usageText = usageValue === null || usageValue === undefined
-      ? "用量未记录"
-      : formatTokenUsage(usageValue, usageUnit, "compact");
+    const usageText = formatLeaderboardExportUsage(usageValue, usageUnit);
     const modelName = entry.model?.name ?? entry.modelId;
     const modelX = cardX + 180;
     const isMultimodal = Boolean(entry.model?.supportsMultimodal);
