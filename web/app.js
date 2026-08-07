@@ -191,7 +191,7 @@ const models = [
       ["image-20260805065308-fvbm1tu.webp", "实现 S3 核心模块", ["process"]],
       ["image-20260805065852-nsdy5lg.webp", "功能概览与实现总结", ["process"]],
       ["image-20260805065853-5vrxm89.webp", "提交前的安全补充", ["process"]],
-      ["image-20260805072923-97p5p1f.webp", "任务完成与耗时 10 分 28 秒", ["process"]],
+      ["image-20260805072923-97p5p1f.webp", "任务完成与耗时 14 分 8 秒", ["process"]],
       ["image-20260805070056-jab3by6.webp", "用量记录与外部模型约束", ["process"]],
       ["image-20260805071506-3nyxtct.webp", "设置中心入口", ["settings"]],
       ["image-20260805071458-4dkpp1q.webp", "数据备份页面", ["overview"]],
@@ -325,7 +325,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=84";
+const leaderboardDataUrl = "/source/leaderboard.json?v=85";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
