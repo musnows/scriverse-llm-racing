@@ -83,6 +83,7 @@ PORT=13250 \
 RATING_DB=/var/lib/agent-evaluation/ratings.sqlite \
 IP_HASH_SECRET='替换为随机长字符串' \
 REQUEST_INTERVAL_MS=300000 \
+MAX_API_REQUESTS_PER_MINUTE=120 \
 ALLOWED_ORIGIN='https://your-netlify-site.example' \
 CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
 node server.mjs
@@ -100,6 +101,10 @@ node server.mjs
 
 后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。测试用例的赞、踩同样使用 Cookie 和 IP 限流；同一访客可在限流间隔后切换反馈。
 
+`IP_HASH_SECRET` 必须设置为至少 32 个字符的随机字符串；`ALLOWED_ORIGIN` 必须是前端的完整 HTTP 或 HTTPS Origin，不能使用 `*`。评分写接口只接受 `application/json`，并拒绝非允许 Origin 的浏览器请求。`MAX_API_REQUESTS_PER_MINUTE` 默认限制单个来源 IP 每分钟访问 API 120 次。
+
+生产环境应让 Node 服务只监听反向代理可访问的内网端口，并由反向代理提供 HTTPS；不要直接把 `13250` 暴露到公网。
+
 每条测试用例反馈都会使用 `SHA-256(需求 ID + case ID + case 内容)` 作为归属键。case 内容变更并同步更新 catalog、递增 catalog `version` 后，历史反馈会保留在数据库中，但不会计入新内容的计数。
 
 也可以直接使用 Docker 镜像运行后端：
@@ -108,9 +113,10 @@ node server.mjs
 docker run -d \
   --name scriverse-llm-racing-server \
   --restart unless-stopped \
-  -p 13250:13250 \
+  -p 127.0.0.1:13250:13250 \
   -e IP_HASH_SECRET='替换为一段随机长字符串' \
   -e REQUEST_INTERVAL_MS=300000 \
+  -e MAX_API_REQUESTS_PER_MINUTE=120 \
   -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
   -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
   -v /opt/scriverse-llm-racing/data:/var/lib/scriverse-llm-racing \

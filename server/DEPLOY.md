@@ -25,9 +25,10 @@ sudo chown -R 1000:1000 /opt/scriverse-llm-racing/data
 docker run -d \
   --name scriverse-llm-racing-server \
   --restart unless-stopped \
-  -p 13250:13250 \
+  -p 127.0.0.1:13250:13250 \
   -e IP_HASH_SECRET='替换为一段随机长字符串' \
   -e REQUEST_INTERVAL_MS=300000 \
+  -e MAX_API_REQUESTS_PER_MINUTE=120 \
   -e ALLOWED_ORIGIN='https://your-netlify-site.example' \
   -e CATALOG_URL='https://your-netlify-site.example/rating-catalog.json' \
   -e TRUST_PROXY=true \
@@ -35,7 +36,7 @@ docker run -d \
   musnows/scriverse-llm-racing-server:latest
 ```
 
-容器默认监听 `13250`。如果只需要更换宿主机端口，只修改左侧端口，例如 `-p 18080:13250`；容器内部端口仍保持 `13250`。如果需要同时更换容器端口，则增加 `-e PORT=18080 -p 18080:18080`。
+容器默认监听 `13250`。示例只绑定宿主机回环地址，公网流量应经过 Nginx 或其他支持 HTTPS 的反向代理。如果只需要更换宿主机端口，只修改左侧端口，例如 `-p 127.0.0.1:18080:13250`；容器内部端口仍保持 `13250`。如果需要同时更换容器端口，则增加 `-e PORT=18080 -p 127.0.0.1:18080:18080`。
 
 发布到 Docker Hub 前先登录，然后使用 Buildx 发布常见服务器架构：
 
@@ -64,7 +65,7 @@ docker compose up -d
 docker compose ps
 ```
 
-Compose 会读取 `server/.env` 中的前端 Origin、评分目录地址和密钥，并将 `server/data/` 挂载到容器的 SQLite 数据目录。宿主机端口通过 `HOST_PORT` 修改，容器内部端口固定为 `13250`。
+Compose 会读取 `server/.env` 中的前端 Origin、评分目录地址和密钥，并将 `server/data/` 挂载到容器的 SQLite 数据目录。宿主机默认只绑定 `127.0.0.1`，可通过 `HOST_BIND_ADDRESS` 和 `HOST_PORT` 修改；公网部署时不要把绑定地址改为 `0.0.0.0`，容器内部端口固定为 `13250`。
 
 ## 启动
 
@@ -77,6 +78,7 @@ RATING_DB=/var/lib/agent-evaluation/ratings.sqlite \
 IP_HASH_SECRET='替换为一段随机长字符串' \
 MAX_VOTES_PER_DAY=10 \
 REQUEST_INTERVAL_MS=300000 \
+MAX_API_REQUESTS_PER_MINUTE=120 \
 ALLOWED_ORIGIN='https://your-netlify-site.example' \
 node server.mjs
 ```
@@ -87,7 +89,9 @@ node server.mjs
 
 评分提交接口按“来源 IP + 需求 + 模型”限制请求间隔，默认 `REQUEST_INTERVAL_MS=300000`，即同一 IP 对同一需求下的同一模型每 5 分钟最多提交一次评分；更换需求或模型不受影响，间隔内的请求直接返回 HTTP 429。设置为 `0` 可以关闭这个间隔限制。
 
-后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。前后端跨域部署时，`ALLOWED_ORIGIN` 必须填写前端的完整 Origin，不能使用 `*`，否则浏览器不会携带这个 Cookie。
+所有 API 还按来源 IP 进行全局访问限制，默认 `MAX_API_REQUESTS_PER_MINUTE=120`。服务端会限制请求体大小、设置 HTTP 请求和连接超时，并定期清理过期的限流状态。公网仍应在 Nginx、云 WAF 或负载均衡器上配置更严格的连接数和请求速率限制。
+
+后端会通过 HttpOnly Cookie 记录浏览器在某项需求下是否已经给某个模型评分；同一 Cookie 不能重复评分，删除 Cookie 后可以重新获得一个身份，但仍受来源 IP 限速约束。前后端跨域部署时，`ALLOWED_ORIGIN` 必须填写前端的完整 HTTP 或 HTTPS Origin，不能使用 `*`；写接口只接受 `application/json`，并会校验浏览器的 Origin。
 
 ## 评分允许列表同步
 
@@ -101,18 +105,20 @@ CATALOG_SYNC_INTERVAL_MS=600000 \
 node server.mjs
 ```
 
+`CATALOG_URL` 必须使用 HTTPS，后端会拒绝带有账号密码的 URL，并将目录响应限制在 4 MiB 以内。
+
 后端只先比较顶层 `version`：版本号没有变化时不会遍历需求和模型，也不会写数据库；版本号变更后才校验并替换快照。测试用例反馈使用 `SHA-256(需求 ID + case ID + case 内容)` 聚合，因此修改 case 内容时必须同步更新 catalog 内容并递增 `version`，旧内容的反馈不会计入新内容。网络错误、格式错误或回退版本会保留上一次有效快照；如果从未同步成功，评分接口会返回 `catalog_not_ready`，不会接受未知的需求、模型或测试用例。
 
 ## 反向代理
 
-如果前面使用 Nginx，需要把真实客户端 IP 传给后端，并设置 `TRUST_PROXY=true`：
+如果前面使用 Nginx，需要把真实客户端 IP 传给后端，并设置 `TRUST_PROXY=true`。后端只会在连接来源属于 `TRUSTED_PROXY_IPS`，或属于本机私有网络地址时读取代理头；能够明确确定代理地址时应配置精确的 IP：
 
 ```nginx
 location / {
     proxy_pass http://127.0.0.1:13250;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-For $remote_addr;
 }
 ```
 
@@ -120,9 +126,10 @@ location / {
 
 ```bash
 TRUST_PROXY=true
+TRUSTED_PROXY_IPS=127.0.0.1
 ```
 
-只有在服务器前面确实有可信反向代理时才开启 `TRUST_PROXY`。
+只有在服务器前面确实有可信反向代理且后端端口未直接暴露公网时才开启 `TRUST_PROXY`。如果反向代理运行在 Docker 网络中，应将 `TRUSTED_PROXY_IPS` 设置为反向代理容器的固定内网 IP。
 
 ## systemd 示例
 
@@ -139,10 +146,12 @@ Environment=PORT=13250
 Environment=RATING_DB=/var/lib/agent-evaluation/ratings.sqlite
 Environment=MAX_VOTES_PER_DAY=10
 Environment=REQUEST_INTERVAL_MS=300000
+Environment=MAX_API_REQUESTS_PER_MINUTE=120
 Environment=CATALOG_URL=https://your-netlify-site.example/rating-catalog.json
 Environment=CATALOG_SYNC_INTERVAL_MS=600000
 Environment=ALLOWED_ORIGIN=https://your-netlify-site.example
 Environment=TRUST_PROXY=true
+Environment=TRUSTED_PROXY_IPS=127.0.0.1
 Environment=IP_HASH_SECRET=替换为随机长字符串
 Restart=on-failure
 

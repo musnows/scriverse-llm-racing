@@ -3,5 +3,9 @@
 *.sqlite3
 *.sqlite-wal
 *.sqlite-shm
+.env
+.env.*
+*.key
+*.pem
 data/
 .DS_Store

@@ -6,6 +6,7 @@ ENV NODE_ENV=production \
     PORT=13250 \
     RATING_DB=/var/lib/scriverse-llm-racing/ratings.sqlite \
     REQUEST_INTERVAL_MS=300000 \
+    MAX_API_REQUESTS_PER_MINUTE=120 \
     CATALOG_SYNC_INTERVAL_MS=600000
 
 RUN mkdir -p /var/lib/scriverse-llm-racing \

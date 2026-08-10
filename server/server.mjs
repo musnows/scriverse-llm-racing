@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
-import { createReadStream, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { extname, join, normalize, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
+import { isIP } from "node:net";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number.parseInt(process.env.PORT || "13250", 10);
@@ -14,15 +15,67 @@ const configuredCaseVoteLimit = Number.parseInt(process.env.MAX_CASE_VOTES_PER_D
 const maxCaseVotesPerDay = Number.isFinite(configuredCaseVoteLimit) ? Math.max(5, configuredCaseVoteLimit) : maxVotesPerDay;
 const configuredRequestInterval = Number.parseInt(process.env.REQUEST_INTERVAL_MS || "300000", 10);
 const requestIntervalMs = Number.isFinite(configuredRequestInterval) ? Math.max(0, configuredRequestInterval) : 300_000;
-const ipHashSecret = process.env.IP_HASH_SECRET || "change-this-secret";
+const ipHashSecret = String(process.env.IP_HASH_SECRET || "").trim();
+if (ipHashSecret.length < 32) {
+  throw new Error("IP_HASH_SECRET must be at least 32 characters");
+}
 const visitorCookieName = "scriverse_visitor_id";
 const visitorCookieMaxAge = 315_360_000;
 const trustProxy = process.env.TRUST_PROXY === "true";
+const configuredTrustedProxyIps = String(process.env.TRUSTED_PROXY_IPS || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+if (configuredTrustedProxyIps.some((value) => isIP(value) === 0)) {
+  throw new Error("TRUSTED_PROXY_IPS must contain only valid IP addresses");
+}
+const trustedProxyIps = new Set(configuredTrustedProxyIps);
+const allowedOrigin = String(process.env.ALLOWED_ORIGIN || "").trim();
+if (allowedOrigin === "*" || allowedOrigin === "null") {
+  throw new Error("ALLOWED_ORIGIN must be an explicit HTTP or HTTPS origin");
+}
+if (allowedOrigin) {
+  let parsedAllowedOrigin;
+  try {
+    parsedAllowedOrigin = new URL(allowedOrigin);
+  } catch {
+    throw new Error("ALLOWED_ORIGIN must be a valid HTTP or HTTPS origin");
+  }
+  if (!["http:", "https:"].includes(parsedAllowedOrigin.protocol)
+    || parsedAllowedOrigin.username
+    || parsedAllowedOrigin.password
+    || parsedAllowedOrigin.hash
+    || parsedAllowedOrigin.origin !== allowedOrigin) {
+    throw new Error("ALLOWED_ORIGIN must be a valid HTTP or HTTPS origin");
+  }
+}
 const catalogUrl = String(process.env.CATALOG_URL || "").trim();
+if (catalogUrl) {
+  let parsedCatalogUrl;
+  try {
+    parsedCatalogUrl = new URL(catalogUrl);
+  } catch {
+    throw new Error("CATALOG_URL must be a valid HTTPS URL");
+  }
+  if (parsedCatalogUrl.protocol !== "https:" || parsedCatalogUrl.username || parsedCatalogUrl.password) {
+    throw new Error("CATALOG_URL must use HTTPS without embedded credentials");
+  }
+}
 const configuredCatalogSyncInterval = Number.parseInt(process.env.CATALOG_SYNC_INTERVAL_MS || "600000", 10);
 const catalogSyncIntervalMs = Number.isFinite(configuredCatalogSyncInterval)
   ? Math.max(60_000, configuredCatalogSyncInterval)
   : 600_000;
+const configuredGlobalRequestLimit = Number.parseInt(process.env.MAX_API_REQUESTS_PER_MINUTE || "120", 10);
+const maxApiRequestsPerMinute = Number.isFinite(configuredGlobalRequestLimit)
+  ? Math.max(0, configuredGlobalRequestLimit)
+  : 120;
+const maxTrackedGlobalRateLimitKeys = 10_000;
+const maxRequestBodyBytes = 16 * 1024;
+const configuredCatalogMaxBytes = Number.parseInt(process.env.MAX_CATALOG_BYTES || String(4 * 1024 * 1024), 10);
+const maxCatalogBytes = Number.isFinite(configuredCatalogMaxBytes)
+  ? Math.max(64 * 1024, configuredCatalogMaxBytes)
+  : 4 * 1024 * 1024;
+const rateLimitStateRetentionMs = Math.max(2 * 24 * 60 * 60 * 1000, requestIntervalMs + 24 * 60 * 60 * 1000);
 
 function logEvent(event, fields = {}, level = "info") {
   const entry = JSON.stringify({
@@ -254,23 +307,12 @@ let requirementTestCases = new Map();
 let catalogEtag = null;
 let catalogSyncInFlight = null;
 let catalogSyncTimer = null;
-
-const contentTypes = {
-  ".css": "text/css; charset=utf-8",
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".svg": "image/svg+xml",
-  ".webp": "image/webp",
-};
+let rateLimitCleanupTimer = null;
+const globalRequestBuckets = new Map();
 
 function getCorsOrigin(request) {
-  const configured = process.env.ALLOWED_ORIGIN || "*";
   const origin = request.headers.origin;
-  return configured === "*" || configured === origin ? configured : "null";
+  return allowedOrigin && origin === allowedOrigin ? allowedOrigin : null;
 }
 
 function getCookieValue(request, name) {
@@ -300,12 +342,13 @@ function responseHeaders(request, contentType = "application/json; charset=utf-8
   const headers = {
     "Content-Type": contentType,
     "Cache-Control": "no-store",
-    "Access-Control-Allow-Origin": corsOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    "X-Content-Type-Options": "nosniff",
     Vary: "Origin",
   };
-  if (corsOrigin !== "*" && corsOrigin !== "null") {
+  if (corsOrigin) {
+    headers["Access-Control-Allow-Origin"] = corsOrigin;
     headers["Access-Control-Allow-Credentials"] = "true";
   }
   if (request.visitorCookieToSet) {
@@ -468,7 +511,37 @@ async function readRemoteCatalog() {
     throw new Error(`catalog request failed with HTTP ${response.status}`);
   }
   catalogEtag = response.headers.get("etag") || catalogEtag;
-  return JSON.parse(await response.text());
+  const contentLength = Number(response.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > maxCatalogBytes) {
+    throw new Error("catalog response is too large");
+  }
+  const reader = response.body?.getReader();
+  if (!reader) {
+    const text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > maxCatalogBytes) {
+      throw new Error("catalog response is too large");
+    }
+    return JSON.parse(text);
+  }
+  const chunks = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      totalBytes += value.byteLength;
+      if (totalBytes > maxCatalogBytes) {
+        await reader.cancel();
+        throw new Error("catalog response is too large");
+      }
+      chunks.push(Buffer.from(value));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return JSON.parse(Buffer.concat(chunks, totalBytes).toString("utf8"));
 }
 
 async function syncCatalog() {
@@ -506,18 +579,60 @@ async function syncCatalog() {
   return catalogSyncInFlight;
 }
 
+function getValidIp(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const ip = value.trim();
+  return isIP(ip) > 0 ? ip : null;
+}
+
+function isPrivateProxyAddress(value) {
+  const ip = getValidIp(value);
+  if (!ip) {
+    return false;
+  }
+  const mappedIpv4 = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i)?.[1];
+  const ipv4 = mappedIpv4 || (isIP(ip) === 4 ? ip : null);
+  if (ipv4) {
+    const octets = ipv4.split(".").map(Number);
+    return octets[0] === 10
+      || octets[0] === 127
+      || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31)
+      || (octets[0] === 192 && octets[1] === 168)
+      || (octets[0] === 169 && octets[1] === 254);
+  }
+  return ip === "::1" || /^f[cd]/i.test(ip) || /^fe[89ab]/i.test(ip);
+}
+
+function isTrustedProxyAddress(value) {
+  const ip = getValidIp(value);
+  if (!ip) {
+    return false;
+  }
+  if (trustedProxyIps.size > 0) {
+    return trustedProxyIps.has(ip);
+  }
+  return isPrivateProxyAddress(ip);
+}
+
 function getClientIp(request) {
-  if (trustProxy) {
-    const forwarded = request.headers["x-forwarded-for"];
-    if (typeof forwarded === "string" && forwarded.length > 0) {
-      return forwarded.split(",")[0].trim();
-    }
-    const realIp = request.headers["x-real-ip"];
-    if (typeof realIp === "string" && realIp.length > 0) {
-      return realIp;
+  const remoteIp = request.socket.remoteAddress || "unknown";
+  if (!trustProxy || !isTrustedProxyAddress(remoteIp)) {
+    return remoteIp;
+  }
+  const realIp = getValidIp(request.headers["x-real-ip"]);
+  if (realIp) {
+    return realIp;
+  }
+  const forwarded = request.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0) {
+    const firstForwardedIp = getValidIp(forwarded.split(",")[0]);
+    if (firstForwardedIp) {
+      return firstForwardedIp;
     }
   }
-  return request.socket.remoteAddress || "unknown";
+  return remoteIp;
 }
 
 function getRequestIp(request) {
@@ -644,6 +759,42 @@ function hashVisitorId(visitorId) {
   return createHash("sha256").update(`${ipHashSecret}:visitor:${visitorId}`).digest("hex");
 }
 
+function cleanupGlobalRequestBuckets(now) {
+  for (const [key, bucket] of globalRequestBuckets) {
+    if (now - bucket.windowStartedAt >= 60_000) {
+      globalRequestBuckets.delete(key);
+    }
+  }
+}
+
+function takeGlobalRequestSlot(ip) {
+  if (maxApiRequestsPerMinute === 0) {
+    return { allowed: true };
+  }
+
+  const now = Date.now();
+  const key = hashRateLimitIp(ip);
+  let bucket = globalRequestBuckets.get(key);
+  if (!bucket || now - bucket.windowStartedAt >= 60_000) {
+    if (globalRequestBuckets.size >= maxTrackedGlobalRateLimitKeys) {
+      cleanupGlobalRequestBuckets(now);
+    }
+    if (globalRequestBuckets.size >= maxTrackedGlobalRateLimitKeys) {
+      return { allowed: false, retryAfterSeconds: 60 };
+    }
+    bucket = { windowStartedAt: now, count: 0 };
+    globalRequestBuckets.set(key, bucket);
+  }
+  bucket.count += 1;
+  if (bucket.count > maxApiRequestsPerMinute) {
+    return {
+      allowed: false,
+      retryAfterSeconds: Math.max(1, Math.ceil((60_000 - (now - bucket.windowStartedAt)) / 1000)),
+    };
+  }
+  return { allowed: true };
+}
+
 function takeRequestSlot(ip, requirementId, modelId) {
   if (requestIntervalMs === 0) {
     return { allowed: true };
@@ -694,6 +845,12 @@ function takeCaseVoteRequestSlot(ip, requirementId, testCaseId, caseHash) {
     ON CONFLICT(ip_hash, requirement_id, test_case_id, case_hash) DO UPDATE SET last_request_at = excluded.last_request_at
   `).run(ipHash, requirementId, testCaseId, caseHash, now);
   return { allowed: true };
+}
+
+function cleanupRequestRateLimitState() {
+  const cutoff = Date.now() - rateLimitStateRetentionMs;
+  database.prepare("DELETE FROM request_rate_limits WHERE last_request_at < ?").run(cutoff);
+  database.prepare("DELETE FROM case_vote_rate_limits WHERE last_request_at < ?").run(cutoff);
 }
 
 function hasVisitorRated(visitorIdHash, requirementId, modelId) {
@@ -826,13 +983,51 @@ function recordCaseVote({ voteId, requirementId, testCaseId, caseHash, reaction,
   }
 }
 
+function isAllowedRequestOrigin(request) {
+  const origin = request.headers.origin;
+  if (typeof origin !== "string" || origin.length === 0) {
+    return true;
+  }
+  if (allowedOrigin) {
+    return origin === allowedOrigin;
+  }
+  const host = request.headers.host;
+  return typeof host === "string" && (origin === `http://${host}` || origin === `https://${host}`);
+}
+
+function isJsonContentType(request) {
+  const contentType = request.headers["content-type"];
+  return typeof contentType === "string" && /^application\/json(?:\s*;|$)/i.test(contentType.trim());
+}
+
+function validateJsonWriteRequest(request, response, logFunction) {
+  if (!isAllowedRequestOrigin(request)) {
+    logFunction(request, "origin_not_allowed", 403, null);
+    sendJson(request, response, { error: "origin_not_allowed" }, 403);
+    return false;
+  }
+  if (!isJsonContentType(request)) {
+    logFunction(request, "unsupported_media_type", 415, null);
+    sendJson(request, response, { error: "unsupported_media_type" }, 415);
+    return false;
+  }
+  return true;
+}
+
 function parseBody(request) {
   return new Promise((resolveBody, reject) => {
+    request.on("error", reject);
+    const contentLength = Number(request.headers["content-length"]);
+    if (Number.isFinite(contentLength) && contentLength > maxRequestBodyBytes) {
+      reject(new Error("request body too large"));
+      request.destroy();
+      return;
+    }
     let body = "";
     request.setEncoding("utf8");
     request.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 16 * 1024) {
+      if (Buffer.byteLength(body, "utf8") > maxRequestBodyBytes) {
         reject(new Error("request body too large"));
         request.destroy();
       }
@@ -844,7 +1039,6 @@ function parseBody(request) {
         reject(new Error("invalid json"));
       }
     });
-    request.on("error", reject);
   });
 }
 
@@ -874,6 +1068,9 @@ function getRatings(request, response, url) {
 }
 
 async function createVote(request, response) {
+  if (!validateJsonWriteRequest(request, response, logVote)) {
+    return;
+  }
   let body;
   try {
     body = await parseBody(request);
@@ -1007,6 +1204,9 @@ function getCaseVotes(request, response, url) {
 }
 
 async function createCaseVote(request, response) {
+  if (!validateJsonWriteRequest(request, response, logCaseVote)) {
+    return;
+  }
   let body;
   try {
     body = await parseBody(request);
@@ -1084,27 +1284,10 @@ async function createCaseVote(request, response) {
   }, status);
 }
 
-function serveStatic(request, response, url) {
-  const requestedPath = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
-  const absolutePath = resolve(rootDir, `.${normalize(requestedPath)}`);
-  const relativePath = relative(rootDir, absolutePath);
-  const blockedExtensions = new Set([".db", ".sqlite", ".sqlite3", ".wal", ".shm", ".zip", ".mjs", ".toml", ".sql", ".md"]);
-  const blockedDirectory = relativePath === "data" || relativePath.startsWith("data/") || relativePath === "privacy-ocr" || relativePath.startsWith("privacy-ocr/");
-  if (relativePath.startsWith("..") || relativePath.includes("..") || blockedDirectory || blockedExtensions.has(extname(absolutePath).toLowerCase())) {
-    response.writeHead(403);
-    response.end("Forbidden");
-    return;
-  }
-  if (!existsSync(absolutePath)) {
-    response.writeHead(404);
-    response.end("Not found");
-    return;
-  }
-  response.writeHead(200, {
-    "Content-Type": contentTypes[extname(absolutePath).toLowerCase()] || "application/octet-stream",
-    "Cache-Control": "no-cache",
-  });
-  createReadStream(absolutePath).pipe(response);
+function servePublicCatalog(request, response) {
+  const body = readFileSync(join(rootDir, "rating-catalog.json"), "utf8");
+  response.writeHead(200, responseHeaders(request, "application/json; charset=utf-8"));
+  response.end(body);
 }
 
 const server = createServer(async (request, response) => {
@@ -1116,6 +1299,25 @@ const server = createServer(async (request, response) => {
     return;
   }
   try {
+    if (url.pathname.startsWith("/api/") && request.method !== "OPTIONS") {
+      const globalRequestSlot = takeGlobalRequestSlot(request.clientIp);
+      if (!globalRequestSlot.allowed) {
+        logEvent("api_request_rate_limited", {
+          requestId: request.requestId,
+          ip: request.clientIp,
+          path: url.pathname,
+          retryAfterSeconds: globalRequestSlot.retryAfterSeconds,
+          limitPerMinute: maxApiRequestsPerMinute,
+        }, "warn");
+        sendJson(request, response, {
+          error: "api_request_rate_limited",
+          retryAfterSeconds: globalRequestSlot.retryAfterSeconds,
+        }, 429, {
+          "Retry-After": String(globalRequestSlot.retryAfterSeconds),
+        });
+        return;
+      }
+    }
     if (url.pathname === "/api/rating-config" && request.method === "GET") {
       sendJson(request, response, {
         data: {
@@ -1124,6 +1326,7 @@ const server = createServer(async (request, response) => {
           maxVotesPerDay,
           maxCaseVotesPerDay,
           requestIntervalMs,
+          maxApiRequestsPerMinute,
         },
       });
       return;
@@ -1148,7 +1351,11 @@ const server = createServer(async (request, response) => {
       sendJson(request, response, { error: "not_found" }, 404);
       return;
     }
-    serveStatic(request, response, url);
+    if (url.pathname === "/rating-catalog.json" && request.method === "GET") {
+      servePublicCatalog(request, response);
+      return;
+    }
+    sendJson(request, response, { error: "not_found" }, 404);
   } catch (error) {
     logEvent("http_request_failed", {
       requestId: request.requestId,
@@ -1165,15 +1372,30 @@ const server = createServer(async (request, response) => {
   }
 });
 
+server.requestTimeout = 30_000;
+server.headersTimeout = 15_000;
+server.timeout = 30_000;
+server.keepAliveTimeout = 5_000;
+
 async function startServer() {
+  cleanupRequestRateLimitState();
   loadStoredCatalog();
   await syncCatalog();
   catalogSyncTimer = setInterval(() => {
     void syncCatalog();
   }, catalogSyncIntervalMs);
   catalogSyncTimer.unref?.();
+  rateLimitCleanupTimer = setInterval(() => {
+    cleanupRequestRateLimitState();
+  }, 60 * 60 * 1000);
+  rateLimitCleanupTimer.unref?.();
   server.listen(port, "0.0.0.0", () => {
-    logEvent("server_started", { host: "0.0.0.0", port, requestIntervalMs });
+    logEvent("server_started", {
+      host: "0.0.0.0",
+      port,
+      requestIntervalMs,
+      maxApiRequestsPerMinute,
+    });
   });
 }
 
@@ -1182,6 +1404,9 @@ void startServer();
 function shutdown() {
   if (catalogSyncTimer) {
     clearInterval(catalogSyncTimer);
+  }
+  if (rateLimitCleanupTimer) {
+    clearInterval(rateLimitCleanupTimer);
   }
   database.close();
   server.close(() => process.exit(0));

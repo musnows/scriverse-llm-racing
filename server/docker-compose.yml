@@ -4,16 +4,18 @@ services:
     container_name: scriverse-llm-racing-server
     restart: unless-stopped
     ports:
-      - "${HOST_PORT:-13250}:13250"
+      - "${HOST_BIND_ADDRESS:-127.0.0.1}:${HOST_PORT:-13250}:13250"
     environment:
       PORT: "13250"
       RATING_DB: /var/lib/scriverse-llm-racing/ratings.sqlite
       IP_HASH_SECRET: "${IP_HASH_SECRET:?请先在 .env 中设置 IP_HASH_SECRET}"
       MAX_VOTES_PER_DAY: "${MAX_VOTES_PER_DAY:-10}"
       REQUEST_INTERVAL_MS: "${REQUEST_INTERVAL_MS:-300000}"
+      MAX_API_REQUESTS_PER_MINUTE: "${MAX_API_REQUESTS_PER_MINUTE:-120}"
       ALLOWED_ORIGIN: "${ALLOWED_ORIGIN:?请先在 .env 中设置 ALLOWED_ORIGIN}"
       CATALOG_URL: "${CATALOG_URL:?请先在 .env 中设置 CATALOG_URL}"
       CATALOG_SYNC_INTERVAL_MS: "${CATALOG_SYNC_INTERVAL_MS:-600000}"
       TRUST_PROXY: "${TRUST_PROXY:-false}"
+      TRUSTED_PROXY_IPS: "${TRUSTED_PROXY_IPS:-}"
     volumes:
       - ./data:/var/lib/scriverse-llm-racing
