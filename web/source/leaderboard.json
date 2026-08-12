@@ -58,6 +58,42 @@
       "baseCommit": "54d9e85b4fccbb0c53925ad6c6976646fe62f39f",
       "models": [
         {
+          "modelId": 6,
+          "testedAt": "2026-08-13T01:25:42+08:00",
+          "durationSeconds": 6491,
+          "tokenUsage": 271222111,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/1daa48d9",
+          "failures": {
+            "TC-02": "write_character 的 raceId 和 organizationIds 会改变种族或组织关联，但工具启用和计划执行只检查 characters 写权限，缺少跨模块权限校验。",
+            "TC-04": "拒绝审批路由只校验计划属于当前作品，Store.rejectAiWritePlan 也不校验发起用户或对话归属用户；同作品协作者可通过已知 plan ID 拒绝他人审批。",
+            "TC-14": "AskUserQuestions 后仍会执行同批剩余工具并继续模型轮次；回答仅插入隐藏 user 消息并由前端另发新请求，未实现原 Agent loop 的一次性持久化恢复。",
+            "TC-15": "构建计划时把 raceId 统一当作目标控制字段排除，导致 write_character 声明支持的角色种族变更不会进入计划、diff 或最终执行。",
+            "TC-16": "未显式指定模型时计划保存 modelId=null，执行阶段才重新解析当时的默认模型；默认配置变化会使实际任务模型与用户确认内容不一致。",
+            "TC-18": "AskUserQuestions 被作为普通 completed 工具处理，调用后没有立即持久化并挂起 Agent loop，也没有通过原 tool_call_id 仅恢复一次。",
+            "TC-19": "审批中心没有提问记录列表，只能恢复当前对话的 pending 弹窗，无法集中查看已回答、已拒绝、已过期或失效状态。",
+            "TC-21": "审批详情只展示目标 ID、版本和计划级操作者，没有逐项展示对应审计记录。",
+            "TC-22": "可写工具每次请求都读取作品当前 write_tools_json，没有纳入已交互对话的工具快照，开关变化会动态改变 tools。"
+          }
+        },
+        {
+          "modelId": 9,
+          "testedAt": "2026-08-13T00:54:19+08:00",
+          "durationSeconds": 3891,
+          "tokenUsage": 8264511,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2679b84f",
+          "failures": {
+            "TC-02": "种族、组织的 memberIds 以及角色的 raceId、organizationIds 会修改其他模块关系，但计划只要求主词条模块权限；已复现仅有 races 写权限时仍可修改角色种族。",
+            "TC-04": "查看审批与提问时会放行任何仍有作品访问权限的成员；同作品协作者可按 ID 读取他人的简述、完整 diff、问题、选项和回答。",
+            "TC-06": "计划只保存主词条版本，关联角色、种族、组织、章节和参与者的版本未固化或复检，待确认期间变化后旧计划仍可覆盖最新关系。",
+            "TC-07": "对话创建时便冻结工具快照；零消息对话之后开启可写工具或 AskUserQuestions 仍无法获得新工具，必须重建对话。",
+            "TC-11": "刷新或重新登录后恢复的确认 Toast 只返回审批摘要，不包含 operations，因此无法展示具体操作对象。",
+            "TC-13": "同一对话创建新问题前未检查已有 pending 问题，一次一个问题的约束只存在于单次模型响应的内存变量中。",
+            "TC-14": "未决问题不会阻止同批后续写工具、新聊天或新写计划，回答接口也没有恢复原 Agent loop 的持久化链路。",
+            "TC-16": "分析任务审批执行直接调用 Store.createTask，绕过既有 AiManager.createTask 的模型用途、平台归属、供应商可用性和关系来源校验。",
+            "TC-18": "AskUserQuestions 后仍执行同批剩余工具并额外发起模型请求；没有持久化 continuation，也不能把真实回答作为原工具结果仅恢复一次。"
+          }
+        },
+        {
           "modelId": 11,
           "testedAt": "2026-08-07T13:01:28+08:00",
           "durationSeconds": 5412,
@@ -99,25 +135,6 @@
             "TC-21": "审批详情未展示操作者和审计记录，撤销只支持设定、角色，其他已编辑词条不支持。",
             "TC-22": "已交互会话只冻结只读工具；可写 tools 每次按当前设置动态生成，开关变化会破坏 prompt cache。",
             "TC-24": "候选工作树只有未提交修改，未创建本次实现的独立 Angular Git commit。"
-          }
-        },
-        {
-          "modelId": 9,
-          "testedAt": "2026-08-07T08:43:47+08:00",
-          "durationSeconds": 3010,
-          "tokenUsage": 25362000,
-          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d66ba8f6",
-          "unexpectedCases": [
-            "Grok 4.5 High 在进行首次测试时，直接越权读取了 ~/.worktree 下其他 Agent 的已实现代码，并将其拷贝至自己的目录视作任务已完成。本平台上传的是封堵越权后的二次测试结果。"
-          ],
-          "failures": {
-            "TC-02": "创建种族可在仅校验种族权限时通过 replaceRaceMembers 修改角色 race_id，未同时校验角色权限。",
-            "TC-04": "同作品协作者可读取、处理其他用户或对话的审批和提问记录，并获得其中的计划、diff、正文引用和回答内容。",
-            "TC-09": "任一实体工具开启后都会暴露统一 submit_write_plan，模型仍可见全部词条、正文批注和分析任务能力。",
-            "TC-11": "确认 Toast 只展示 AI 简述和操作数，未展示操作对象或模块。",
-            "TC-16": "分析任务错误要求模型属于当前作品，并绕过既有 AiManager.createTask 的模型解析链路；平台可用模型会创建失败。",
-            "TC-21": "审批详情未展示每项最终结果、版本号、操作者或审计记录。",
-            "TC-22": "可写 tools 每次均按当前设置动态生成；已有交互的会话之后开关工具仍会改变 tools，破坏 prompt cache。"
           }
         },
         {
@@ -329,7 +346,7 @@
           "modelName": "Grok 4.5 High",
           "supportsMultimodal": true,
           "software": "Cursor Agent View",
-          "version": "3.14.7",
+          "version": "3.15.6",
           "context": "256K",
           "status": "已测试"
         },
@@ -401,9 +418,9 @@
           "modelName": "DeepSeek V4 Pro Preview",
           "supportsMultimodal": false,
           "software": "Claude Code",
-          "version": "2.1.220",
+          "version": "2.1.226",
           "context": "1M",
-          "status": "待测试"
+          "status": "已测试"
         },
         {
           "modelId": 11,
@@ -671,21 +688,21 @@
     },
     {
       "modelId": 9,
-      "durationSeconds": 848,
-      "tokenUsage": 8831000,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high-test2",
-      "unexpectedCases": [
-        "首次测试 Grok 4.5 High 时，Grok 通过 Cursor 的 subagent 能力点名使用了 Claude Sonnet 5 当外援，测试结果因此失真，第一次得分是 170。当前平台展示的是第二次重新测试的结果，这次全程只使用纯 Grok 4.5，得分 180，耗时 14 分 8 秒。（8 月 3 日记录）"
-      ],
+      "testedAt": "2026-08-13T00:18:14+08:00",
+      "durationSeconds": 1713,
+      "tokenUsage": 8397988,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/269583d5",
       "agent": {
         "software": "Cursor Agent View",
-        "version": "3.14.7",
+        "version": "3.15.6",
         "context": "256K"
       },
       "failures": {
-        "TC-07": "S3 请求没有超时或 AbortController，单个目标挂起会阻塞后续目标；定时任务失败也没有实时 Toast。",
-        "TC-08": "ListObjectsV2 响应固定截断为 8000 字节，超过 1000 个对象时分页信息可能丢失；清理规则也可能误删不符合快照命名规则的 .db 对象。",
-        "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+        "TC-07": "所有目标共用单例调度时间和一个 timer，无法独立配置触发时间；S3 请求也没有超时，挂起目标会永久阻断后续目标，凭证解密异常同样会中止整个队列。",
+        "TC-08": "留存清理只校验对象 basename，db/ 下嵌套目录中的同名对象也会被识别为本功能快照并删除。",
+        "TC-13": "数据库快照名只有秒级时间戳，同一秒内连续备份会生成相同 key 并覆盖历史快照。",
+        "TC-18": "S3 服务端响应正文未经当前目标 AK/SK 值级脱敏便进入日志、last_error、运行记录、API 和 Toast；已复现凭证原样泄露。",
+        "TC-21": "S3 备份只上传数据库和图片，没有上传 master.key 或等价恢复密钥，异机恢复后无法解密已有凭证。"
       }
     },
     {
@@ -858,7 +875,7 @@
     { "modelId": 10, "modelName": "Qwen3.8-Max", "supportsMultimodal": true, "software": "QoderCN IDE Quest", "version": "1.10.0", "context": "1M", "status": "已测试" },
     { "modelId": 1, "modelName": "Doubao-Seed-2.1-Turbo", "supportsMultimodal": true, "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "已测试" },
     { "modelName": "Doubao-Seed-2.1-Pro", "supportsMultimodal": true, "software": "TRAE SOLO", "version": "3.3.83", "context": "200K", "status": "暂不测试" },
-    { "modelId": 9, "modelName": "Grok 4.5 High", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.14.7", "context": "256K", "status": "已测试" },
+    { "modelId": 9, "modelName": "Grok 4.5 High", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.15.6", "context": "256K", "status": "已测试" },
     { "modelId": 8, "modelName": "Composer 2.5", "supportsMultimodal": true, "software": "Cursor IDE", "version": "3.14.7", "context": "256K", "status": "已测试" },
     { "modelId": 13, "modelName": "GPT-5.6 Sol Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
     { "modelId": 7, "modelName": "GPT-5.6 Luna Max", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "373K", "status": "已测试" },
@@ -866,7 +883,7 @@
     { "modelId": 14, "modelName": "GPT-5.5 xhigh", "supportsMultimodal": true, "software": "Codex CLI", "version": "0.146.0", "context": "272K", "status": "已测试" },
     { "modelId": 16, "modelName": "Claude Opus 5 Max", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
-    { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
+    { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.226", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "supportsMultimodal": false, "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
     { "modelId": 12, "modelName": "Kimi K3 Max", "supportsMultimodal": true, "software": "Kimi Code", "version": "0.31.1", "context": "1M", "status": "已测试" },
     { "modelId": 17, "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "WorkBuddy", "version": "5.3.8", "context": "512K", "status": "已测试" }
