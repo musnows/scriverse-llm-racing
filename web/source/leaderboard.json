@@ -78,8 +78,6 @@
         {
           "modelId": 18,
           "testedAt": "2026-08-13T00:54:19+08:00",
-          "durationSeconds": 3891,
-          "tokenUsage": 8264511,
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2679b84f",
           "failures": {
             "TC-02": "种族、组织的 memberIds 以及角色的 raceId、organizationIds 会修改其他模块关系，但计划只要求主词条模块权限；已复现仅有 races 写权限时仍可修改角色种族。",
@@ -717,8 +715,6 @@
     {
       "modelId": 18,
       "testedAt": "2026-08-13T00:18:14+08:00",
-      "durationSeconds": 1713,
-      "tokenUsage": 8397988,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/269583d5",
       "agent": {
         "software": "Cursor Agent View",
