@@ -292,6 +292,13 @@ const models = [
     testedAt: "2026-08-05T00:01:31+08:00",
     images: [],
   },
+  {
+    id: 18,
+    name: "Grok 4.6 High",
+    tool: "Cursor Agent View",
+    testedAt: "2026-08-13T00:18:14+08:00",
+    images: [],
+  },
 ];
 
 const features = [
@@ -325,7 +332,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=90";
+const leaderboardDataUrl = "/source/leaderboard.json?v=91";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
