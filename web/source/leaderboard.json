@@ -93,6 +93,27 @@
           }
         },
         {
+          "modelId": 19,
+          "testedAt": "2026-08-13T23:34:00+08:00",
+          "durationSeconds": 4076,
+          "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/a505d3c5",
+          "failures": {
+            "TC-02": "角色的 raceId、organizationIds 等关联写入只校验主体实体模块，未同时校验种族、组织等关联模块权限，可绕过当前用户与对话归属用户的跨模块权限交集。",
+            "TC-04": "审批和提问未按发起用户、对话归属用户隔离；同作品协作者可枚举、查看、批准、拒绝、撤销他人的计划，并处理他人的提问。",
+            "TC-06": "正文批注、章节大纲及种族、组织、参与者等关联对象的版本未完整固化或复检，待确认期间数据变化后旧计划仍可能执行。",
+            "TC-09": "开启任一实体写能力便向模型暴露统一 create_story_entity 和 update_story_entity，工具 schema 仍包含所有已关闭的实体类别。",
+            "TC-11": "计划确认 Toast 只展示操作数量和 AI 摘要，没有展示具体操作对象。",
+            "TC-13": "创建提问时未检查同一会话已有 pending 问题；已通过内存复现同一会话同时存在两个待回答问题。",
+            "TC-14": "AskUserQuestions 后仍会执行同批剩余工具和后续模型轮次，未回答、拒绝或失效不能真正阻断后续写操作。",
+            "TC-15": "角色 raceId、种族 parentRaceId、时间线 trackId、伏笔 plannedPayoff 等可空字段接受 null，但执行时静默忽略；计划显示成功而实体和版本未变化。",
+            "TC-16": "分析任务计划未固化实际模型，审批执行直接调用 Store.createTask，绕过既有模型默认值、供应商可用性和任务来源校验链路。",
+            "TC-18": "AskUserQuestions 没有持久化 Agent loop 或一次性 continuation；回答由前端拼接隐藏用户消息后发起新请求，不是原工具调用的真实结果。",
+            "TC-19": "审批中心只加载修改计划，提问接口也只返回 pending，无法查看已回答、已拒绝、已过期或已失效的历史提问。",
+            "TC-21": "审批详情未展示决策操作者和逐操作审计记录，只展示结果 ID 与版本。",
+            "TC-22": "会话快照只固化原有读取工具；可写工具每次按作品当前配置重新计算，已交互会话的 tools 会随设置变化。"
+          }
+        },
+        {
           "modelId": 11,
           "testedAt": "2026-08-07T13:01:28+08:00",
           "durationSeconds": 5412,
@@ -443,6 +464,15 @@
         {
           "modelId": 6,
           "modelName": "DeepSeek V4 Pro Preview",
+          "supportsMultimodal": false,
+          "software": "Claude Code",
+          "version": "2.1.226",
+          "context": "1M",
+          "status": "已测试"
+        },
+        {
+          "modelId": 19,
+          "modelName": "DeepSeek V4 Pro 0813",
           "supportsMultimodal": false,
           "software": "Claude Code",
           "version": "2.1.226",
