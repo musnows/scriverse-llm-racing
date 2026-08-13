@@ -732,6 +732,25 @@
       }
     },
     {
+      "modelId": 19,
+      "testedAt": "2026-08-13T23:02:47+08:00",
+      "durationSeconds": 2168,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2fae581c",
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.226",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "所有目标共用全局调度时间和单个轮询调度器，无法独立配置定时任务；S3 请求也没有超时，挂起目标会永久阻断后续目标、手动任务和定时任务。",
+        "TC-08": "留存清理只按对象 basename 识别快照，db/ 下嵌套目录中符合文件名形式的非本功能对象也会被删除。",
+        "TC-13": "数据库快照名只有秒级时间戳，同一秒内连续备份会使用相同 object key 并覆盖上一份历史快照。",
+        "TC-15": "修改了 styles.css，但 index.html 仍引用旧的 CSS 缓存版本参数，升级后可能继续加载旧样式。",
+        "TC-18": "S3 服务端错误正文未经当前目标 AK/SK 值级脱敏便进入日志、运行记录和前端错误详情，服务端回显凭证时可能造成泄露。",
+        "TC-21": "S3 备份未包含 master.key 或等价恢复密钥，数据库快照迁移到新环境后无法解密已保存凭证。"
+      }
+    },
+    {
       "modelId": 9,
       "durationSeconds": 848,
       "tokenUsage": 8831000,
@@ -930,6 +949,7 @@
     { "modelId": 16, "modelName": "Claude Opus 5 Max", "supportsMultimodal": true, "software": "Cursor Agent View", "version": "3.14.7", "context": "1M", "status": "已测试" },
     { "modelId": 5, "modelName": "DeepSeek V4 Flash 0731", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.220", "context": "1M", "status": "已测试" },
     { "modelId": 6, "modelName": "DeepSeek V4 Pro Preview", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.226", "context": "1M", "status": "已测试" },
+    { "modelId": 19, "modelName": "DeepSeek V4 Pro 0813", "supportsMultimodal": false, "software": "Claude Code", "version": "2.1.226", "context": "1M", "status": "已测试" },
     { "modelId": 11, "modelName": "GLM-5.2 Max", "supportsMultimodal": false, "software": "Cursor Agent View", "version": "3.14.7", "context": "200K（Cursor 不支持 1M）", "status": "已测试" },
     { "modelId": 12, "modelName": "Kimi K3 Max", "supportsMultimodal": true, "software": "Kimi Code", "version": "0.31.1", "context": "1M", "status": "已测试" },
     { "modelId": 17, "modelName": "MiniMax-M3", "supportsMultimodal": true, "software": "WorkBuddy", "version": "5.3.8", "context": "512K", "status": "已测试" }

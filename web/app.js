@@ -299,6 +299,13 @@ const models = [
     testedAt: "2026-08-13T00:18:14+08:00",
     images: [],
   },
+  {
+    id: 19,
+    name: "DeepSeek V4 Pro 0813",
+    tool: "Claude Code",
+    testedAt: "2026-08-13T23:02:47+08:00",
+    images: [],
+  },
 ];
 
 const features = [
@@ -332,7 +339,7 @@ for (const model of models) {
   });
 }
 
-const leaderboardDataUrl = "/source/leaderboard.json?v=93";
+const leaderboardDataUrl = "/source/leaderboard.json?v=94";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
