@@ -500,10 +500,13 @@ function formatTokenUsage(tokenUsage, unit = "token", display = "detailed") {
   if (tokenUsage === null || tokenUsage === undefined) {
     return "未记录";
   }
-  if (typeof tokenUsage === "number" && Number.isFinite(tokenUsage)) {
-    if (normalizedUnit === "credit") {
-      return `${new Intl.NumberFormat("en-US").format(tokenUsage)} c`;
+  if (normalizedUnit === "credit") {
+    const numericCredit = Number(String(tokenUsage).trim().replaceAll(",", ""));
+    if (Number.isFinite(numericCredit)) {
+      return `${new Intl.NumberFormat("en-US").format(Math.round(numericCredit))} c`;
     }
+  }
+  if (typeof tokenUsage === "number" && Number.isFinite(tokenUsage)) {
     if (tokenUsage >= 1_000_000) {
       if (display === "compact") {
         return `${(Math.floor((tokenUsage / 1_000_000) * 100) / 100).toFixed(2)} M`;
@@ -553,14 +556,14 @@ function formatLeaderboardExportUsage(tokenUsage, unit = "token") {
   if (!Number.isFinite(numericValue)) {
     return normalizedText || "用量未记录";
   }
+  if (unit === "credit") {
+    return `${new Intl.NumberFormat("en-US").format(Math.round(numericValue))} c`;
+  }
 
   const scale = leaderboardExportUsageScales.find(({ divisor }) => (
     Math.abs(numericValue) >= divisor
   )) ?? leaderboardExportUsageScales[leaderboardExportUsageScales.length - 1];
   const numberText = formatLeaderboardExportUsageNumber(numericValue / scale.divisor);
-  if (unit === "credit") {
-    return `${numberText} ${scale.suffix ? `${scale.suffix} ` : ""}c`;
-  }
   return `${numberText} ${scale.suffix || "tk"}`;
 }
 
