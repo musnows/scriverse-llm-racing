@@ -96,6 +96,7 @@
           "modelId": 19,
           "testedAt": "2026-08-13T23:34:00+08:00",
           "durationSeconds": 4076,
+          "tokenUsage": 264096152,
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/a505d3c5",
           "failures": {
             "TC-02": "角色的 raceId、organizationIds 等关联写入只校验主体实体模块，未同时校验种族、组织等关联模块权限，可绕过当前用户与对话归属用户的跨模块权限交集。",
@@ -765,6 +766,7 @@
       "modelId": 19,
       "testedAt": "2026-08-13T23:02:47+08:00",
       "durationSeconds": 2168,
+      "tokenUsage": 63647863,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2fae581c",
       "agent": {
         "software": "Claude Code",
