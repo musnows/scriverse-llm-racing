@@ -3621,7 +3621,7 @@ async function loadLeaderboardData() {
       state.featureId = features[0].id;
       routeNeedsReplacement = true;
     }
-    setView(state.view, { updateRoute: false });
+    setView(state.view, { updateRoute: false, skipTransition: true });
     if (routeNeedsReplacement) {
       updateBrowserRoute({ replace: true });
     }
@@ -3730,7 +3730,7 @@ function applyBrowserRoute() {
   state.modelId = route.modelId ?? models[0]?.id ?? 1;
   state.modelContentTab = route.modelContentTab ?? "screenshots";
   state.featureId = route.featureId ?? features[0].id;
-  setView(state.view, { updateRoute: false });
+  setView(state.view, { updateRoute: false, skipTransition: !leaderboardData });
 }
 
 async function loadDataForView(view) {
