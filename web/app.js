@@ -443,6 +443,15 @@ function createChartSvgElement(tagName, attributes = {}, textContent = "") {
   return element;
 }
 
+function createChartBestDirectionLabel(margin) {
+  return createChartSvgElement("text", {
+    class: "model-overall-chart__direction-label",
+    x: margin.left + 8,
+    y: margin.top + 17,
+    "aria-hidden": "true",
+  }, "↖️ 左上最好");
+}
+
 function formatChartDuration(durationSeconds) {
   if (Number(durationSeconds) <= 0) {
     return "0 min";
@@ -553,6 +562,7 @@ function createModelOverallChartExportSvg(chartType = "duration") {
         .model-overall-chart__axes line { stroke: #686b66; stroke-width: 1.2; }
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
+        .model-overall-chart__direction-label { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 9px; font-weight: 700; paint-order: stroke; stroke: #111210; stroke-linejoin: round; stroke-width: 2px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
         .model-overall-chart__point--best { stroke: #f3c76b; filter: drop-shadow(0 0 5px rgba(243, 199, 107, .8)); }
         .model-overall-chart__label-connectors--expanded { display: none; }
@@ -949,6 +959,7 @@ function renderModelOverallChart(ranking = []) {
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "加权通过率"),
   );
   elements.modelOverallChart.append(labels);
+  elements.modelOverallChart.append(createChartBestDirectionLabel(margin));
 
   const chartBounds = {
     left: margin.left + 4,
@@ -1172,6 +1183,7 @@ function renderModelTokenEfficiencyChart(ranking = []) {
     createChartSvgElement("text", { class: "model-overall-chart__axis-title", transform: `translate(16 ${margin.top + plotHeight / 2}) rotate(-90)`, "text-anchor": "middle" }, "加权通过率"),
   );
   elements.modelTokenEfficiencyChart.append(labels);
+  elements.modelTokenEfficiencyChart.append(createChartBestDirectionLabel(margin));
 
   const chartBounds = {
     left: margin.left + 4,

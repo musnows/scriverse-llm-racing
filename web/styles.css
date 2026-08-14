@@ -1865,6 +1865,18 @@ a.requirement-meta-card__value:hover {
   font-size: 10px;
 }
 
+.model-overall-chart__direction-label {
+  fill: #e0a084;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  paint-order: stroke;
+  pointer-events: none;
+  stroke: #111210;
+  stroke-linejoin: round;
+  stroke-width: 2px;
+}
+
 .model-overall-chart__point {
   cursor: pointer;
   stroke: #fffaf6;
