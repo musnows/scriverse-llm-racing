@@ -78,6 +78,7 @@
         {
           "modelId": 18,
           "testedAt": "2026-08-13T00:54:19+08:00",
+          "durationSeconds": 3660,
           "tokenUsage": 8264511,
           "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2679b84f",
           "failures": {
@@ -746,6 +747,7 @@
     {
       "modelId": 18,
       "testedAt": "2026-08-13T00:18:14+08:00",
+      "durationSeconds": 1514,
       "tokenUsage": 8397988,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/269583d5",
       "agent": {
