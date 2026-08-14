@@ -11,7 +11,9 @@ web/
   index.html                 评测榜单前端
   app.js                     页面逻辑、评分请求和视图渲染
   styles.css                 页面样式
-  source/leaderboard.json    评测需求、模型和测试结果
+  source/index.json          需求索引和各需求数据地址
+  source/models.json         模型名称、工具和能力目录
+  source/requirements/       每项需求独立的评测结果
   rating-catalog.json        后端评分允许列表
   build.mjs                  构建 API 配置和部署时间
 
@@ -44,7 +46,9 @@ npm run build
 - `build-meta.js`：footer 显示的最近更新时间。
 - `baidu-statistics-config.js`：百度统计 ID；未设置 `BAIDU_STATISTICS_ID` 时不加载统计脚本。
 
-单个需求对象可以配置最终采纳信息。字段必须写在 `web/source/leaderboard.json` 对应的 `requirements[]` 对象中：
+前端首页只请求需求索引；进入排行榜、模型或功能页时按需请求模型目录和当前需求 JSON，进入需求信息页时只请求当前需求 JSON，只有进入模型总榜时才并发请求全部需求数据。新增需求时，在 `web/source/index.json` 的 `requirements[]` 中添加摘要和 `dataUrl`，并在 `web/source/requirements/` 下创建对应的独立 JSON。
+
+单个需求可以配置最终采纳信息。字段必须写在该需求的独立 JSON 中：
 
 ```json
 {
@@ -54,7 +58,7 @@ npm run build
 }
 ```
 
-- `finalAdoptedModelId` 必须引用同一 JSON 顶层 `models[]` 中已有的 `modelId`。只有用户明确指定时才能设置或修改，不能根据排名或分数推断。
+- `finalAdoptedModelId` 必须引用同一需求 JSON 的 `models[]` 中已有的 `modelId`。只有用户明确指定时才能设置或修改，不能根据排名或分数推断。
 - `finalAdoptedPrUrl` 是可选的真实合入主仓 PR 链接；不配置时，Toast 只显示“最终采纳”的含义，不显示链接。
 - 前端会动态读取字段，在单需求排行榜对应模型名称后显示“最终采纳”标识，表格表头不会显示该标识。
 

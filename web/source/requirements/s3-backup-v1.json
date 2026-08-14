@@ -1,0 +1,1859 @@
+{
+  "id": "s3-backup-v1",
+  "title": "叙界 S3 备份能力",
+  "summary": "为 Scriverse 增加数据库与图片的 S3 备份能力，覆盖多目标同步、定时任务、快照保留与失败反馈。",
+  "weight": 1,
+  "finalAdoptedModelId": 13,
+  "finalAdoptedPrUrl": "https://github.com/musnows/Scriverse/pull/350",
+  "baseRepository": "musnows/Scriverse",
+  "baseRepositoryUrl": "https://github.com/musnows/Scriverse",
+  "baseVersion": "v0.6.6",
+  "baseCommit": "91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2",
+  "prompt": "为当前项目加上数据库和图片的 s3 备份能力：\n\n1. 支持配置多个亚马逊 s3 兼容的配置项，作为同步服务器的目标，支持同时开启多个备份目标，依次同步到对应目标中；\n2. 配置项里面需要有子目录的设置能力，同步到给定子目录（没有给定的时候默认桶根目录）下的 /scriverse 子目录中；\n3. 把图片上传到 /scriverse/img 子目录中，若图片已经存在则跳过，不存在上传；\n4. 数据库备份到 /scriverse/db 子目录中，不进行历史备份覆盖，在 db 文件名中加上时间戳后上传，方便用作后续的快照回滚；\n5. 支持选择是否备份图片，不勾选的时候只备份数据库；\n6. 支持选择备份定时任务的触发时间和备份留存个数，超过备份留存个数后，删除最老的数据库备份（不清理图片）；\n7. 设置入口加到整个系统的设置中，不需要支持选择书籍，只支持备份整个系统的数据；\n8. 如果对应 s3 服务请求失败，需要在日志里面完整打印失败的 s3 配置项（ak 和 sk 不打印）和它的请求失败 s3 服务端的返回结果，并 toast 提示前端，禁止静默失败。\n\n在任务执行期间必须自行完成决策，禁止咨询用户任何问题。",
+  "evaluationDatabase": "scriverse-demo-db-with-setting-images-20260802.zip",
+  "evaluationDatabaseUrl": "https://github.com/musnows/scriverse-llm-racing/blob/main/assets/scriverse-demo-db-with-setting-images-20260802-20260802064922-i9j1c2w.zip",
+  "scoring": {
+    "initial": 200,
+    "deductionByPriority": {
+      "P00": 30,
+      "P0": 10,
+      "P1": 5,
+      "P2": 0
+    }
+  },
+  "testCases": [
+    {
+      "id": "TC-01",
+      "priority": "P00",
+      "scenario": "设置页面存在 S3 配置入口。"
+    },
+    {
+      "id": "TC-02",
+      "priority": "P00",
+      "scenario": "在数据写入时执行数据库备份，下载后数据库可正常打开且数据完整。"
+    },
+    {
+      "id": "TC-03",
+      "priority": "P0",
+      "scenario": "新增、修改、启用、停用和保存多个 S3 配置，并携带必要鉴权参数。"
+    },
+    {
+      "id": "TC-04",
+      "priority": "P0",
+      "scenario": "S3 备份作为独立模块接入，不影响其他已有功能。"
+    },
+    {
+      "id": "TC-05",
+      "priority": "P0",
+      "scenario": "旧数据库能够平滑升级，已有数据完整且迁移可重复执行。"
+    },
+    {
+      "id": "TC-06",
+      "priority": "P0",
+      "scenario": "SK 必须通过凭证保险库加密且不得明文落库；AK 允许作为标识明文保存。查询配置时不得返回已保存的 SK，修改其他字段且未填写新 SK 时仍须保留原凭证。"
+    },
+    {
+      "id": "TC-07",
+      "priority": "P0",
+      "scenario": "多个启用目标依次执行，可以各自使用独立定时器，无需共享单一定时器；停用目标不执行，单目标超时或失败不阻断后续目标，并记录完整的非敏感配置与服务端结果、向前端显示明确 Toast。"
+    },
+    {
+      "id": "TC-08",
+      "priority": "P0",
+      "scenario": "分页清理超过 1000 个对象且只删除符合规则的旧数据库快照。"
+    },
+    {
+      "id": "TC-09",
+      "priority": "P0",
+      "scenario": "自定义 S3 endpoint 上传时，各目标隔离使用自己的连接配置。"
+    },
+    {
+      "id": "TC-10",
+      "priority": "P1",
+      "scenario": "独立图片备份开关关闭后只上传数据库，不产生图片上传请求。"
+    },
+    {
+      "id": "TC-11",
+      "priority": "P0",
+      "scenario": "设置两分钟后的定时任务并完成一次 S3 同步。"
+    },
+    {
+      "id": "TC-12",
+      "priority": "P0",
+      "scenario": "保存定时配置后按用户选择的触发时间持续自动执行。"
+    },
+    {
+      "id": "TC-13",
+      "priority": "P1",
+      "scenario": "增量同步跳过已存在图片，并为每次数据库备份生成时间戳快照。"
+    },
+    {
+      "id": "TC-14",
+      "priority": "P1",
+      "scenario": "UI 与全局样式一致，无明显错乱、溢出、遮挡或不可操作控件。"
+    },
+    {
+      "id": "TC-15",
+      "priority": "P1",
+      "scenario": "按 AGENTS.md 更新静态资源缓存版本并加载更新后的资源。"
+    },
+    {
+      "id": "TC-16",
+      "priority": "P1",
+      "scenario": "服务重启后定时配置恢复，重复初始化不会注册重复任务。"
+    },
+    {
+      "id": "TC-17",
+      "priority": "P1",
+      "scenario": "远端图片存在性检查失败时应判定同步失败，不得误认为图片不存在。"
+    },
+    {
+      "id": "TC-18",
+      "priority": "P1",
+      "scenario": "AK/SK 不出现在普通日志、错误日志、Toast 或审计记录中。"
+    },
+    {
+      "id": "TC-19",
+      "priority": "P2",
+      "scenario": "S3 设置页面遇到重启或会话失效时正常重定向到登录页面。"
+    },
+    {
+      "id": "TC-20",
+      "priority": "P2",
+      "scenario": "按 AGENTS.md 完成测试和独立 Git commit，提交信息符合 Angular 规范。"
+    },
+    {
+      "id": "TC-21",
+      "priority": "P2",
+      "scenario": "S3 系统备份同时包含用于解密 CredentialVault 凭证的 master.key 或等价恢复密钥，使数据库快照能够在新环境中恢复已保存的加密凭证。"
+    }
+  ],
+  "models": [
+    {
+      "modelId": 4,
+      "durationSeconds": 2698,
+      "tokenUsage": 0,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/hy3",
+      "unexpectedCases": [
+        "有独立的文件删除用户验证，npm build 会触发这个验证，需要在设置中关闭。",
+        "二测回归还是没太顶住，只过了 8/21，得分 115/200。没过的是 TC-06、TC-07、TC-08、TC-09、TC-11、TC-12、TC-13、TC-14、TC-15、TC-16、TC-18、TC-20、TC-21；当时实现还全部没提交，所以 TC-20 也算失败。"
+      ],
+      "agent": {
+        "software": "WorkBuddy",
+        "version": "5.3.8",
+        "context": "192K"
+      },
+      "failures": {
+        "TC-07": "S3 请求未设置超时或 AbortSignal，单个目标永久挂起时会阻断后续目标。",
+        "TC-08": "分页已经实现，但快照过滤规则未严格匹配完整对象名，可能误删 db/ 下的嵌套对象或非快照 .db 文件。",
+        "TC-13": "数据库快照名称只精确到秒，同一秒内连续执行两次备份会生成相同 key，可能覆盖历史快照。",
+        "TC-15": "只更新了 app.js 缓存参数，修改后的 styles.css 仍使用旧版本参数，对应系统测试断言也未同步。",
+        "TC-18": "SK 泄漏风险。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key；新环境缺少原主密钥时，数据库中的加密凭证无法恢复使用。"
+      },
+      "testedAt": "2026-08-02T16:31:21+08:00"
+    },
+    {
+      "modelId": 2,
+      "durationSeconds": 1260,
+      "tokenUsage": 914.97,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max-preview",
+      "unexpectedCases": [
+        "启动时就进入限流，任务很难排队成功，必须终止任务并 continue 才能继续。"
+      ],
+      "agent": {
+        "software": "QoderCN IDE Quest",
+        "version": "1.9.1",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 或失败结果被忽略，随后直接读取主数据库文件，WAL 中刚提交的数据可能没有进入上传快照。",
+        "TC-07": "S3 客户端没有请求超时，挂起目标会永久阻断后续目标；失败日志也没有记录全部非敏感配置。",
+        "TC-08": "ListObjectsV2 固定只读取前 1000 项且不处理 continuation token，同时没有严格限制快照文件名，可能漏清或误删对象。",
+        "TC-14": "390px 窄屏溢出或样式一致性问题。",
+        "TC-21": "S3 备份只上传数据库和可选图片；本地迁移备份中的 master.key 不在 S3 上传链路中，恢复后数据库内的加密凭证无法解密。"
+      },
+      "testedAt": "2026-08-02T16:31:21+08:00"
+    },
+    {
+      "modelId": 3,
+      "durationSeconds": 2747,
+      "tokenUsage": 0,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/longcat-2.0",
+      "unexpectedCases": [
+        "首轮测试时，模型直接把修改写到了主仓库，绕过了 git-worktree 要求必须在 worktree 目录下工作的强约束。",
+        "长对话时 context usage 进度会锁死在 17%，无法继续更新；多个对话均出现该问题。",
+        "长对话时页面有概率无法自动滚动到底部，需要手动滚动才能看到最新内容。"
+      ],
+      "agent": {
+        "software": "CatPaw",
+        "version": "2026.0729.1946",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "备份 100% 失败，数据库备份无法通过完整性验证。",
+        "TC-03": "编辑时隐藏 AK/SK 仍必填，UI 无法保存。",
+        "TC-06": "编辑时隐藏 AK/SK 仍必填，UI 无法保存。",
+        "TC-07": "无超时容错、顺序不稳且无主动 Toast。",
+        "TC-08": "不分页且无严格命名过滤。",
+        "TC-09": "二进制 payload hash 签名错误，virtual host/path style 构造错误。",
+        "TC-11": "只能设置整数小时，无法验证两分钟后触发。",
+        "TC-13": "严格 endpoint 拒收二进制上传。",
+        "TC-14": "390px 窄屏溢出、CSS 变量缺失。",
+        "TC-15": "修改了 app.js 和 styles.css，但 index.html 中对应的静态资源缓存版本参数没有更新。",
+        "TC-17": "HEAD 403/429/500 全部误判为不存在。",
+        "TC-18": "响应正文可能带入 AK/SK。",
+        "TC-20": "未按要求完成独立 Git commit 与 Angular 规范提交。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有主密钥备份步骤；恢复数据库后仍必须通过其他渠道提供原 master.key 或 AI_NOVEL_MASTER_KEY。"
+      },
+      "testedAt": "2026-08-02T16:31:21+08:00"
+    },
+    {
+      "modelId": 1,
+      "durationSeconds": 1920,
+      "tokenUsage": 444.8,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/seed-2.1-turbo",
+      "unexpectedCases": [
+        "出现权限认证请求（rm 请求）时，页面没有自动滚动到底部，用户无法感知当前任务已经被阻塞。"
+      ],
+      "agent": {
+        "software": "TRAE SOLO",
+        "version": "3.3.83",
+        "context": "200K"
+      },
+      "failures": {
+        "TC-02": "VACUUM INTO 失败后直接复制主库及 WAL/SHM，随后删除副本 WAL/SHM 且只上传 .db，可能丢失尚未 checkpoint 的已提交数据。",
+        "TC-06": "后端支持留空凭证保留旧值，但编辑表单中的 AK/SK 始终带 required，用户无法在不重填凭证时修改其他字段。",
+        "TC-08": "清理逻辑把 db/ 下任意以 .db、.db-wal 或 .db-shm 结尾的对象当作快照，没有严格校验快照命名规则，存在误删风险。",
+        "TC-09": "未使用自定义 S3 兼容 endpoint 完成实际上传验证，也没有多目标客户端与配置隔离回归测试，无法证明该场景通过。",
+        "TC-10": "未提供独立图片备份开关。",
+        "TC-11": "fetch failed，立即备份与定时备份均未完成。",
+        "TC-13": "调度器启动后 stopRequested 被设为 true 且未复位，图片循环直接退出，实际无法执行已存在图片跳过的增量同步。",
+        "TC-15": "app.js 和 styles.css 已修改，但对应静态资源缓存版本参数均未更新，浏览器可能继续加载旧资源。",
+        "TC-16": "定时 tick 没有处理 runBackup() 的 Promise rejection，长任务重叠可能产生未处理拒绝。",
+        "TC-17": "stopRequested 导致图片循环在首次检查前退出，远端图片存在性检查实际不会执行，也没有覆盖权限、限流和网络异常的回归测试。",
+        "TC-20": "未按要求完成独立 Git commit 与 Angular 规范提交。",
+        "TC-21": "S3 备份只上传数据库和可选图片；迁移前复制的 master.key 仅存在于本地备份目录，不会上传到 S3，无法完成异机凭证恢复。"
+      },
+      "testedAt": "2026-08-02T16:31:21+08:00"
+    },
+    {
+      "modelId": 5,
+      "durationSeconds": 4140,
+      "tokenUsage": 54945337,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-flash-0731",
+      "unexpectedCases": [
+        "TC-21 意外情况：密钥备份在特定配置下可能失效。使用 AI_NOVEL_MASTER_KEY 时，磁盘 master.key 可能不存在或已经过期；DATABASE_PATH 与 DATA_DIR 分离时还可能读取错误路径。密钥文件缺失会被静默跳过，导致数据库快照无法完整恢复已保存的加密凭证。",
+        "Flash 是所有模型中唯一一个遵循 AGENTS.md 完成浏览器自动化测试的模型。"
+      ],
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.220",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 结果未检查，随后直接复制主数据库文件；活跃读事务阻塞 checkpoint 时，备份库能够打开但会缺少 WAL 中已经提交的数据。",
+        "TC-07": "手动备份失败能够提示，但定时任务失败只记录服务端日志和状态，没有向前端主动显示 Toast 的通知通道。",
+        "TC-08": "留存筛选只检查对象 basename，可能把 db/ 下其他子目录中符合快照命名格式的对象一并删除。",
+        "TC-18": "S3 服务端错误响应未经当前目标 AK/SK 动态脱敏，可能进入日志、持久化状态、API 响应和 Toast。"
+      },
+      "testedAt": "2026-08-03T00:31:37+08:00"
+    },
+    {
+      "modelId": 6,
+      "durationSeconds": 1136,
+      "tokenUsage": 15098172,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-pro-preview",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.220",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有超时控制，挂起目标会阻断后续目标；同时间创建的配置顺序不稳定，定时失败也没有前端 Toast。",
+        "TC-08": "ListObjectsV2 只读取第一页且不处理 continuation token，快照过滤规则过宽，列表或删除失败还会被吞掉并报告成功。",
+        "TC-09": "path-style 请求的 SigV4 canonical URI 未包含 bucket，自定义签名验证 endpoint 返回 SignatureDoesNotMatch。",
+        "TC-11": "两分钟后的定时任务虽已触发，但 path-style 请求的 SigV4 canonical URI 漏掉 bucket 前缀，七牛 S3 返回 SignatureDoesNotMatch（HTTP 403），未能完成 S3 同步。",
+        "TC-12": "调度匹配使用正负一分钟窗口，可能提前一分钟执行，并因去重在用户选择的准确时间跳过。",
+        "TC-15": "静态资源缓存参数已经修改，但相关系统测试断言未同步，导致五项系统测试失败。",
+        "TC-17": "HEAD 返回 403、429 或 5xx 时会被当作图片不存在，随后继续上传并可能把整次同步报告为成功。",
+        "TC-18": "S3 响应反射的 AK 可进入错误日志、持久化错误状态、API 响应和 Toast。",
+        "TC-20": "原模型没有提交需求实现，后续 commit b5717f4 由 Codex 补交，且全量测试仍未通过。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有读取或上传 master.key；新环境恢复数据库后，已保存的 S3 和 AI 凭证无法解密。"
+      },
+      "testedAt": "2026-08-03T00:31:37+08:00"
+    },
+    {
+      "modelId": 7,
+      "durationSeconds": 2117,
+      "tokenUsage": 36810362,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-luna-max",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "手动备份失败会显示 Toast，但定时任务失败只记录服务端日志和 lastRun，前端没有轮询、SSE 或其他主动通知通道。",
+        "TC-08": "分页已经实现，但留存筛选仅检查 db/ 前缀和 .db 后缀，可能误删嵌套子目录或不符合 snapshot-时间戳.db 命名规则的对象。",
+        "TC-18": "S3 错误正文的脱敏只覆盖少量 XML 标签和标准 AKIA 格式，当前目标的非标准 AK/SK 仍可能进入错误日志。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-03T23:03:51+08:00"
+    },
+    {
+      "modelId": 8,
+      "durationSeconds": 1104,
+      "tokenUsage": 7393000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/composer-2.5",
+      "unexpectedCases": [
+        "测试过程中居然用了 Cursor 的指定 subagent 模型能力，还喊了 Claude Sonnet 5 来当外援。这样测出来的结果暂时不能信，得重测。（8 月 3 日记录）"
+      ],
+      "agent": {
+        "software": "Cursor IDE",
+        "version": "3.14.7",
+        "context": "256K"
+      },
+      "failures": {
+        "TC-02": "wal_checkpoint(TRUNCATE) 的 busy 结果被 Database.run 丢弃，随后直接复制活动主库；活跃读事务阻塞 checkpoint 时，副本会缺少 WAL 中已经提交的数据。",
+        "TC-04": "本次 package-lock 更新删除了 Sharp WASM 所需的顶层 @emnapi/runtime 和 @emnapi/core 条目，Docker 跨平台依赖清单测试失败。",
+        "TC-07": "多目标失败后能够继续执行，但日志只保留少数 S3 异常字段，没有完整记录服务端返回结果。",
+        "TC-08": "分页已经实现，但仅按对象 basename 匹配快照名，可能删除 db/ 下其他嵌套子目录中的同名对象。",
+        "TC-14": "S3 对话框继承 editor-dialog 双列网格，但新增区块没有跨列，桌面布局中的设置、说明和目标列表会被割裂到不同列。",
+        "TC-15": "HTML 已更新 app.js 和 styles.css 缓存参数，但四项系统测试仍断言旧版本并失败。",
+        "TC-16": "凭证解密等前置异常发生在逐目标 catch 之前且没有 finally 复位 running；定时调用也没有 rejection handler，可能永久停止后续周期或产生未处理拒绝。",
+        "TC-18": "失败日志会记录 accessKeyHint 中的真实 AK 后四位，服务端消息进入 Toast 前也没有按当前目标 AK/SK 可靠脱敏。",
+        "TC-20": "原 Composer 2.5 Agent 没有创建独立 Git commit；提交 11b5fb8 由 Codex 代为补交，不计为模型自行完成，因此本用例不通过。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-03T23:03:51+08:00"
+    },
+    {
+      "modelId": 18,
+      "testedAt": "2026-08-13T00:18:14+08:00",
+      "durationSeconds": 1514,
+      "tokenUsage": 8397988,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/269583d5",
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.15.6",
+        "context": "256K"
+      },
+      "failures": {
+        "TC-07": "所有目标共用单例调度时间和一个 timer，无法独立配置触发时间；S3 请求也没有超时，挂起目标会永久阻断后续目标，凭证解密异常同样会中止整个队列。",
+        "TC-08": "留存清理只校验对象 basename，db/ 下嵌套目录中的同名对象也会被识别为本功能快照并删除。",
+        "TC-13": "数据库快照名只有秒级时间戳，同一秒内连续备份会生成相同 key 并覆盖历史快照。",
+        "TC-18": "S3 服务端响应正文未经当前目标 AK/SK 值级脱敏便进入日志、last_error、运行记录、API 和 Toast；已复现凭证原样泄露。",
+        "TC-21": "S3 备份只上传数据库和图片，没有上传 master.key 或等价恢复密钥，异机恢复后无法解密已有凭证。"
+      }
+    },
+    {
+      "modelId": 19,
+      "testedAt": "2026-08-13T23:02:47+08:00",
+      "durationSeconds": 2168,
+      "tokenUsage": 63647863,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2fae581c",
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.226",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "所有目标共用全局调度时间和单个轮询调度器，无法独立配置定时任务；S3 请求也没有超时，挂起目标会永久阻断后续目标、手动任务和定时任务。",
+        "TC-08": "留存清理只按对象 basename 识别快照，db/ 下嵌套目录中符合文件名形式的非本功能对象也会被删除。",
+        "TC-13": "数据库快照名只有秒级时间戳，同一秒内连续备份会使用相同 object key 并覆盖上一份历史快照。",
+        "TC-15": "修改了 styles.css，但 index.html 仍引用旧的 CSS 缓存版本参数，升级后可能继续加载旧样式。",
+        "TC-18": "S3 服务端错误正文未经当前目标 AK/SK 值级脱敏便进入日志、运行记录和前端错误详情，服务端回显凭证时可能造成泄露。",
+        "TC-21": "S3 备份未包含 master.key 或等价恢复密钥，数据库快照迁移到新环境后无法解密已保存凭证。"
+      }
+    },
+    {
+      "modelId": 9,
+      "durationSeconds": 848,
+      "tokenUsage": 8831000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/grok-4.5-high-test2",
+      "unexpectedCases": [
+        "首次测试 Grok 4.5 High 时，Grok 通过 Cursor 的 subagent 能力点名使用了 Claude Sonnet 5 当外援，测试结果因此失真，第一次得分是 170。当前平台展示的是第二次重新测试的结果，这次全程只使用纯 Grok 4.5，得分 180，耗时 14 分 8 秒。（8 月 3 日记录）"
+      ],
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.14.7",
+        "context": "256K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有超时或 AbortController，单个目标挂起会阻塞后续目标；定时任务失败也没有实时 Toast。",
+        "TC-08": "ListObjectsV2 响应固定截断为 8000 字节，超过 1000 个对象时分页信息可能丢失；清理规则也可能误删不符合快照命名规则的 .db 对象。",
+        "TC-21": "S3 备份只上传数据库和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-03T23:03:51+08:00"
+    },
+    {
+      "modelId": 10,
+      "durationSeconds": 1963,
+      "tokenUsage": 525.11,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/qwen-3.8-max",
+      "unexpectedCases": [
+        "测试期间碰到了两次服务端错误，每次都得我手动点“继续”才能跑下去。你就不能自己重试吗？"
+      ],
+      "agent": {
+        "software": "QoderCN IDE Quest",
+        "version": "1.10.0",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-03": "支持多个目标的新增、修改和删除，但数据库、API 与前端都没有目标级启用或停用能力。",
+        "TC-07": "目标无法停用，S3 请求也没有超时或 AbortSignal；挂起目标会阻塞后续目标，且任一目标凭证在循环前解密失败也会中止整次备份。",
+        "TC-08": "分页已经实现，但留存清理会处理 db/ 前缀下的全部对象，没有严格限制为本功能生成的数据库快照名称。",
+        "TC-18": "S3 服务端错误消息和原始响应正文未经当前目标 AK/SK 脱敏便进入日志、最近失败状态、API 响应和 Toast，服务端回显凭证时会造成泄露。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-04T00:20:37+08:00"
+    },
+    {
+      "modelId": 11,
+      "durationSeconds": 2145,
+      "tokenUsage": 22000000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.2-max-cursor",
+      "unexpectedCases": [
+        "Cursor 里只能给 GLM-5.2 开到 200K 上下文，测试中间还 compact 了好几次。这个结果和官方 1M 上下文的 GLM-5.2 应该还是有点差距。"
+      ],
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.14.7",
+        "context": "200K（Cursor 不支持 1M）"
+      },
+      "failures": {
+        "TC-06": "后端能够加密并保留 AK/SK，但编辑对话框清空凭证后仍把两个输入设为 required，浏览器会阻止只修改其他字段并保留旧凭证。",
+        "TC-07": "S3 请求没有超时或 AbortSignal，挂起目标会永久阻塞后续目标；定时任务失败也只有服务端日志，没有通道让前端显示明确 Toast。",
+        "TC-08": "分页已经实现，但清理只按 db/ 前缀和 .db 后缀筛选，可能删除嵌套目录或不符合快照命名规则的其他数据库对象。",
+        "TC-13": "数据库对象名称中的时间戳只精确到秒，同一秒内连续备份会使用相同 key 并覆盖历史快照。",
+        "TC-16": "runBackup 设置运行锁后没有 finally；未捕获异常或挂起的 S3 请求会让运行状态永久锁死，导致后续周期无法继续。",
+        "TC-17": "图片 HEAD 检查异常虽然会被捕获，但目标最终仍按数据库上传结果标记为成功，前端可能 Toast 全部成功，未把本次同步判定为失败。",
+        "TC-18": "S3 原始响应正文会直接写入日志，通用脱敏无法保证移除兼容服务回显的当前目标 AK/SK。",
+        "TC-21": "S3 备份只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-04T00:20:37+08:00"
+    },
+    {
+      "modelId": 12,
+      "durationSeconds": 7792,
+      "tokenUsage": 27195391,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/kimi-k3-max",
+      "unexpectedCases": [
+        "首轮跑了 45 分钟，结果连代码分析都没做完，还吃掉了 5 小时额度的 6%。现在这份数据是我重新测第二遍的结果。",
+        "不算 subagent，单看主 Agent，实测 TPS 只有 9，跑起来是真的慢。"
+      ],
+      "agent": {
+        "software": "Kimi Code",
+        "version": "0.31.1",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-13": "数据库对象名称中的时间戳只精确到秒，同一目标在一秒内连续备份会使用相同 key 并覆盖历史快照。",
+        "TC-18": "S3 服务端原始响应未经当前目标 AK/SK 值级别脱敏便进入日志、last_error、执行 API 和 Toast，服务端回显凭证时会造成泄露。",
+        "TC-21": "备份流程只上传数据库快照和可选图片，并明确不包含 master.key；新环境无法解密数据库中已有的 S3 与 AI 凭证。"
+      },
+      "successes": {
+        "TC-07": "为不同的 S3 目标提供独立且互不冲突的同步时间设置，并通过目标级超时控制避免单个目标长期挂起，从而规避了其他 SOTA 模型缺少超时时间的问题。"
+      },
+      "testedAt": "2026-08-04T05:49:42+08:00"
+    },
+    {
+      "modelId": 13,
+      "durationSeconds": 2852,
+      "tokenUsage": 31837326,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-sol-max",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有连接或请求超时，单目标永久挂起时会阻塞后续目标；手动执行接口还允许对停用目标发起备份。",
+        "TC-08": "分页和每批 1000 个删除已经实现，但留存清理只检查当前 db/ 前缀和 .db 后缀，可能删除 manual.db、嵌套目录等不符合快照命名规则的对象。",
+        "TC-21": "备份流程只上传数据库快照和可选图片，没有上传 master.key 或等价 CredentialVault 恢复密钥。"
+      },
+      "testedAt": "2026-08-04T08:12:31+08:00"
+    },
+    {
+      "modelId": 14,
+      "durationSeconds": 2566,
+      "tokenUsage": 25601459,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.5-xhigh",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "272K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有超时控制，单个目标挂起会阻断后续目标；停用目标仍可被手动执行，同一触发时间也不能保证按配置顺序执行。",
+        "TC-08": "留存清理仅按目标前缀和 .db 后缀筛选，没有严格校验快照命名规则，可能误删其他数据库对象或嵌套路径对象。",
+        "TC-21": "备份流程只上传数据库和可选图片，没有上传 master.key 或等价恢复密钥。"
+      },
+      "testedAt": "2026-08-04T10:56:21+08:00"
+    },
+    {
+      "modelId": 15,
+      "durationSeconds": 2683,
+      "tokenUsage": 41646413,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/gpt-5.6-terra-max",
+      "unexpectedCases": [
+        "这是 GPT-5.6 Terra Max 的第二次重测结果。完整测试还会命中基线已有的版本号不一致（src/version.ts 为 0.6.5、package.json 为 0.6.6），与本次 S3 改动无关。"
+      ],
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.146.0",
+        "context": "373K"
+      },
+      "failures": {
+        "TC-07": "S3 请求没有 AbortSignal 或超时控制，真实挂起的目标会阻断串行队列，后续目标无法继续执行。",
+        "TC-18": "S3 服务端响应正文只做通用字段和格式脱敏，没有按当前目标的实际 AK/SK 值处理；服务端回显凭证时仍可能进入错误日志。",
+        "TC-21": "备份流程只上传数据库和可选图片，没有上传 master.key 或等价恢复密钥；新环境无法用原主密钥解密数据库中的 S3 与 AI 凭证。"
+      },
+      "testedAt": "2026-08-04T10:56:21+08:00"
+    },
+    {
+      "modelId": 16,
+      "durationSeconds": 3051,
+      "tokenUsage": 91813000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/claude-opus-5-max",
+      "unexpectedCases": [
+        "工作区文档和测试仍把不上传 master.key 当成预期，与当前 TC-21 要求存在冲突；本次按最新用例判定。"
+      ],
+      "agent": {
+        "software": "Cursor Agent View",
+        "version": "3.14.7",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-08": "留存清理仅按 .db 后缀筛选，没有严格校验快照命名规则，可能误删 db/ 下不符合规则的数据库对象。",
+        "TC-13": "数据库快照文件名只有秒级时间戳，同一秒内重复备份会生成同名对象并覆盖历史快照。",
+        "TC-21": "备份流程只上传数据库，没有上传 master.key 或等价恢复密钥。"
+      },
+      "testedAt": "2026-08-04T19:48:42+08:00"
+    },
+    {
+      "modelId": 17,
+      "durationSeconds": 1628,
+      "tokenUsage": 371,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/minimax-m3",
+      "unexpectedCases": [],
+      "agent": {
+        "software": "WorkBuddy",
+        "version": "5.3.8",
+        "context": "512K"
+      },
+      "failures": {
+        "TC-08": "DeleteObjects 请求未携带 Content-MD5，且批量删除返回的部分错误未被检查，旧快照清理可能失败或被误记为成功。",
+        "TC-11": "保存备份目标后未刷新 BackupRunner 调度器，新配置的两分钟触发时间可能仍按启动时默认下一次时间执行。",
+        "TC-12": "保存或修改定时配置后未重新调度，运行中的调度器不会及时应用新的触发时间。",
+        "TC-18": "Access Key ID 会明文返回并进入安全日志；虽未发现 SK 回显，但不满足 AK/SK 均不得泄漏。",
+        "TC-20": "新增 backup-service 测试传入 safeLogConfigForTarget 未声明字段，npm run typecheck 失败；候选改动尚未提交。",
+        "TC-21": "S3 备份流程只上传数据库和图片，没有上传 master.key 或等价恢复密钥，异机恢复无法解密凭证。"
+      },
+      "testedAt": "2026-08-05T00:01:31+08:00"
+    }
+  ],
+  "participants": [
+    {
+      "modelId": 3,
+      "modelName": "LongCat-2.0",
+      "supportsMultimodal": false,
+      "software": "CatPaw",
+      "version": "2026.0729.1946",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 4,
+      "modelName": "Hy3",
+      "supportsMultimodal": false,
+      "software": "WorkBuddy",
+      "version": "5.3.8",
+      "context": "192K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 2,
+      "modelName": "Qwen3.8-Max-Preview",
+      "supportsMultimodal": true,
+      "software": "QoderCN IDE Quest",
+      "version": "1.9.1",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 10,
+      "modelName": "Qwen3.8-Max",
+      "supportsMultimodal": true,
+      "software": "QoderCN IDE Quest",
+      "version": "1.10.0",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 1,
+      "modelName": "Doubao-Seed-2.1-Turbo",
+      "supportsMultimodal": true,
+      "software": "TRAE SOLO",
+      "version": "3.3.83",
+      "context": "200K",
+      "status": "已测试"
+    },
+    {
+      "modelName": "Doubao-Seed-2.1-Pro",
+      "supportsMultimodal": true,
+      "software": "TRAE SOLO",
+      "version": "3.3.83",
+      "context": "200K",
+      "status": "暂不测试"
+    },
+    {
+      "modelId": 9,
+      "modelName": "Grok 4.5 High",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "256K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 18,
+      "modelName": "Grok 4.6 High",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.15.6",
+      "context": "256K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 8,
+      "modelName": "Composer 2.5",
+      "supportsMultimodal": true,
+      "software": "Cursor IDE",
+      "version": "3.14.7",
+      "context": "256K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 13,
+      "modelName": "GPT-5.6 Sol Max",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 7,
+      "modelName": "GPT-5.6 Luna Max",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 15,
+      "modelName": "GPT-5.6 Terra Max",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 14,
+      "modelName": "GPT-5.5 xhigh",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "272K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 16,
+      "modelName": "Claude Opus 5 Max",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 5,
+      "modelName": "DeepSeek V4 Flash 0731",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.220",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 6,
+      "modelName": "DeepSeek V4 Pro Preview",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.226",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 19,
+      "modelName": "DeepSeek V4 Pro 0813",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.226",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 11,
+      "modelName": "GLM-5.2 Max",
+      "supportsMultimodal": false,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "200K（Cursor 不支持 1M）",
+      "status": "已测试"
+    },
+    {
+      "modelId": 12,
+      "modelName": "Kimi K3 Max",
+      "supportsMultimodal": true,
+      "software": "Kimi Code",
+      "version": "0.31.1",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 17,
+      "modelName": "MiniMax-M3",
+      "supportsMultimodal": true,
+      "software": "WorkBuddy",
+      "version": "5.3.8",
+      "context": "512K",
+      "status": "已测试"
+    }
+  ],
+  "screenshots": {
+    "1": [
+      [
+        "image-20260801230707-wdg04ed.webp",
+        "模型与模式选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802095037-ltvoeks.webp",
+        "系统设置中的 S3 备份入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802095115-7ud4y54.webp",
+        "S3 备份设置主面板",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802095314-i6apboj.webp",
+        "新增 S3 目标配置",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802095340-b7df0q9.webp",
+        "已保存的目标与全局配置",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802095352-pyixxux.webp",
+        "立即备份失败与运行记录",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802095447-ruc5et2.webp",
+        "Cron 预览与定时设置",
+        [
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802095640-hay3wgb.webp",
+        "定时任务触发后的失败记录",
+        [
+          "schedule",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802100706-j9v0lm6.webp",
+        "服务重启提示",
+        [
+          "session"
+        ]
+      ],
+      [
+        "image-20260802100721-q2kvp0v.webp",
+        "重启后设置弹窗仍未关闭",
+        [
+          "session"
+        ]
+      ],
+      [
+        "image-20260802095746-56o6hjq.webp",
+        "AICR 问题命中表",
+        [
+          "review"
+        ]
+      ],
+      [
+        "image-20260802101849-4tjjb4z.webp",
+        "最终评分与主要结论",
+        [
+          "review"
+        ]
+      ]
+    ],
+    "2": [
+      [
+        "image-20260801230701-fvwhgxb.webp",
+        "1M 上下文与模型模式选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802102318-b3vam73.webp",
+        "系统设置中的数据备份入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802102327-gu9mwx1.webp",
+        "数据备份主页面空状态",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802102336-ejm0dgy.webp",
+        "新建备份目标空表单",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802102819-9u0ug4f.webp",
+        "填写完整的目标配置",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802102825-qn4kldo.webp",
+        "已保存的目标配置",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802102848-n8rmn9c.webp",
+        "立即备份执行中",
+        [
+          "manual"
+        ]
+      ],
+      [
+        "image-20260802102846-dq1qowi.webp",
+        "备份成功提示",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802102902-5s75tlk.webp",
+        "云端 scriverse 目录结构",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "image-20260802102937-c6sgjia.webp",
+        "带时间戳的数据库快照",
+        [
+          "remote",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802101348-14c3h12.webp",
+        "AICR 问题命中表",
+        [
+          "review"
+        ]
+      ],
+      [
+        "image-20260802101945-orrtnq5.webp",
+        "最终评分与主要结论",
+        [
+          "review"
+        ]
+      ]
+    ],
+    "3": [
+      [
+        "image-20260801230716-nekt5zt.webp",
+        "模型选择界面",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260801235849-ejyt7r1.webp",
+        "任务完成与后续确认",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802101228-1jv5yz0.webp",
+        "主仓库出现未跟踪改动",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802101234-whvtc9k.webp",
+        "代码写入了错误目录",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802101206-26lb7v6.webp",
+        "重新执行后的交付总结",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802105941-ditpgyh.webp",
+        "系统设置中的 S3 备份入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802105943-0u6kpek.webp",
+        "S3 备份管理空状态",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802110845-9qxodgo.webp",
+        "新增目标空表单",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802111003-5bh7bhw.webp",
+        "填写完整的目标配置",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802111010-i775fw8.webp",
+        "已保存目标与启用状态",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802111031-w4li04j.webp",
+        "立即备份失败提示",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802111235-i9pab3s.webp",
+        "测试连接失败提示",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-longcat-aicr-supplement.webp",
+        "AICR 审查完成与评分补充",
+        [
+          "review"
+        ]
+      ]
+    ],
+    "4": [
+      [
+        "image-20260801230712-zy199ri.webp",
+        "Max 模式与模型选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802000001-749b4nc.webp",
+        "任务完成耗时",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802105342-05j8kzb.webp",
+        "系统设置中的 S3 备份入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802105344-4m737cu.webp",
+        "S3 备份设置主面板",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802105527-4aabvqp.webp",
+        "新增备份目标基础字段",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802110135-gj8rzs2.webp",
+        "填写完整的目标配置",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802110141-bq3mewy.webp",
+        "目标配置与备份选项",
+        [
+          "target",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802110149-r0aikm6.webp",
+        "后端停止后的失败提示",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802110340-okgd7vf.webp",
+        "已保存目标与编辑状态",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802110343-p6u33ob.webp",
+        "目标配置复核",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260802110406-kp4682t.webp",
+        "备份执行结果与日志",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802110422-6ofe2h3.webp",
+        "云端 scriverse 目录结构",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "image-20260802110447-u0g1mhb.webp",
+        "定时备份时间选择",
+        [
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802110503-98zcpg6.webp",
+        "保存定时配置后的面板",
+        [
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802110536-omtk6dq.webp",
+        "备份操作与状态反馈",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802110648-m6ql5d7.webp",
+        "云端数据库快照列表",
+        [
+          "remote",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260802110657-p6fe1ds.webp",
+        "定时备份触发后的记录",
+        [
+          "schedule",
+          "status"
+        ]
+      ],
+      [
+        "image-20260802101359-jjt35bk.webp",
+        "AICR 问题命中表",
+        [
+          "review"
+        ]
+      ],
+      [
+        "image-20260802101931-0udpb3d.webp",
+        "最终评分与主要结论",
+        [
+          "review"
+        ]
+      ]
+    ],
+    "5": [
+      [
+        "image-20260803081355-5es93wt.webp",
+        "启动 Claude Code 与模型选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081439-2aum1i1.webp",
+        "创建独立 worktree",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081459-gtcmnno.webp",
+        "确认测试需求",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081511-e3ni4uh.webp",
+        "代码探索与实现计划",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802223041-j374rja.webp",
+        "测试验收与提交修复",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802223600-n5h727q.webp",
+        "最终实现总结与交付",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802234650-p5zx3h9.webp",
+        "进入系统设置并打开数据备份",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802235101-ed8oy6g.webp",
+        "数据备份主面板",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802235109-vv141zs.webp",
+        "新建备份目标空表单",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260803070917-75hhq0t.webp",
+        "填写 Flash 备份目标（已脱敏）",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260803070926-2fyx8ax.webp",
+        "保存后的备份目标与全局设置",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803070948-py1an4c.webp",
+        "备份目标已配置，尚未执行备份",
+        [
+          "overview",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803070947-761y1wr.webp",
+        "手动备份成功",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803071228-wh9yhmp.webp",
+        "远端数据库与主密钥快照",
+        [
+          "remote",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803071329-rc3wud5.webp",
+        "远端图片对象（按哈希命名）",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "image-20260803071403-hfbdtwi.webp",
+        "定时备份快捷时间选项",
+        [
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260803071532-nilj7xl.webp",
+        "启用定时备份并保存 Cron 配置",
+        [
+          "schedule",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803071808-tzzyt8x.webp",
+        "定时备份成功后的状态",
+        [
+          "schedule",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803071721-lwdr6gi.webp",
+        "远端多份数据库与主密钥快照",
+        [
+          "remote",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260803071913-t4q64ji.webp",
+        "关闭图片备份并保存配置",
+        [
+          "schedule",
+          "target"
+        ]
+      ],
+      [
+        "image-20260803071609-ik4id3p.webp",
+        "备份成功明细与新增图片统计",
+        [
+          "manual",
+          "status"
+        ]
+      ]
+    ],
+    "6": [
+      [
+        "image-20260803081355-5es93wt.webp",
+        "启动 Claude Code 与模型选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081439-2aum1i1.webp",
+        "创建独立 worktree",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081459-gtcmnno.webp",
+        "确认测试需求",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803081511-e3ni4uh.webp",
+        "代码探索与实现计划",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802223041-j374rja.webp",
+        "测试验收与提交修复",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802223600-n5h727q.webp",
+        "最终实现总结与交付",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260802235122-49dy4q8.webp",
+        "设置中心中的 S3 备份入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260802235114-qfj5ld8.webp",
+        "S3 备份配置空状态",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260802235131-6og5uog.webp",
+        "新增备份配置表单",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260803072009-dks69ct.webp",
+        "填写 Pro 备份配置（已脱敏）",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260803072007-2wznyvn.webp",
+        "配置保存成功后的 S3 列表",
+        [
+          "target",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803072041-1s8gixq.webp",
+        "立即备份失败：签名不匹配",
+        [
+          "manual",
+          "status"
+        ]
+      ],
+      [
+        "image-20260803072548-61i6zx4.webp",
+        "定位 SigV4 canonical URI 问题",
+        [
+          "review"
+        ]
+      ],
+      [
+        "image-20260803080202-7yyell7.webp",
+        "已保存配置中的上次失败详情",
+        [
+          "status"
+        ]
+      ],
+      [
+        "image-20260803080224-c7e2z2a.webp",
+        "定时备份触发后的失败状态",
+        [
+          "schedule",
+          "status"
+        ]
+      ]
+    ],
+    "7": [
+      [
+        "image-20260803212112-ar227ir.webp",
+        "第三轮测试启动与工具选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803214537-v2dv1gt.webp",
+        "多模型并行工作界面",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220141-ums4m9f.webp",
+        "测试完成后的系统设置与 Agent 输出",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220250-zshy8cs.webp",
+        "测试总结与提交信息",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803224435-34cpbfw.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260803224434-ibyzd28.webp",
+        "S3 备份计划",
+        [
+          "overview",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260803224432-a0a24bi.webp",
+        "新增 S3 目标",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "8": [
+      [
+        "image-20260803212112-ar227ir.webp",
+        "第三轮测试启动与工具选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803214537-v2dv1gt.webp",
+        "多模型并行工作界面",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220141-ums4m9f.webp",
+        "测试完成后的系统设置与 Agent 输出",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220250-zshy8cs.webp",
+        "测试总结与提交信息",
+        [
+          "process"
+        ]
+      ],
+      [
+        "4d62f246d88bc7a6af187b22869bfac8-20260803224747-ay1rujv.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "68cc4f21fb98a5c4af9c4f19534b6fd1-20260803224753-liwxwvb.webp",
+        "S3 备份设置",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "b77be8c868ed7c908ad896a90c561742-20260803224758-hbuqtiu.webp",
+        "备份目标配置",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "9": [
+      [
+        "image-20260805064410-7ic2gz2.webp",
+        "创建独立 worktree",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805064455-xih9x5u.webp",
+        "确认 worktree 已切换",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805064757-8wqhxkf.webp",
+        "探索项目并开始实现",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805065308-fvbm1tu.webp",
+        "实现 S3 核心模块",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805065852-nsdy5lg.webp",
+        "功能概览与实现总结",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805065853-5vrxm89.webp",
+        "提交前的安全补充",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805072923-97p5p1f.webp",
+        "任务完成与耗时 14 分 8 秒",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805070056-jab3by6.webp",
+        "用量记录与外部模型约束",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260805071506-3nyxtct.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260805071458-4dkpp1q.webp",
+        "数据备份页面",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260805071500-4w2jvrq.webp",
+        "新增备份目标",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "10": [
+      [
+        "image-20260804001203-ymvj4gr.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260804001141-h7wn6px.webp",
+        "数据备份页面",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260804001147-684u3hh.webp",
+        "新增备份目标",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "11": [
+      [
+        "image-20260804001209-s8z1js9.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260804001214-fn2utm1.webp",
+        "备份与同步页面",
+        [
+          "overview",
+          "schedule"
+        ]
+      ],
+      [
+        "image-20260804001221-f03m72n.webp",
+        "新增 S3 目标",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260804001226-yd8ntdi.webp",
+        "S3 目标配置选项",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "12": [
+      [
+        "image-20260803212112-ar227ir.webp",
+        "第三轮测试启动与工具选择",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803214537-v2dv1gt.webp",
+        "多模型并行工作界面",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220141-ums4m9f.webp",
+        "测试完成后的系统设置与 Agent 输出",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260803220250-zshy8cs.webp",
+        "测试总结与提交信息",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804071634-plfhucu.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260804071637-sz07shf.webp",
+        "数据备份页面",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260804071639-z0r8vyb.webp",
+        "新增备份目标",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260804071640-5of1gvl.webp",
+        "备份目标同步选项",
+        [
+          "target",
+          "schedule"
+        ]
+      ]
+    ],
+    "13": [
+      [
+        "image-20260804065202-ny26db1.webp",
+        "Terra 与 Sol 模型启动",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804065235-zeqgize.webp",
+        "Sol 启动与记忆设置",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804065443-waivlf9.webp",
+        "Sol worktree 与任务执行",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804080540-0c83ud9.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260804080545-4f1y4xc.webp",
+        "S3 系统备份页面",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-sol-s3-target-form-top.webp",
+        "新增 S3 目标表单上半部分",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-sol-s3-target-form-options.webp",
+        "新增 S3 目标表单同步选项",
+        [
+          "target"
+        ]
+      ]
+    ],
+    "16": [
+      [
+        "image-20260804234905-kja60nb.webp",
+        "创建 worktree 并等待下一步",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234913-e1j6gzp.webp",
+        "确认基于 main 创建 worktree",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234921-w13txcg.webp",
+        "S3 备份实现总结",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234927-aaldq5x.webp",
+        "浏览器验收问题与修复",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234931-4c2v6aw.webp",
+        "实现细节与浏览器验收",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234935-cg76j1i.webp",
+        "测试完成与交付",
+        [
+          "process"
+        ]
+      ],
+      [
+        "6df3a86cf1d5c9bbe8d967da7d6f8a0d-20260804234944-fe93c0i.webp",
+        "S3 备份实现与验收总结",
+        [
+          "process"
+        ]
+      ],
+      [
+        "image-20260804234950-i31suau.webp",
+        "设置中心入口",
+        [
+          "settings"
+        ]
+      ],
+      [
+        "image-20260804234952-nos4mo4.webp",
+        "数据备份主界面",
+        [
+          "overview"
+        ]
+      ],
+      [
+        "image-20260804234955-fa1l6og.webp",
+        "新增备份目标表单上半部分",
+        [
+          "target"
+        ]
+      ],
+      [
+        "image-20260804234957-5luzmey.webp",
+        "新增备份目标表单下半部分",
+        [
+          "target"
+        ]
+      ]
+    ]
+  }
+}

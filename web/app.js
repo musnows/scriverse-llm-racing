@@ -8,305 +8,7 @@ function apiUrl(path) {
   return `${apiBase}${normalizedPath}`;
 }
 
-const models = [
-  {
-    id: 1,
-    name: "Doubao-Seed-2.1-Turbo",
-    tool: "TRAE SOLO",
-    testedAt: "2026-08-02T16:31:21+08:00",
-    images: [
-      ["image-20260801230707-wdg04ed.webp", "模型与模式选择", ["process"]],
-      ["image-20260802095037-ltvoeks.webp", "系统设置中的 S3 备份入口", ["settings"]],
-      ["image-20260802095115-7ud4y54.webp", "S3 备份设置主面板", ["overview"]],
-      ["image-20260802095314-i6apboj.webp", "新增 S3 目标配置", ["target"]],
-      ["image-20260802095340-b7df0q9.webp", "已保存的目标与全局配置", ["target", "status"]],
-      ["image-20260802095352-pyixxux.webp", "立即备份失败与运行记录", ["manual", "status"]],
-      ["image-20260802095447-ruc5et2.webp", "Cron 预览与定时设置", ["schedule"]],
-      ["image-20260802095640-hay3wgb.webp", "定时任务触发后的失败记录", ["schedule", "status"]],
-      ["image-20260802100706-j9v0lm6.webp", "服务重启提示", ["session"]],
-      ["image-20260802100721-q2kvp0v.webp", "重启后设置弹窗仍未关闭", ["session"]],
-      ["image-20260802095746-56o6hjq.webp", "AICR 问题命中表", ["review"]],
-      ["image-20260802101849-4tjjb4z.webp", "最终评分与主要结论", ["review"]],
-    ],
-  },
-  {
-    id: 2,
-    name: "Qwen3.8-Max-Preview",
-    tool: "QoderCN IDE Quest",
-    testedAt: "2026-08-02T16:31:21+08:00",
-    images: [
-      ["image-20260801230701-fvwhgxb.webp", "1M 上下文与模型模式选择", ["process"]],
-      ["image-20260802102318-b3vam73.webp", "系统设置中的数据备份入口", ["settings"]],
-      ["image-20260802102327-gu9mwx1.webp", "数据备份主页面空状态", ["overview"]],
-      ["image-20260802102336-ejm0dgy.webp", "新建备份目标空表单", ["target"]],
-      ["image-20260802102819-9u0ug4f.webp", "填写完整的目标配置", ["target"]],
-      ["image-20260802102825-qn4kldo.webp", "已保存的目标配置", ["target", "status"]],
-      ["image-20260802102848-n8rmn9c.webp", "立即备份执行中", ["manual"]],
-      ["image-20260802102846-dq1qowi.webp", "备份成功提示", ["manual", "status"]],
-      ["image-20260802102902-5s75tlk.webp", "云端 scriverse 目录结构", ["remote"]],
-      ["image-20260802102937-c6sgjia.webp", "带时间戳的数据库快照", ["remote", "schedule"]],
-      ["image-20260802101348-14c3h12.webp", "AICR 问题命中表", ["review"]],
-      ["image-20260802101945-orrtnq5.webp", "最终评分与主要结论", ["review"]],
-    ],
-  },
-  {
-    id: 3,
-    name: "LongCat-2.0",
-    tool: "CatPaw",
-    testedAt: "2026-08-02T16:31:21+08:00",
-    images: [
-      ["image-20260801230716-nekt5zt.webp", "模型选择界面", ["process"]],
-      ["image-20260801235849-ejyt7r1.webp", "任务完成与后续确认", ["process"]],
-      ["image-20260802101228-1jv5yz0.webp", "主仓库出现未跟踪改动", ["process"]],
-      ["image-20260802101234-whvtc9k.webp", "代码写入了错误目录", ["process"]],
-      ["image-20260802101206-26lb7v6.webp", "重新执行后的交付总结", ["process"]],
-      ["image-20260802105941-ditpgyh.webp", "系统设置中的 S3 备份入口", ["settings"]],
-      ["image-20260802105943-0u6kpek.webp", "S3 备份管理空状态", ["overview"]],
-      ["image-20260802110845-9qxodgo.webp", "新增目标空表单", ["target"]],
-      ["image-20260802111003-5bh7bhw.webp", "填写完整的目标配置", ["target"]],
-      ["image-20260802111010-i775fw8.webp", "已保存目标与启用状态", ["target", "status"]],
-      ["image-20260802111031-w4li04j.webp", "立即备份失败提示", ["manual", "status"]],
-      ["image-20260802111235-i9pab3s.webp", "测试连接失败提示", ["manual", "status"]],
-      ["image-longcat-aicr-supplement.webp", "AICR 审查完成与评分补充", ["review"]],
-    ],
-  },
-  {
-    id: 4,
-    name: "Hy3",
-    tool: "WorkBuddy",
-    testedAt: "2026-08-02T16:31:21+08:00",
-    images: [
-      ["image-20260801230712-zy199ri.webp", "Max 模式与模型选择", ["process"]],
-      ["image-20260802000001-749b4nc.webp", "任务完成耗时", ["process"]],
-      ["image-20260802105342-05j8kzb.webp", "系统设置中的 S3 备份入口", ["settings"]],
-      ["image-20260802105344-4m737cu.webp", "S3 备份设置主面板", ["overview"]],
-      ["image-20260802105527-4aabvqp.webp", "新增备份目标基础字段", ["target"]],
-      ["image-20260802110135-gj8rzs2.webp", "填写完整的目标配置", ["target"]],
-      ["image-20260802110141-bq3mewy.webp", "目标配置与备份选项", ["target", "schedule"]],
-      ["image-20260802110149-r0aikm6.webp", "后端停止后的失败提示", ["manual", "status"]],
-      ["image-20260802110340-okgd7vf.webp", "已保存目标与编辑状态", ["target", "status"]],
-      ["image-20260802110343-p6u33ob.webp", "目标配置复核", ["target"]],
-      ["image-20260802110406-kp4682t.webp", "备份执行结果与日志", ["manual", "status"]],
-      ["image-20260802110422-6ofe2h3.webp", "云端 scriverse 目录结构", ["remote"]],
-      ["image-20260802110447-u0g1mhb.webp", "定时备份时间选择", ["schedule"]],
-      ["image-20260802110503-98zcpg6.webp", "保存定时配置后的面板", ["schedule"]],
-      ["image-20260802110536-omtk6dq.webp", "备份操作与状态反馈", ["manual", "status"]],
-      ["image-20260802110648-m6ql5d7.webp", "云端数据库快照列表", ["remote", "schedule"]],
-      ["image-20260802110657-p6fe1ds.webp", "定时备份触发后的记录", ["schedule", "status"]],
-      ["image-20260802101359-jjt35bk.webp", "AICR 问题命中表", ["review"]],
-      ["image-20260802101931-0udpb3d.webp", "最终评分与主要结论", ["review"]],
-    ],
-  },
-  {
-    id: 5,
-    name: "DeepSeek V4 Flash 0731",
-    tool: "Claude Code",
-    testedAt: "2026-08-03T00:31:37+08:00",
-    images: [
-      ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
-      ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
-      ["image-20260803081459-gtcmnno.webp", "确认测试需求", ["process"]],
-      ["image-20260803081511-e3ni4uh.webp", "代码探索与实现计划", ["process"]],
-      ["image-20260802223041-j374rja.webp", "测试验收与提交修复", ["process"]],
-      ["image-20260802223600-n5h727q.webp", "最终实现总结与交付", ["process"]],
-      ["image-20260802234650-p5zx3h9.webp", "进入系统设置并打开数据备份", ["settings"]],
-      ["image-20260802235101-ed8oy6g.webp", "数据备份主面板", ["overview"]],
-      ["image-20260802235109-vv141zs.webp", "新建备份目标空表单", ["target"]],
-      ["image-20260803070917-75hhq0t.webp", "填写 Flash 备份目标（已脱敏）", ["target"]],
-      ["image-20260803070926-2fyx8ax.webp", "保存后的备份目标与全局设置", ["target", "status"]],
-      ["image-20260803070948-py1an4c.webp", "备份目标已配置，尚未执行备份", ["overview", "status"]],
-      ["image-20260803070947-761y1wr.webp", "手动备份成功", ["manual", "status"]],
-      ["image-20260803071228-wh9yhmp.webp", "远端数据库与主密钥快照", ["remote", "status"]],
-      ["image-20260803071329-rc3wud5.webp", "远端图片对象（按哈希命名）", ["remote"]],
-      ["image-20260803071403-hfbdtwi.webp", "定时备份快捷时间选项", ["schedule"]],
-      ["image-20260803071532-nilj7xl.webp", "启用定时备份并保存 Cron 配置", ["schedule", "status"]],
-      ["image-20260803071808-tzzyt8x.webp", "定时备份成功后的状态", ["schedule", "status"]],
-      ["image-20260803071721-lwdr6gi.webp", "远端多份数据库与主密钥快照", ["remote", "schedule"]],
-      ["image-20260803071913-t4q64ji.webp", "关闭图片备份并保存配置", ["schedule", "target"]],
-      ["image-20260803071609-ik4id3p.webp", "备份成功明细与新增图片统计", ["manual", "status"]],
-    ],
-  },
-  {
-    id: 6,
-    name: "DeepSeek V4 Pro Preview",
-    tool: "Claude Code",
-    testedAt: "2026-08-03T00:31:37+08:00",
-    images: [
-      ["image-20260803081355-5es93wt.webp", "启动 Claude Code 与模型选择", ["process"]],
-      ["image-20260803081439-2aum1i1.webp", "创建独立 worktree", ["process"]],
-      ["image-20260803081459-gtcmnno.webp", "确认测试需求", ["process"]],
-      ["image-20260803081511-e3ni4uh.webp", "代码探索与实现计划", ["process"]],
-      ["image-20260802223041-j374rja.webp", "测试验收与提交修复", ["process"]],
-      ["image-20260802223600-n5h727q.webp", "最终实现总结与交付", ["process"]],
-      ["image-20260802235122-49dy4q8.webp", "设置中心中的 S3 备份入口", ["settings"]],
-      ["image-20260802235114-qfj5ld8.webp", "S3 备份配置空状态", ["overview"]],
-      ["image-20260802235131-6og5uog.webp", "新增备份配置表单", ["target"]],
-      ["image-20260803072009-dks69ct.webp", "填写 Pro 备份配置（已脱敏）", ["target"]],
-      ["image-20260803072007-2wznyvn.webp", "配置保存成功后的 S3 列表", ["target", "status"]],
-      ["image-20260803072041-1s8gixq.webp", "立即备份失败：签名不匹配", ["manual", "status"]],
-      ["image-20260803072548-61i6zx4.webp", "定位 SigV4 canonical URI 问题", ["review"]],
-      ["image-20260803080202-7yyell7.webp", "已保存配置中的上次失败详情", ["status"]],
-      ["image-20260803080224-c7e2z2a.webp", "定时备份触发后的失败状态", ["schedule", "status"]],
-    ],
-  },
-  {
-    id: 7,
-    name: "GPT-5.6 Luna Max",
-    tool: "Codex CLI",
-    testedAt: "2026-08-03T23:03:51+08:00",
-    images: [
-      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
-      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
-      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
-      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
-      ["image-20260803224435-34cpbfw.webp", "设置中心入口", ["settings"]],
-      ["image-20260803224434-ibyzd28.webp", "S3 备份计划", ["overview", "schedule"]],
-      ["image-20260803224432-a0a24bi.webp", "新增 S3 目标", ["target"]],
-    ],
-  },
-  {
-    id: 8,
-    name: "Composer 2.5",
-    tool: "Cursor IDE",
-    testedAt: "2026-08-03T23:03:51+08:00",
-    images: [
-      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
-      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
-      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
-      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
-      ["4d62f246d88bc7a6af187b22869bfac8-20260803224747-ay1rujv.webp", "设置中心入口", ["settings"]],
-      ["68cc4f21fb98a5c4af9c4f19534b6fd1-20260803224753-liwxwvb.webp", "S3 备份设置", ["overview"]],
-      ["b77be8c868ed7c908ad896a90c561742-20260803224758-hbuqtiu.webp", "备份目标配置", ["target"]],
-    ],
-  },
-  {
-    id: 9,
-    name: "Grok 4.5 High",
-    tool: "Cursor Agent View",
-    testedAt: "2026-08-03T23:03:51+08:00",
-    images: [
-      ["image-20260805064410-7ic2gz2.webp", "创建独立 worktree", ["process"]],
-      ["image-20260805064455-xih9x5u.webp", "确认 worktree 已切换", ["process"]],
-      ["image-20260805064757-8wqhxkf.webp", "探索项目并开始实现", ["process"]],
-      ["image-20260805065308-fvbm1tu.webp", "实现 S3 核心模块", ["process"]],
-      ["image-20260805065852-nsdy5lg.webp", "功能概览与实现总结", ["process"]],
-      ["image-20260805065853-5vrxm89.webp", "提交前的安全补充", ["process"]],
-      ["image-20260805072923-97p5p1f.webp", "任务完成与耗时 14 分 8 秒", ["process"]],
-      ["image-20260805070056-jab3by6.webp", "用量记录与外部模型约束", ["process"]],
-      ["image-20260805071506-3nyxtct.webp", "设置中心入口", ["settings"]],
-      ["image-20260805071458-4dkpp1q.webp", "数据备份页面", ["overview"]],
-      ["image-20260805071500-4w2jvrq.webp", "新增备份目标", ["target"]],
-    ],
-  },
-  {
-    id: 10,
-    name: "Qwen3.8-Max",
-    tool: "QoderCN IDE Quest",
-    testedAt: "2026-08-04T00:20:37+08:00",
-    images: [
-      ["image-20260804001203-ymvj4gr.webp", "设置中心入口", ["settings"]],
-      ["image-20260804001141-h7wn6px.webp", "数据备份页面", ["overview"]],
-      ["image-20260804001147-684u3hh.webp", "新增备份目标", ["target"]],
-    ],
-  },
-  {
-    id: 11,
-    name: "GLM-5.2 Max",
-    tool: "Cursor Agent View",
-    testedAt: "2026-08-04T00:20:37+08:00",
-    images: [
-      ["image-20260804001209-s8z1js9.webp", "设置中心入口", ["settings"]],
-      ["image-20260804001214-fn2utm1.webp", "备份与同步页面", ["overview", "schedule"]],
-      ["image-20260804001221-f03m72n.webp", "新增 S3 目标", ["target"]],
-      ["image-20260804001226-yd8ntdi.webp", "S3 目标配置选项", ["target"]],
-    ],
-  },
-  {
-    id: 12,
-    name: "Kimi K3 Max",
-    tool: "Kimi Code",
-    testedAt: "2026-08-04T05:49:42+08:00",
-    images: [
-      ["image-20260803212112-ar227ir.webp", "第三轮测试启动与工具选择", ["process"]],
-      ["image-20260803214537-v2dv1gt.webp", "多模型并行工作界面", ["process"]],
-      ["image-20260803220141-ums4m9f.webp", "测试完成后的系统设置与 Agent 输出", ["process"]],
-      ["image-20260803220250-zshy8cs.webp", "测试总结与提交信息", ["process"]],
-      ["image-20260804071634-plfhucu.webp", "设置中心入口", ["settings"]],
-      ["image-20260804071637-sz07shf.webp", "数据备份页面", ["overview"]],
-      ["image-20260804071639-z0r8vyb.webp", "新增备份目标", ["target"]],
-      ["image-20260804071640-5of1gvl.webp", "备份目标同步选项", ["target", "schedule"]],
-    ],
-  },
-  {
-    id: 13,
-    name: "GPT-5.6 Sol Max",
-    tool: "Codex CLI",
-    testedAt: "2026-08-04T08:12:31+08:00",
-    images: [
-      ["image-20260804065202-ny26db1.webp", "Terra 与 Sol 模型启动", ["process"]],
-      ["image-20260804065235-zeqgize.webp", "Sol 启动与记忆设置", ["process"]],
-      ["image-20260804065443-waivlf9.webp", "Sol worktree 与任务执行", ["process"]],
-      ["image-20260804080540-0c83ud9.webp", "设置中心入口", ["settings"]],
-      ["image-20260804080545-4f1y4xc.webp", "S3 系统备份页面", ["overview"]],
-      ["image-sol-s3-target-form-top.webp", "新增 S3 目标表单上半部分", ["target"]],
-      ["image-sol-s3-target-form-options.webp", "新增 S3 目标表单同步选项", ["target"]],
-    ],
-  },
-  {
-    id: 14,
-    name: "GPT-5.5 xhigh",
-    tool: "Codex CLI",
-    testedAt: "2026-08-04T10:56:21+08:00",
-    images: [],
-  },
-  {
-    id: 15,
-    name: "GPT-5.6 Terra Max",
-    tool: "Codex CLI",
-    testedAt: "2026-08-04T10:56:21+08:00",
-    images: [],
-  },
-  {
-    id: 16,
-    name: "Claude Opus 5 Max",
-    tool: "Cursor Agent View",
-    testedAt: "2026-08-04T19:48:42+08:00",
-    images: [
-      ["image-20260804234905-kja60nb.webp", "创建 worktree 并等待下一步", ["process"]],
-      ["image-20260804234913-e1j6gzp.webp", "确认基于 main 创建 worktree", ["process"]],
-      ["image-20260804234921-w13txcg.webp", "S3 备份实现总结", ["process"]],
-      ["image-20260804234927-aaldq5x.webp", "浏览器验收问题与修复", ["process"]],
-      ["image-20260804234931-4c2v6aw.webp", "实现细节与浏览器验收", ["process"]],
-      ["image-20260804234935-cg76j1i.webp", "测试完成与交付", ["process"]],
-      ["6df3a86cf1d5c9bbe8d967da7d6f8a0d-20260804234944-fe93c0i.webp", "S3 备份实现与验收总结", ["process"]],
-      ["image-20260804234950-i31suau.webp", "设置中心入口", ["settings"]],
-      ["image-20260804234952-nos4mo4.webp", "数据备份主界面", ["overview"]],
-      ["image-20260804234955-fa1l6og.webp", "新增备份目标表单上半部分", ["target"]],
-      ["image-20260804234957-5luzmey.webp", "新增备份目标表单下半部分", ["target"]],
-    ],
-  },
-  {
-    id: 17,
-    name: "MiniMax-M3",
-    tool: "WorkBuddy",
-    testedAt: "2026-08-05T00:01:31+08:00",
-    images: [],
-  },
-  {
-    id: 18,
-    name: "Grok 4.6 High",
-    tool: "Cursor Agent View",
-    testedAt: "2026-08-13T00:18:14+08:00",
-    images: [],
-  },
-  {
-    id: 19,
-    name: "DeepSeek V4 Pro 0813",
-    tool: "Claude Code",
-    testedAt: "2026-08-13T23:02:47+08:00",
-    images: [],
-  },
-];
+let models = [];
 
 const features = [
   ["settings", "设置入口", "比较 S3 备份能力在系统设置中的入口位置与呈现方式。"],
@@ -320,29 +22,14 @@ const features = [
   ["review", "AICR 与评分", "汇总代码审查命中项、最终评分和主要问题。"],
 ].map(([id, name, description]) => ({ id, name, description }));
 
-for (const model of models) {
-  model.images = model.images.map(([file, title, tags], index) => ({
-    file,
-    title,
-    tags,
-    modelId: model.id,
-    modelName: model.name,
-    sequence: index + 1,
-  }));
-  model.imagesByFeature = new Map();
-  model.images.forEach((image) => {
-    image.tags.forEach((tag) => {
-      const items = model.imagesByFeature.get(tag) ?? [];
-      items.push(image);
-      model.imagesByFeature.set(tag, items);
-    });
-  });
-}
-
-const leaderboardDataUrl = "/source/leaderboard.json?v=98";
+const leaderboardManifestUrl = "/source/index.json?v=1";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
+let modelCatalogRequest = null;
+let modelCatalogLoadError = false;
+const requirementDataRequests = new Map();
+const requirementDataErrors = new Set();
 let rankingDataCache = null;
 let rankingDataCacheSource = null;
 let rankingDataCacheRequirementId = null;
@@ -371,6 +58,41 @@ const caseVoteState = {
 function getCurrentRequirement() {
   const requirements = leaderboardData?.requirements ?? [];
   return requirements.find((requirement) => requirement.id === state.requirementId) ?? requirements[0] ?? null;
+}
+
+function isRequirementDataLoaded(requirement) {
+  return Boolean(requirement && Array.isArray(requirement.models) && Array.isArray(requirement.participants));
+}
+
+function areAllRequirementsLoaded() {
+  const requirements = leaderboardData?.requirements ?? [];
+  return requirements.length > 0 && requirements.every(isRequirementDataLoaded);
+}
+
+function isModelCatalogLoaded() {
+  return models.length > 0;
+}
+
+function isOverallDataLoaded() {
+  return isModelCatalogLoaded() && areAllRequirementsLoaded();
+}
+
+function getRequirementParticipants(requirement) {
+  return Array.isArray(requirement?.participants) ? requirement.participants : [];
+}
+
+function getRequirementAgent(requirement, modelId) {
+  return getRequirementParticipants(requirement).find((agent) => agent.modelId === modelId) ?? null;
+}
+
+function getLoadedModelAgent(modelId) {
+  for (const requirement of leaderboardData?.requirements ?? []) {
+    const agent = getRequirementAgent(requirement, modelId);
+    if (agent) {
+      return agent;
+    }
+  }
+  return null;
 }
 
 function getFinalAdoptedModelId(requirement) {
@@ -448,8 +170,7 @@ function getRankingData() {
   const scoring = getRequirementScoring(requirement);
   const scoreByPriority = scoring.deductionByPriority;
   const testCaseIds = new Set(testCases.map((testCase) => testCase.id));
-  const requirementEntries = getRequirementModelEntries(requirement);
-  const entries = requirementEntries ?? leaderboardData.models;
+  const entries = getRequirementModelEntries(requirement) ?? [];
   rankingDataCache = entries
     .map((entry) => {
       const failedIds = new Set(Object.keys(entry.failures ?? {}).filter((testCaseId) => testCaseIds.has(testCaseId)));
@@ -460,7 +181,7 @@ function getRankingData() {
       return {
         ...entry,
         model: models.find((model) => model.id === entry.modelId),
-        agent: leaderboardData.agents.find((agent) => agent.modelId === entry.modelId) ?? entry.agent,
+        agent: getRequirementAgent(requirement, entry.modelId) ?? entry.agent,
         score: scoring.initial - deductions,
         maxScore: scoring.initial,
         weightedPassRate: getWeightedPassRate(scoring.initial - deductions, scoring.initial),
@@ -606,7 +327,7 @@ function renderBuildUpdatedAt() {
 function getOverallRatingData() {
   const ranking = models.map((model) => ({
     model,
-    agent: leaderboardData?.agents.find((entry) => entry.modelId === model.id),
+    agent: getLoadedModelAgent(model.id),
     overallMetrics: getOverallModelMetrics(model.id),
     testedRequirementCount: getTestedRequirementCount(model.id),
     weightedAverageDurationSeconds: getWeightedAverageDurationSeconds(model.id),
@@ -645,16 +366,9 @@ function getWeightedAverageDurationSeconds(modelId) {
     return null;
   }
   const requirements = leaderboardData.requirements ?? [];
-  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
-  const durationRecords = hasPerRequirementResults
-    ? requirements.flatMap((requirement) => (hasExplicitRequirementModelEntries(requirement)
-      ? (getRequirementModelEntries(requirement) ?? [])
-      : leaderboardData.models)
-      .filter((entry) => (entry.modelId ?? entry.id) === modelId)
-      .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })))
-    : leaderboardData.models
-      .filter((entry) => entry.modelId === modelId)
-      .map((entry) => ({ entry, weight: getRequirementWeight(requirements[0]) }));
+  const durationRecords = requirements.flatMap((requirement) => (getRequirementModelEntries(requirement) ?? [])
+    .filter((entry) => (entry.modelId ?? entry.id) === modelId)
+    .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })));
   const validRecords = durationRecords
     .map(({ entry, weight }) => ({
       durationSeconds: Number(entry.durationSeconds),
@@ -677,16 +391,9 @@ function getWeightedUsageRecords(modelId) {
     return [];
   }
   const requirements = leaderboardData.requirements ?? [];
-  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
-  return hasPerRequirementResults
-    ? requirements.flatMap((requirement) => (hasExplicitRequirementModelEntries(requirement)
-      ? (getRequirementModelEntries(requirement) ?? [])
-      : leaderboardData.models)
-      .filter((entry) => (entry.modelId ?? entry.id) === modelId)
-      .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })))
-    : leaderboardData.models
-      .filter((entry) => entry.modelId === modelId)
-      .map((entry) => ({ entry, weight: getRequirementWeight(requirements[0]) }));
+  return requirements.flatMap((requirement) => (getRequirementModelEntries(requirement) ?? [])
+    .filter((entry) => (entry.modelId ?? entry.id) === modelId)
+    .map((entry) => ({ entry, weight: getRequirementWeight(requirement) })));
 }
 
 function getWeightedAverageUsage(modelId) {
@@ -1182,9 +889,9 @@ function renderModelOverallChart(ranking = []) {
   elements.modelOverallChartDialogBest.textContent = "";
   const chartData = createModelOverallChartData(ranking);
   if (chartData.length === 0) {
-    elements.modelOverallChartNote.textContent = leaderboardData ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
+    elements.modelOverallChartNote.textContent = isOverallDataLoaded() ? "暂无可绘制的加权平均耗时数据" : "正在加载数据";
     elements.modelOverallChartEmpty.hidden = false;
-    elements.modelOverallChartEmpty.textContent = leaderboardData ? "目前没有同时记录加权平均耗时和加权通过率的模型。" : "正在加载散点图数据……";
+    elements.modelOverallChartEmpty.textContent = isOverallDataLoaded() ? "目前没有同时记录加权平均耗时和加权通过率的模型。" : "正在加载散点图数据……";
     return;
   }
 
@@ -1403,7 +1110,7 @@ function renderModelTokenEfficiencyChart(ranking = []) {
   elements.modelTokenEfficiencyChartEmpty.hidden = true;
   const chartData = createModelTokenEfficiencyChartData(ranking);
   if (chartData.length === 0) {
-    elements.modelTokenEfficiencyChartNote.textContent = leaderboardData ? "暂无可绘制的 token 模型数据" : "正在加载数据";
+    elements.modelTokenEfficiencyChartNote.textContent = isOverallDataLoaded() ? "暂无可绘制的 token 模型数据" : "正在加载数据";
     elements.modelTokenEfficiencyChartEmpty.hidden = false;
     elements.modelTokenEfficiencyChartEmpty.textContent = leaderboardData
       ? "目前没有同时记录 token 用量和加权通过率的模型；credit usage 模型不计入。"
@@ -1590,28 +1297,10 @@ function getRequirementModelEntries(requirement) {
   ].find(Array.isArray);
 }
 
-function hasExplicitRequirementModelEntries(requirement) {
-  return [
-    requirement?.models,
-    requirement?.results,
-    requirement?.evaluations,
-    requirement?.modelResults,
-  ].some(Array.isArray);
-}
-
 function getTestedRequirements(modelId) {
   const requirements = leaderboardData?.requirements ?? [];
-  const hasPerRequirementResults = requirements.some(hasExplicitRequirementModelEntries);
-  if (!hasPerRequirementResults) {
-    return requirements.length > 0 && leaderboardData.models.some((entry) => entry.modelId === modelId) ? requirements : [];
-  }
-
-  return requirements.filter((requirement) => {
-    const entries = hasExplicitRequirementModelEntries(requirement)
-      ? (getRequirementModelEntries(requirement) ?? [])
-      : leaderboardData.models;
-    return entries.some((entry) => (entry.modelId ?? entry.id) === modelId);
-  });
+  return requirements.filter((requirement) => (getRequirementModelEntries(requirement) ?? [])
+    .some((entry) => (entry.modelId ?? entry.id) === modelId));
 }
 
 function getTestedRequirementCount(modelId) {
@@ -1619,22 +1308,15 @@ function getTestedRequirementCount(modelId) {
 }
 
 function getRequirementModelEntry(requirement, modelId) {
-  const entries = getRequirementModelEntries(requirement);
-  if (hasExplicitRequirementModelEntries(requirement)) {
-    return entries.find((entry) => (entry.modelId ?? entry.id) === modelId) ?? null;
-  }
-  return leaderboardData?.models.find((entry) => entry.modelId === modelId) ?? null;
+  return (getRequirementModelEntries(requirement) ?? [])
+    .find((entry) => (entry.modelId ?? entry.id) === modelId) ?? null;
 }
 
 function getRequirementModelImages(requirement, modelId) {
   const model = models.find((item) => item.id === modelId);
   const screenshotMap = requirement?.screenshots;
-  const hasExplicitModels = hasExplicitRequirementModelEntries(requirement);
-  if (hasExplicitModels && !screenshotMap) {
-    return [];
-  }
   if (!screenshotMap || !Object.prototype.hasOwnProperty.call(screenshotMap, String(modelId))) {
-    return hasExplicitModels ? [] : (model?.images ?? []);
+    return [];
   }
   const rawImages = Array.isArray(screenshotMap[String(modelId)])
     ? screenshotMap[String(modelId)]
@@ -1679,10 +1361,7 @@ function getCurrentRequirementFeatures() {
 }
 
 function getRequirementTestedAt(requirement, modelId) {
-  if (hasExplicitRequirementModelEntries(requirement)) {
-    return getRequirementModelEntry(requirement, modelId)?.testedAt ?? null;
-  }
-  return models.find((model) => model.id === modelId)?.testedAt ?? null;
+  return getRequirementModelEntry(requirement, modelId)?.testedAt ?? null;
 }
 
 function getRequirementScore(entry, requirement) {
@@ -1928,8 +1607,10 @@ function createModelOverallRow(entry) {
 
 function renderModelOverall() {
   elements.modelOverallList.replaceChildren();
-  if (!leaderboardData) {
-    elements.modelOverallNote.textContent = "正在加载";
+  if (!leaderboardData || !isOverallDataLoaded()) {
+    elements.modelOverallNote.textContent = modelCatalogLoadError || requirementDataErrors.size > 0
+      ? "需求数据加载失败，请刷新页面重试"
+      : "正在按需加载全部需求数据";
     renderModelOverallChart();
     renderModelTokenEfficiencyChart();
     return;
@@ -1949,7 +1630,7 @@ function renderModelOverall() {
 
 const state = {
   view: "home",
-  modelId: models[0].id,
+  modelId: 1,
   featureId: features[0].id,
   requirementId: null,
   modelContentTab: "screenshots",
@@ -2355,7 +2036,7 @@ function renderModelRating() {
       }
       showToast("评分已记录", "success");
       await loadRatingsForRequirement(true);
-      await loadAllRatingsForRequirements(true);
+      ratingState.allLoaded = false;
     } catch (error) {
       showToast(error instanceof Error && error.message ? error.message : "评分服务尚未部署", "error");
     } finally {
@@ -2441,7 +2122,7 @@ async function loadRatingsForRequirement(force = false) {
 }
 
 async function loadAllRatingsForRequirements(force = false) {
-  if (!leaderboardData || ratingState.allLoading || (ratingState.allLoaded && !force)) {
+  if (!leaderboardData || !isOverallDataLoaded() || ratingState.allLoading || (ratingState.allLoaded && !force)) {
     return;
   }
 
@@ -2726,6 +2407,23 @@ function renderLeaderboardDetailCaseVote() {
 function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
   const requirement = getCurrentRequirement();
+  if (!model || !isModelCatalogLoaded() || !isRequirementDataLoaded(requirement)) {
+    elements.modelKicker.textContent = model?.tool ?? "模型资料";
+    elements.modelTitle.textContent = model?.name ?? "正在加载模型资料……";
+    elements.modelTestedAt.textContent = "测试时间：读取中";
+    elements.modelCount.textContent = "截图读取中";
+    elements.modelTokenUsage.textContent = "用量读取中";
+    elements.modelGallery.hidden = false;
+    elements.modelUnexpectedCasesView.hidden = true;
+    elements.modelGallery.replaceChildren();
+    const message = document.createElement("p");
+    message.className = "empty-state";
+    message.textContent = modelCatalogLoadError || requirementDataErrors.has(requirement?.id)
+      ? "该需求数据加载失败，请刷新页面重试。"
+      : "正在加载该需求的模型结果……";
+    elements.modelGallery.append(message);
+    return;
+  }
   const modelEntry = getRequirementModelEntry(requirement, model.id);
   const images = getRequirementModelImages(requirement, model.id);
   renderModelTabs();
@@ -2845,6 +2543,17 @@ function createComparisonColumn(model, items, index = 0) {
 }
 
 function renderFeatureView() {
+  const requirement = getCurrentRequirement();
+  if (!isModelCatalogLoaded() || !isRequirementDataLoaded(requirement)) {
+    elements.featureTabs.replaceChildren();
+    elements.featureTitle.textContent = "正在加载功能对比……";
+    elements.featureDescription.textContent = modelCatalogLoadError || requirementDataErrors.has(requirement?.id)
+      ? "该需求数据加载失败，请刷新页面重试。"
+      : "正在加载该需求的截图索引。";
+    elements.featureCount.textContent = "截图读取中";
+    elements.featureComparison.replaceChildren();
+    return;
+  }
   const currentFeatures = getCurrentRequirementFeatures();
   const feature = currentFeatures.find((item) => item.id === state.featureId) ?? currentFeatures[0];
   if (!feature) {
@@ -3367,29 +3076,30 @@ function openLeaderboardDetail({
 }
 
 function renderLeaderboard() {
-  const rankingData = getRankingData();
   const currentRequirement = getCurrentRequirement();
-  const testCases = getRequirementTestCasesForDisplay(currentRequirement);
-  const scoring = getRequirementScoring(currentRequirement);
   elements.leaderboardSummary.replaceChildren();
   elements.leaderboardHead.replaceChildren();
   elements.leaderboardBody.replaceChildren();
   elements.leaderboardRequirement.textContent = currentRequirement
     ? `最终测试结果：${currentRequirement.title}`
     : "最终测试结果";
-  elements.leaderboardTestCount.textContent = currentRequirement
-    ? `${testCases.length} 个测试用例`
-    : "测试用例数量读取中";
+  elements.leaderboardTestCount.textContent = "测试用例数量读取中";
 
-  if (!leaderboardData) {
+  if (!leaderboardData || !isModelCatalogLoaded() || !isRequirementDataLoaded(currentRequirement)) {
     const message = document.createElement("p");
     message.className = "leaderboard-loading";
-    message.textContent = leaderboardLoadError ? "排行榜数据加载失败，请刷新页面重试。" : "正在加载排行榜数据……";
+    message.textContent = leaderboardLoadError || modelCatalogLoadError || requirementDataErrors.has(currentRequirement?.id)
+      ? "排行榜数据加载失败，请刷新页面重试。"
+      : "正在加载当前需求的排行榜数据……";
     elements.leaderboardSummary.append(message);
-    elements.leaderboardNote.textContent = "排行榜数据来自 source/leaderboard.json。";
+    elements.leaderboardNote.textContent = "排行榜按当前需求独立加载。";
     return;
   }
 
+  const rankingData = getRankingData();
+  const testCases = getRequirementTestCasesForDisplay(currentRequirement);
+  const scoring = getRequirementScoring(currentRequirement);
+  elements.leaderboardTestCount.textContent = `${testCases.length} 个测试用例`;
   const deductionRules = formatDeductionRules(scoring.deductionByPriority);
   elements.leaderboardNote.textContent = `扣分规则：初始 ${scoring.initial} 分；${deductionRules || "暂无扣分规则"}。状态来自初步人工复核记录；点击通过或未通过状态可查看对应说明，成功说明未填写时显示“无详情”。在测试用例“查看说明”中可点赞或踩。`;
   elements.leaderboardDescription.textContent = "按人工评分复核记录汇总排名、得分与每个测试用例的通过状态。点击“通过”或“未通过”状态可查看对应说明；在测试用例说明中可点赞或踩。";
@@ -3651,6 +3361,20 @@ function renderRequirementsView() {
     return;
   }
   elements.requirementTitle.textContent = requirement.title;
+  if (!isRequirementDataLoaded(requirement)) {
+    elements.requirementRepository.removeAttribute("href");
+    elements.requirementRepository.textContent = requirement.baseRepository ?? "读取中";
+    elements.requirementCommit.textContent = "读取中";
+    elements.requirementDatabase.removeAttribute("href");
+    elements.requirementDatabase.textContent = "读取中";
+    elements.requirementWeight.textContent = formatRequirementWeight(getRequirementWeight(requirement));
+    elements.requirementWeightNote.textContent = "相对系数，1.0 为基准";
+    elements.requirementPrompt.textContent = requirementDataErrors.has(requirement.id)
+      ? "该需求数据加载失败，请刷新页面重试。"
+      : "正在加载该需求的详细说明……";
+    elements.agentRosterBody.replaceChildren();
+    return;
+  }
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
   elements.requirementRepository.textContent = requirement.baseRepository;
   elements.requirementCommit.textContent = requirement.baseCommit;
@@ -3661,13 +3385,9 @@ function renderRequirementsView() {
   elements.requirementWeightNote.textContent = "相对系数，1.0 为基准";
   elements.requirementPrompt.textContent = requirement.prompt;
 
-  const hasExplicitResults = hasExplicitRequirementModelEntries(requirement);
-  const testedModelIds = new Set((hasExplicitResults
-    ? (getRequirementModelEntries(requirement) ?? [])
-    : leaderboardData.models).map((entry) => entry.modelId ?? entry.id));
-  const participants = Array.isArray(requirement.participants)
-    ? requirement.participants
-    : (leaderboardData.agents ?? []);
+  const testedModelIds = new Set((getRequirementModelEntries(requirement) ?? [])
+    .map((entry) => entry.modelId ?? entry.id));
+  const participants = getRequirementParticipants(requirement);
   const agentRows = participants.map((agent) => {
     const row = document.createElement("tr");
     const model = document.createElement("th");
@@ -3685,9 +3405,7 @@ function renderRequirementsView() {
     const context = document.createElement("td");
     context.textContent = agent.context || "未记录";
     const status = document.createElement("td");
-    const statusText = hasExplicitResults
-      ? (testedModelIds.has(agent.modelId) ? "已测试" : "待测试")
-      : agent.status;
+    const statusText = testedModelIds.has(agent.modelId) ? "已测试" : "待测试";
     status.className = `agent-status ${statusText === "已测试" ? "agent-status--tested" : "agent-status--pending"}`;
     status.textContent = statusText;
     if (agent.note) {
@@ -3699,68 +3417,192 @@ function renderRequirementsView() {
   elements.agentRosterBody.replaceChildren(...agentRows);
 }
 
-async function loadLeaderboardData() {
-  try {
-    const response = await fetch(leaderboardDataUrl, { cache: "no-cache" });
+function hasValidScoring(scoring) {
+  return Number.isSafeInteger(scoring?.initial)
+    && scoring.initial >= 0
+    && scoring.deductionByPriority
+    && typeof scoring.deductionByPriority === "object"
+    && !Array.isArray(scoring.deductionByPriority);
+}
+
+function hasValidRequirementData(payload, expectedId) {
+  const testCases = payload?.testCases;
+  const screenshots = payload?.screenshots;
+  return payload?.id === expectedId
+    && typeof payload.title === "string"
+    && hasValidScoring(payload.scoring)
+    && Array.isArray(testCases)
+    && testCases.every((testCase) => (
+      typeof testCase?.id === "string"
+      && typeof testCase?.priority === "string"
+      && Object.prototype.hasOwnProperty.call(payload.scoring.deductionByPriority, testCase.priority)
+    ))
+    && Array.isArray(payload.models)
+    && payload.models.every((entry) => (
+      Number.isSafeInteger(entry?.modelId)
+      && (entry.unexpectedCases === undefined
+        || (Array.isArray(entry.unexpectedCases)
+          && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim())))
+    ))
+    && Array.isArray(payload.participants)
+    && payload.participants.every((agent) => (
+      (agent?.modelId == null || Number.isSafeInteger(agent.modelId))
+      && typeof agent?.supportsMultimodal === "boolean"
+    ))
+    && screenshots
+    && typeof screenshots === "object"
+    && !Array.isArray(screenshots)
+    && Object.values(screenshots).every(Array.isArray);
+}
+
+function hasValidLeaderboardManifest(payload) {
+  const requirements = payload?.requirements;
+  if (!Number.isSafeInteger(payload?.version)
+    || typeof payload.modelsUrl !== "string"
+    || !payload.modelsUrl.startsWith("/source/models.json")
+    || !Array.isArray(requirements)
+    || requirements.length === 0) {
+    return false;
+  }
+  const requirementIds = new Set();
+  return requirements.every((requirement) => {
+    const isValid = typeof requirement?.id === "string"
+      && requirement.id.length > 0
+      && !requirementIds.has(requirement.id)
+      && typeof requirement.title === "string"
+      && typeof requirement.dataUrl === "string"
+      && requirement.dataUrl.startsWith("/source/requirements/")
+      && hasValidScoring(requirement.scoring);
+    requirementIds.add(requirement?.id);
+    return isValid;
+  });
+}
+
+function hasValidModelCatalog(payload) {
+  if (!Number.isSafeInteger(payload?.version) || !Array.isArray(payload.models) || payload.models.length === 0) {
+    return false;
+  }
+  const modelIds = new Set();
+  return payload.models.every((model) => {
+    const isValid = Number.isSafeInteger(model?.id)
+      && model.id > 0
+      && !modelIds.has(model.id)
+      && typeof model.name === "string"
+      && typeof model.tool === "string"
+      && typeof model.supportsMultimodal === "boolean";
+    modelIds.add(model?.id);
+    return isValid;
+  });
+}
+
+function invalidateRequirementCaches() {
+  rankingDataCache = null;
+  rankingDataCacheSource = null;
+  rankingDataCacheRequirementId = null;
+}
+
+async function loadModelCatalog() {
+  if (isModelCatalogLoaded()) {
+    return models;
+  }
+  if (modelCatalogRequest) {
+    return modelCatalogRequest;
+  }
+  modelCatalogRequest = (async () => {
+    const response = await fetch(leaderboardData.modelsUrl, { cache: "no-cache" });
     if (!response.ok) {
-      throw new Error(`Leaderboard data request failed: ${response.status}`);
+      throw new Error(`Model catalog request failed: ${response.status}`);
     }
     const payload = await response.json();
-    const hasValidRequirementScoring = Array.isArray(payload?.requirements)
-      && payload.requirements.length > 0
-      && payload.requirements.every((requirement) => {
-        const scoring = requirement?.scoring ?? { initial: 0, deductionByPriority: {} };
-        const deductionByPriority = scoring?.deductionByPriority;
-        const testCases = requirement?.testCases ?? [];
-        return Number.isSafeInteger(scoring?.initial)
-          && scoring.initial >= 0
-          && deductionByPriority
-          && typeof deductionByPriority === "object"
-          && Array.isArray(testCases)
-          && testCases.every((testCase) => (
-            testCase?.id
-            && testCase?.priority
-            && Object.prototype.hasOwnProperty.call(deductionByPriority, testCase.priority)
-          ));
-      });
-    const hasValidUnexpectedCases = Array.isArray(payload?.models)
-      && payload.models.every((entry) => (
-        entry?.unexpectedCases === undefined
-        || (Array.isArray(entry.unexpectedCases) && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim()))
-      ));
-    const hasValidAgentCapabilities = Array.isArray(payload?.agents)
-      && payload.agents.every((agent) => typeof agent?.supportsMultimodal === "boolean");
-    const hasValidScreenshots = Array.isArray(payload?.requirements)
-      && payload.requirements.every((requirement) => (
-        requirement?.screenshots === undefined
-        || (requirement.screenshots
-          && typeof requirement.screenshots === "object"
-          && !Array.isArray(requirement.screenshots)
-          && Object.values(requirement.screenshots).every(Array.isArray))
-      ));
-    if (!payload || !Array.isArray(payload.models) || !Array.isArray(payload.requirements) || !Array.isArray(payload.agents) || !hasValidRequirementScoring || !hasValidUnexpectedCases || !hasValidAgentCapabilities || !hasValidScreenshots) {
-      throw new Error("Leaderboard data shape is invalid");
+    if (!hasValidModelCatalog(payload)) {
+      throw new Error("Model catalog shape is invalid");
     }
-    leaderboardData = payload;
-    for (const model of models) {
-      const agent = payload.agents.find((item) => item.modelId === model.id);
-      model.supportsMultimodal = agent?.supportsMultimodal === true;
+    models = payload.models;
+    modelCatalogLoadError = false;
+    return models;
+  })();
+  try {
+    return await modelCatalogRequest;
+  } catch (error) {
+    modelCatalogLoadError = true;
+    throw error;
+  } finally {
+    modelCatalogRequest = null;
+  }
+}
+
+async function loadRequirementData(requirementId) {
+  const requirement = leaderboardData?.requirements.find((item) => item.id === requirementId);
+  if (!requirement) {
+    throw new Error(`Unknown requirement: ${requirementId}`);
+  }
+  if (isRequirementDataLoaded(requirement)) {
+    return requirement;
+  }
+  if (requirementDataRequests.has(requirementId)) {
+    return requirementDataRequests.get(requirementId);
+  }
+
+  const request = (async () => {
+    const response = await fetch(requirement.dataUrl, { cache: "no-cache" });
+    if (!response.ok) {
+      throw new Error(`Requirement data request failed: ${response.status}`);
     }
-    rankingDataCache = null;
-    rankingDataCacheSource = null;
-    rankingDataCacheRequirementId = null;
+    const payload = await response.json();
+    if (!hasValidRequirementData(payload, requirementId)) {
+      throw new Error(`Requirement data shape is invalid: ${requirementId}`);
+    }
+    const currentIndex = leaderboardData.requirements.findIndex((item) => item.id === requirementId);
+    const hydratedRequirement = { ...requirement, ...payload, dataUrl: requirement.dataUrl };
+    leaderboardData.requirements.splice(currentIndex, 1, hydratedRequirement);
+    requirementDataErrors.delete(requirementId);
+    invalidateRequirementCaches();
+    return hydratedRequirement;
+  })();
+  requirementDataRequests.set(requirementId, request);
+  try {
+    return await request;
+  } catch (error) {
+    requirementDataErrors.add(requirementId);
+    throw error;
+  } finally {
+    if (requirementDataRequests.get(requirementId) === request) {
+      requirementDataRequests.delete(requirementId);
+    }
+  }
+}
+
+async function loadAllRequirementData() {
+  await Promise.all((leaderboardData?.requirements ?? [])
+    .map((requirement) => loadRequirementData(requirement.id)));
+}
+
+async function loadLeaderboardData() {
+  try {
+    const manifestResponse = await fetch(leaderboardManifestUrl, { cache: "no-cache" });
+    if (!manifestResponse.ok) {
+      throw new Error(`Leaderboard manifest request failed: ${manifestResponse.status}`);
+    }
+    const manifest = await manifestResponse.json();
+    if (!hasValidLeaderboardManifest(manifest)) {
+      throw new Error("Leaderboard manifest shape is invalid");
+    }
+
+    leaderboardData = {
+      version: manifest.version,
+      modelsUrl: manifest.modelsUrl,
+      requirements: manifest.requirements.map((requirement) => ({ ...requirement })),
+    };
+    leaderboardLoadError = false;
+    invalidateRequirementCaches();
     renderGlobalRequirementSelect();
     let routeNeedsReplacement = false;
-    const requirements = payload.requirements;
-    const currentRequirement = requirements.find((requirement) => requirement.id === state.requirementId);
+    const currentRequirement = leaderboardData.requirements
+      .find((requirement) => requirement.id === state.requirementId);
     if (state.view !== "home" && state.view !== "model-overall" && !(state.view === "requirements" && state.requirementsTab === "method") && !currentRequirement) {
       state.view = "home";
       state.requirementId = null;
       state.requirementsTab = "requirement";
-      routeNeedsReplacement = true;
-    }
-    if (state.view === "model" && !models.some((model) => model.id === state.modelId)) {
-      state.modelId = models[0].id;
       routeNeedsReplacement = true;
     }
     if (state.view === "feature" && !features.some((feature) => feature.id === state.featureId)) {
@@ -3774,12 +3616,7 @@ async function loadLeaderboardData() {
   } catch (error) {
     leaderboardLoadError = true;
     console.error("Leaderboard data load failed", error);
-    if (state.view === "leaderboard") {
-      renderLeaderboard();
-    }
-    if (state.view === "requirements") {
-      renderRequirementsView();
-    }
+    setView(state.view, { updateRoute: false, skipDataLoad: true });
   }
 }
 
@@ -3861,7 +3698,7 @@ function parseBrowserRoute() {
     return {
       view: "model",
       requirementId,
-      modelId: Number.isSafeInteger(modelId) ? modelId : models[0].id,
+      modelId: Number.isSafeInteger(modelId) ? modelId : (models[0]?.id ?? 1),
       modelContentTab: new URLSearchParams(window.location.search).get("tab") === "unexpected"
         ? "unexpected"
         : "screenshots",
@@ -3878,13 +3715,58 @@ function applyBrowserRoute() {
   state.view = route.view;
   state.requirementId = route.requirementId ?? null;
   state.requirementsTab = route.requirementsTab ?? "requirement";
-  state.modelId = route.modelId ?? models[0].id;
+  state.modelId = route.modelId ?? models[0]?.id ?? 1;
   state.modelContentTab = route.modelContentTab ?? "screenshots";
   state.featureId = route.featureId ?? features[0].id;
   setView(state.view, { updateRoute: false });
 }
 
-function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
+async function loadDataForView(view) {
+  if (!leaderboardData) {
+    return false;
+  }
+  if (view === "model-overall") {
+    if (isModelCatalogLoaded() && areAllRequirementsLoaded()) {
+      return false;
+    }
+    await Promise.all([loadModelCatalog(), loadAllRequirementData()]);
+    return true;
+  }
+  if (view === "requirements" && state.requirementsTab === "method") {
+    return false;
+  }
+  if (!["leaderboard", "model", "feature", "requirements"].includes(view) || !state.requirementId) {
+    return false;
+  }
+  const needsModelCatalog = ["leaderboard", "model", "feature"].includes(view);
+  const requirement = leaderboardData.requirements.find((item) => item.id === state.requirementId);
+  if (view === "model" && isModelCatalogLoaded() && !models.some((model) => model.id === state.modelId)) {
+    state.modelId = models[0]?.id ?? 1;
+    updateBrowserRoute({ replace: true });
+    if (isRequirementDataLoaded(requirement)) {
+      return true;
+    }
+  }
+  if (isRequirementDataLoaded(requirement) && (!needsModelCatalog || isModelCatalogLoaded())) {
+    return false;
+  }
+  await Promise.all([
+    loadRequirementData(state.requirementId),
+    ...(needsModelCatalog ? [loadModelCatalog()] : []),
+  ]);
+  if (view === "model" && !models.some((model) => model.id === state.modelId)) {
+    state.modelId = models[0]?.id ?? 1;
+    updateBrowserRoute({ replace: true });
+  }
+  return true;
+}
+
+function setView(view, {
+  updateRoute = true,
+  replaceRoute = false,
+  skipDataLoad = false,
+  skipTransition = false,
+} = {}) {
   const isGlobalTestMethod = view === "requirements" && state.requirementsTab === "method";
   if (view !== "home" && view !== "model-overall" && !state.requirementId && !isGlobalTestMethod) {
     view = "home";
@@ -3923,7 +3805,9 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
       renderHomeView();
     } else if (isModelOverall) {
       renderModelOverall();
-      loadAllRatingsForRequirements();
+      if (isOverallDataLoaded()) {
+        loadAllRatingsForRequirements();
+      }
     } else if (isModel) {
       renderModelView();
     } else if (isFeature) {
@@ -3932,15 +3816,38 @@ function setView(view, { updateRoute = true, replaceRoute = false } = {}) {
       renderRequirementsView();
     } else {
       renderLeaderboard();
-      loadRatingsForRequirement();
-      loadCaseVotesForRequirement();
+      if (isRequirementDataLoaded(getCurrentRequirement())) {
+        loadRatingsForRequirement();
+        loadCaseVotesForRequirement();
+      }
     }
     if (updateRoute) {
       updateBrowserRoute({ replace: replaceRoute });
     }
+    if (!skipDataLoad) {
+      const requestedView = view;
+      const requestedRequirementId = state.requirementId;
+      const requestedRequirementsTab = state.requirementsTab;
+      loadDataForView(view).then((didLoad) => {
+        if (didLoad
+          && state.view === requestedView
+          && state.requirementId === requestedRequirementId
+          && state.requirementsTab === requestedRequirementsTab) {
+          setView(requestedView, { updateRoute: false, skipDataLoad: true, skipTransition: true });
+        }
+      }).catch((error) => {
+        console.error("Requirement data load failed", error);
+        if (state.view === requestedView
+          && state.requirementId === requestedRequirementId
+          && state.requirementsTab === requestedRequirementsTab) {
+          setView(requestedView, { updateRoute: false, skipDataLoad: true, skipTransition: true });
+        }
+      });
+    }
   };
 
-  if (typeof document.startViewTransition === "function"
+  if (!skipTransition
+    && typeof document.startViewTransition === "function"
     && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     activeViewTransition?.skipTransition();
     const transition = document.startViewTransition(renderView);

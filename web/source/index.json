@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "modelsUrl": "/source/models.json?v=1",
+  "requirements": [
+    {
+      "id": "s3-backup-v1",
+      "title": "叙界 S3 备份能力",
+      "summary": "为 Scriverse 增加数据库与图片的 S3 备份能力，覆盖多目标同步、定时任务、快照保留与失败反馈。",
+      "weight": 1,
+      "baseRepository": "musnows/Scriverse",
+      "scoring": {
+        "initial": 200,
+        "deductionByPriority": {
+          "P00": 30,
+          "P0": 10,
+          "P1": 5,
+          "P2": 0
+        }
+      },
+      "dataUrl": "/source/requirements/s3-backup-v1.json?v=1"
+    },
+    {
+      "id": "sidebar-ai-write-approval-v1",
+      "title": "叙界侧边栏 AI 可写工具与持久化审批",
+      "summary": "为叙界侧边栏 AI 增加受控可写工具、AskUserQuestions 与持久化审批工作流。",
+      "weight": 1.6,
+      "baseRepository": "musnows/Scriverse",
+      "scoring": {
+        "initial": 200,
+        "deductionByPriority": {
+          "P00": 18,
+          "P0": 6,
+          "P1": 3,
+          "P2": 0
+        }
+      },
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=1"
+    }
+  ]
+}

@@ -21,23 +21,25 @@
 
 ### 需求的最终采纳模型
 
-- 单个需求的最终采纳配置只写在 `web/source/leaderboard.json` 对应的 `requirements[]` 对象中，不要在 `web/app.js` 或其他前端代码中写死模型 ID、模型名或排名。
-- `finalAdoptedModelId` 必须是该 JSON 顶层 `models[]` 中已经存在的正整数 `modelId`；它表示作者最终采纳并合入叙界主仓的模型实现。
+- 单个需求的最终采纳配置只写在 `web/source/requirements/` 中对应的需求 JSON，不要在 `web/app.js` 或其他前端代码中写死模型 ID、模型名或排名。
+- `finalAdoptedModelId` 必须是该需求 JSON 的 `models[]` 中已经存在的正整数 `modelId`；它表示作者最终采纳并合入叙界主仓的模型实现。
 - 只有用户明确指定最终采纳模型时，才能新增或修改 `finalAdoptedModelId`。不得根据分数、排名、耗时或个人判断自动设置、替换或清空该字段。
 - `finalAdoptedPrUrl` 是可选的合入主仓 PR 链接；只有用户提供或明确指定真实链接时才能填写，未配置或为空时不显示链接，禁止编造 URL。
 - 前端必须从当前需求 JSON 动态读取这两个字段：只在对应模型的单需求排行榜卡片名称后显示“最终采纳”标识，表格表头不得显示；点击标识显示含义说明，并在 `finalAdoptedPrUrl` 有效时提供 PR 链接。
 
 ### 模型测试时间与用量
 
-- `web/app.js` 的 `models[]` 中，每个已测试模型必须填写带时区的 ISO 8601 `testedAt`；如果没有单独记录测试时间，使用该模型实现提交到 worktree 分支的 commit 时间，并在更新时一并填写，禁止留空。
-- `web/source/leaderboard.json` 的已测试结果必须填写 `durationSeconds` 和 `tokenUsage`。用量为 credit 时保留数字并设置 `tokenUsageUnit: "credit"`，不得把 credit 当作 token；普通 token 用量省略该字段或设置为 `"token"`。
+- 每个需求 JSON 的已测试结果必须填写带时区的 ISO 8601 `testedAt`；如果没有单独记录测试时间，使用该模型实现提交到 worktree 分支的 commit 时间，并在更新时一并填写，禁止留空。
+- 每个需求 JSON 的已测试结果必须填写 `durationSeconds` 和 `tokenUsage`。用量为 credit 时保留数字并设置 `tokenUsageUnit: "credit"`，不得把 credit 当作 token；普通 token 用量省略该字段或设置为 `"token"`。
 
 ### 需求级数据隔离
 
+- `web/source/index.json` 只保存需求摘要和 `dataUrl`，`web/source/models.json` 只保存模型公共元数据；每个需求的 Prompt、测试用例、结果、参赛配置和截图必须保存在 `web/source/requirements/` 下独立的 JSON 中。
+- 首页不得预取任何需求详情；单需求页面只能请求当前需求 JSON；只有模型总榜等确实需要跨需求聚合的页面才能请求全部需求 JSON。
 - 新需求的最低必填字段只有需求 `id`、完整 `prompt` 和基于的 `baseCommit`；未提供新测试定义时，`testCases` 默认为空、`scoring` 默认初始分为 `0` 且无扣分规则；用户明确提供新测试用例或打分规则时，必须原样写入该需求自己的字段。
 - 每个需求必须独立保存自己的测试结果、截图、测试时间和用量；新需求尚未测试时，结果数组必须为空，不能回退显示其他需求的得分、失败原因、耗时或测试时间。
 - 新需求可以只复制已有需求的参赛模型名单到自己的 `participants` 字段，但不得复制其他需求的截图、测试结果、测试用例、打分规则、测试时间、用量、失败原因或分支链接；新需求截图应在该需求实际测试后独立录入，修改一个需求的数据不得改变其他需求。
-- 前端读取需求级 `models`、`results`、`evaluations`、`modelResults` 和 `screenshots` 时，只有缺少对应字段的旧需求才允许使用全局兼容回退；显式空数组表示尚无结果，禁止当作全局数据回退。
+- 前端不得为需求级 `models`、`results`、`evaluations`、`modelResults` 和 `screenshots` 提供全局兼容回退；显式空数组表示尚无结果。
 
 ## 后端修改
 
@@ -48,7 +50,9 @@
 - 修改 catalog 结构时，必须同时检查：
   - `server/rating-catalog.json`
   - `web/rating-catalog.json`
-  - `web/source/leaderboard.json`
+  - `web/source/index.json`
+  - `web/source/models.json`
+  - `web/source/requirements/` 下对应的需求 JSON
 - 新增需求或可评分模型时，前后端 catalog 必须同步，且 catalog `version` 必须递增。
 - 每个具体模型独立使用一个 `modelId` 正整数，不得按厂商、工具或模型系列共用 ID；同一厂家的不同模型必须使用不同 ID。
 - 新增模型或新模型版本只能追加新的 `modelId`，已分配的 ID 禁止修改、删除或复用。
@@ -81,7 +85,7 @@
 ```bash
 node --check web/app.js
 node --check server/server.mjs
-node -e "JSON.parse(require('fs').readFileSync('web/source/leaderboard.json', 'utf8'))"
+for file in web/source/index.json web/source/models.json web/source/requirements/*.json; do jq empty "$file"; done
 git diff --check
 ```
 
