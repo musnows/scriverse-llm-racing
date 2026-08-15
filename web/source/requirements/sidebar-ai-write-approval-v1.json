@@ -33,6 +33,7 @@
       "durationSeconds": 3660,
       "tokenUsage": 8264511,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/2679b84f",
+      "underperformanceNote": "Grok 4.6 在侧边栏 AI 可写工具需求中的完成度低于测试前预期。",
       "failures": {
         "TC-02": "种族、组织的 memberIds 以及角色的 raceId、organizationIds 会修改其他模块关系，但计划只要求主词条模块权限；已复现仅有 races 写权限时仍可修改角色种族。",
         "TC-04": "查看审批与提问时会放行任何仍有作品访问权限的成员；同作品协作者可按 ID 读取他人的简述、完整 diff、问题、选项和回答。",
