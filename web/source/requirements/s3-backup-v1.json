@@ -812,7 +812,7 @@
     },
     {
       "modelId": 20,
-      "modelName": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "modelName": "DeepSeek V4 Pro 0813 DSH",
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
@@ -821,7 +821,7 @@
     },
     {
       "modelId": 21,
-      "modelName": "DeepSeek V4 Flash 0731 (dsh 极简模式)",
+      "modelName": "DeepSeek V4 Flash 0731 DSH",
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
