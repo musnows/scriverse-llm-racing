@@ -32,6 +32,15 @@
 - 每个需求 JSON 的已测试结果必须填写带时区的 ISO 8601 `testedAt`；如果没有单独记录测试时间，使用该模型实现提交到 worktree 分支的 commit 时间，并在更新时一并填写，禁止留空。
 - 每个需求 JSON 的已测试结果必须填写 `durationSeconds` 和 `tokenUsage`。用量为 credit 时保留数字并设置 `tokenUsageUnit: "credit"`，不得把 credit 当作 token；普通 token 用量省略该字段或设置为 `"token"`。
 
+### 测试结果与扣分计算
+
+- 单个模型的需求测试结果只能在 `failures` 中记录实际失败的测试用例 ID 及失败原因；禁止在结果中保存人工计算的最终分数、扣分总额、逐项扣分值或排名。
+- 平台代码必须根据当前需求的 `scoring.initial`、`scoring.deductionByPriority`、`testCases` 和结果中的 `failures` 固定计算分数：每个失败测试用例都按自身 `priority` 独立扣分，最终分数为初始分减去全部失败用例扣分之和。
+- 即使多个失败测试用例来自同一个代码根因，也必须按测试用例分别扣分；禁止去重、合并扣分或增加 `deductionExemptFailures`、豁免列表、人工覆盖分数等旁路字段。
+- `P2` 等扣分值为 `0` 的失败用例仍必须保留在 `failures` 中，并计入失败数和通过数计算，只是不改变最终分数。
+- 更新测试结果时，Agent 只负责准确记录失败测试用例和证据，不得自行决定某项失败是否免扣、少扣或改写平台计算出的分数。
+- 修改评分计算或测试结果数据后，必须验证结果 JSON 不含人工分数或扣分字段，并以平台实际计算逻辑核对最终分数、失败数和通过数。
+
 ### 需求级数据隔离
 
 - `web/source/index.json` 只保存需求摘要和 `dataUrl`，`web/source/models.json` 只保存模型公共元数据；每个需求的 Prompt、测试用例、结果、参赛配置和截图必须保存在 `web/source/requirements/` 下独立的 JSON 中。
