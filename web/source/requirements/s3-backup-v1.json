@@ -622,7 +622,7 @@
     },
     {
       "modelId": 2,
-      "modelName": "Qwen3.8-Max-Preview",
+      "modelName": "Qwen3.8 Preview",
       "supportsMultimodal": true,
       "software": "QoderCN IDE Quest",
       "version": "1.9.1",
@@ -631,7 +631,7 @@
     },
     {
       "modelId": 10,
-      "modelName": "Qwen3.8-Max",
+      "modelName": "Qwen3.8",
       "supportsMultimodal": true,
       "software": "QoderCN IDE Quest",
       "version": "1.10.0",
@@ -657,7 +657,7 @@
     },
     {
       "modelId": 9,
-      "modelName": "Grok 4.5 High",
+      "modelName": "Grok 4.5",
       "supportsMultimodal": true,
       "software": "Cursor Agent View",
       "version": "3.14.7",
@@ -666,7 +666,7 @@
     },
     {
       "modelId": 18,
-      "modelName": "Grok 4.6 High",
+      "modelName": "Grok 4.6",
       "supportsMultimodal": true,
       "software": "Cursor Agent View",
       "version": "3.15.6",
@@ -684,7 +684,7 @@
     },
     {
       "modelId": 13,
-      "modelName": "GPT-5.6 Sol Max",
+      "modelName": "GPT-5.6 Sol",
       "supportsMultimodal": true,
       "software": "Codex CLI",
       "version": "0.146.0",
@@ -693,7 +693,7 @@
     },
     {
       "modelId": 7,
-      "modelName": "GPT-5.6 Luna Max",
+      "modelName": "GPT-5.6 Luna",
       "supportsMultimodal": true,
       "software": "Codex CLI",
       "version": "0.146.0",
@@ -702,7 +702,7 @@
     },
     {
       "modelId": 15,
-      "modelName": "GPT-5.6 Terra Max",
+      "modelName": "GPT-5.6 Terra",
       "supportsMultimodal": true,
       "software": "Codex CLI",
       "version": "0.146.0",
@@ -711,7 +711,7 @@
     },
     {
       "modelId": 14,
-      "modelName": "GPT-5.5 xhigh",
+      "modelName": "GPT-5.5",
       "supportsMultimodal": true,
       "software": "Codex CLI",
       "version": "0.146.0",
@@ -720,7 +720,7 @@
     },
     {
       "modelId": 16,
-      "modelName": "Claude Opus 5 Max",
+      "modelName": "Claude Opus 5",
       "supportsMultimodal": true,
       "software": "Cursor Agent View",
       "version": "3.14.7",
@@ -756,7 +756,7 @@
     },
     {
       "modelId": 11,
-      "modelName": "GLM-5.2 Max",
+      "modelName": "GLM-5.2",
       "supportsMultimodal": false,
       "software": "Cursor Agent View",
       "version": "3.14.7",
@@ -765,7 +765,7 @@
     },
     {
       "modelId": 12,
-      "modelName": "Kimi K3 Max",
+      "modelName": "Kimi K3",
       "supportsMultimodal": true,
       "software": "Kimi Code",
       "version": "0.31.1",

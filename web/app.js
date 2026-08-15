@@ -1451,6 +1451,14 @@ function getModelToolName(entry) {
   return entry.agent?.software || entry.model.tool;
 }
 
+function formatReasoningEffort(reasoningEffort) {
+  return reasoningEffort === "none" ? "不可设置" : reasoningEffort;
+}
+
+function getModelReasoningMeta(model) {
+  return `思考等级 ${formatReasoningEffort(model.reasoningEffort)}`;
+}
+
 function createMultimodalIcon(model) {
   if (!model?.supportsMultimodal) {
     return null;
@@ -1508,7 +1516,7 @@ function openModelOverallDetails(entry) {
       : `加权平均耗时 ${formatDurationSeconds(entry.weightedAverageDurationSeconds)}`,
     usageMeta,
   ];
-  elements.modelOverallDialogModel.textContent = `${entry.model.name} · ${modelToolName}`;
+  elements.modelOverallDialogModel.textContent = `${entry.model.name} · ${modelToolName} · ${getModelReasoningMeta(entry.model)}`;
   elements.modelOverallDialogMeta.textContent = dialogMeta.join(" · ");
   elements.modelOverallDialogList.replaceChildren();
 
@@ -1562,7 +1570,10 @@ function createModelOverallRow(entry) {
   tool.className = "model-overall-row__tool";
   tool.textContent = getModelToolName(entry);
   name.append(tool);
-  identity.append(rank, name);
+  const reasoning = document.createElement("span");
+  reasoning.className = "model-overall-row__reasoning";
+  reasoning.textContent = getModelReasoningMeta(entry.model);
+  identity.append(rank, name, reasoning);
 
   const testedRequirements = document.createElement("div");
   testedRequirements.className = "model-overall-row__score-block";
@@ -2437,7 +2448,9 @@ function renderModelView() {
   const model = models.find((item) => item.id === state.modelId) ?? models[0];
   const requirement = getCurrentRequirement();
   if (!model || !isModelCatalogLoaded() || !isRequirementDataLoaded(requirement)) {
-    elements.modelKicker.textContent = model?.tool ?? "模型资料";
+    elements.modelKicker.textContent = model
+      ? `${model.tool} · ${getModelReasoningMeta(model)}`
+      : "模型资料";
     elements.modelTitle.textContent = model?.name ?? "正在加载模型资料……";
     elements.modelTestedAt.textContent = "测试时间：读取中";
     elements.modelCount.textContent = "截图读取中";
@@ -2457,7 +2470,7 @@ function renderModelView() {
   const images = getRequirementModelImages(requirement, model.id);
   renderModelTabs();
   renderModelContentTabs();
-  elements.modelKicker.textContent = model.tool;
+  elements.modelKicker.textContent = `${model.tool} · ${getModelReasoningMeta(model)}`;
   elements.modelTitle.textContent = model.name;
   elements.modelTestedAt.textContent = `测试时间：${formatTestedAt(getRequirementTestedAt(requirement, model.id))}`;
   elements.modelCount.textContent = `${images.length} 张 · 原文顺序`;
@@ -2654,7 +2667,12 @@ function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAd
 
   const agent = document.createElement("p");
   agent.className = "leaderboard-card__agent";
-  agent.textContent = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
+  const agentTool = document.createElement("span");
+  agentTool.textContent = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
+  const agentReasoning = document.createElement("span");
+  agentReasoning.className = "leaderboard-card__reasoning";
+  agentReasoning.textContent = getModelReasoningMeta(entry.model);
+  agent.append(agentTool, agentReasoning);
 
   const context = document.createElement("p");
   context.className = "leaderboard-card__context";
@@ -2860,6 +2878,7 @@ function createLeaderboardExportSvg() {
     const isMultimodal = Boolean(entry.model?.supportsMultimodal);
     const isFinalAdopted = entry.modelId === finalAdoptedModelId;
     const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
+    const modelReasoning = getModelReasoningMeta(entry.model);
     const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
     const modelTextLayout = getLeaderboardExportModelTextLayout(modelName);
     const modelTextElement = createChartSvgElement("text", {
@@ -2891,8 +2910,13 @@ function createLeaderboardExportSvg() {
       createChartSvgElement("text", {
         class: "leaderboard-export__agent",
         x: cardX + 560,
-        y: textY,
+        y: textY - 8,
       }, modelTool),
+      createChartSvgElement("text", {
+        class: "leaderboard-export__reasoning",
+        x: cardX + 560,
+        y: textY + 17,
+      }, modelReasoning),
       createChartSvgElement("text", {
         class: "leaderboard-export__context",
         x: cardX + 920,
@@ -2983,6 +3007,7 @@ function createLeaderboardExportSvg() {
         .leaderboard-export__model--multimodal { fill: #e58b66; }
         .leaderboard-export__model--adopted { fill: #f3c76b; }
         .leaderboard-export__agent, .leaderboard-export__context { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 17px; }
+        .leaderboard-export__reasoning { fill: #d7a58f; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 14px; }
         .leaderboard-export__meta-column { fill: #b8b9b4; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
         .leaderboard-export__meta-separator { fill: #969791; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 21px; }
         .leaderboard-export__score { fill: #fffaf6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 34px; font-weight: 700; }
@@ -3490,12 +3515,14 @@ function renderRequirementsView() {
   const participants = getRequirementParticipants(requirement);
   const agentRows = participants.map((agent) => {
     const row = document.createElement("tr");
+    const catalogModel = models.find((model) => model.id === agent.modelId);
+    const modelName = catalogModel?.name ?? agent.modelName;
     const model = document.createElement("th");
     model.scope = "row";
-    model.textContent = agent.modelName;
+    model.textContent = modelName;
     if (agent.supportsMultimodal) {
       model.classList.add("agent-roster-table__model--multimodal");
-      model.setAttribute("aria-label", `${agent.modelName}，支持多模态`);
+      model.setAttribute("aria-label", `${modelName}，支持多模态`);
       model.title = "支持图片输入（多模态）";
     }
     const software = document.createElement("td");
@@ -3504,6 +3531,10 @@ function renderRequirementsView() {
     version.textContent = agent.version || "未记录";
     const context = document.createElement("td");
     context.textContent = agent.context || "未记录";
+    const reasoningEffort = document.createElement("td");
+    reasoningEffort.textContent = catalogModel
+      ? formatReasoningEffort(catalogModel.reasoningEffort)
+      : "不可设置";
     const status = document.createElement("td");
     const statusText = testedModelIds.has(agent.modelId) ? "已测试" : "待测试";
     status.className = `agent-status ${statusText === "已测试" ? "agent-status--tested" : "agent-status--pending"}`;
@@ -3511,7 +3542,7 @@ function renderRequirementsView() {
     if (agent.note) {
       status.title = agent.note;
     }
-    row.append(model, software, version, context, status);
+    row.append(model, software, version, context, reasoningEffort, status);
     return row;
   });
   elements.agentRosterBody.replaceChildren(...agentRows);
@@ -3589,6 +3620,7 @@ function hasValidModelCatalog(payload) {
       && !modelIds.has(model.id)
       && typeof model.name === "string"
       && typeof model.tool === "string"
+      && ["none", "high", "xhigh", "max"].includes(model.reasoningEffort)
       && typeof model.supportsMultimodal === "boolean";
     modelIds.add(model?.id);
     return isValid;

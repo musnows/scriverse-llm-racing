@@ -1711,6 +1711,22 @@ a.requirement-meta-card__value:hover {
   white-space: nowrap;
 }
 
+.leaderboard-card__agent {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.leaderboard-card__agent > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-card__reasoning {
+  color: #d7a58f;
+  text-transform: lowercase;
+}
+
 .leaderboard-card__context {
   margin-bottom: 0;
   justify-content: center;
@@ -2299,6 +2315,7 @@ a.requirement-meta-card__value:hover {
 
 .model-overall-row__name,
 .model-overall-row__tool,
+.model-overall-row__reasoning,
 .model-overall-row__score,
 .model-overall-row__meta {
   overflow: hidden;
@@ -2313,10 +2330,16 @@ a.requirement-meta-card__value:hover {
 }
 
 .model-overall-row__tool,
+.model-overall-row__reasoning,
 .model-overall-row__meta {
   color: #969791;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
+}
+
+.model-overall-row__reasoning {
+  color: #d7a58f;
+  text-transform: lowercase;
 }
 
 .model-overall-row__score {

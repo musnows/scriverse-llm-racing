@@ -1,6 +1,6 @@
 {
-  "version": 7,
-  "modelsUrl": "/source/models.json?v=3",
+  "version": 8,
+  "modelsUrl": "/source/models.json?v=4",
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -17,7 +17,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/s3-backup-v1.json?v=4"
+      "dataUrl": "/source/requirements/s3-backup-v1.json?v=5"
     },
     {
       "id": "sidebar-ai-write-approval-v1",
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=4"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=5"
     }
   ]
 }
