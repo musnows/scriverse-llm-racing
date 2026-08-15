@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>叙界真实需求 Agent 评测娱乐榜</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/styles.css?v=119">
+    <link rel="stylesheet" href="/styles.css?v=120">
   </head>
   <body>
     <div class="app-shell">
@@ -84,10 +84,17 @@
             </div>
           </div>
           <div class="global-requirement-switch">
-            <label for="global-requirement-select">当前测试需求</label>
-            <select id="global-requirement-select" disabled>
-              <option value="">正在加载需求……</option>
-            </select>
+            <span id="global-requirement-label" class="global-requirement-switch__label">当前测试需求</span>
+            <div id="global-requirement-picker" class="global-requirement-picker">
+              <button id="global-requirement-trigger" class="global-requirement-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="global-requirement-label global-requirement-current-title" disabled>
+                <span id="global-requirement-current-index" class="global-requirement-index">#–</span>
+                <span id="global-requirement-current-title" class="global-requirement-current-title">正在加载需求……</span>
+                <svg class="global-requirement-chevron" viewBox="0 0 12 8" aria-hidden="true">
+                  <path d="m1 1 5 5 5-5"></path>
+                </svg>
+              </button>
+              <div id="global-requirement-menu" class="global-requirement-menu" role="listbox" aria-labelledby="global-requirement-label" hidden></div>
+            </div>
           </div>
         </div>
       </header>
@@ -532,6 +539,6 @@
     <script src="/build-meta.js?v=2"></script>
     <script src="/baidu-statistics-config.js?v=1"></script>
     <script src="/baidu-statistics.js?v=1"></script>
-    <script src="/app.js?v=195"></script>
+    <script src="/app.js?v=198"></script>
   </body>
 </html>

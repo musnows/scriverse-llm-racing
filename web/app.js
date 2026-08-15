@@ -1720,7 +1720,11 @@ const elements = {
   viewSwitch: document.querySelector(".view-switch"),
   globalRequirementSwitch: document.querySelector(".global-requirement-switch"),
   backHome: document.getElementById("back-home"),
-  globalRequirementSelect: document.getElementById("global-requirement-select"),
+  globalRequirementPicker: document.getElementById("global-requirement-picker"),
+  globalRequirementTrigger: document.getElementById("global-requirement-trigger"),
+  globalRequirementCurrentIndex: document.getElementById("global-requirement-current-index"),
+  globalRequirementCurrentTitle: document.getElementById("global-requirement-current-title"),
+  globalRequirementMenu: document.getElementById("global-requirement-menu"),
   modelView: document.getElementById("model-view"),
   featureView: document.getElementById("feature-view"),
   modelTabs: document.getElementById("model-tabs"),
@@ -3341,26 +3345,69 @@ function renderHomeView() {
   }
 }
 
+function closeGlobalRequirementMenu(restoreFocus = false) {
+  elements.globalRequirementMenu.hidden = true;
+  elements.globalRequirementPicker.classList.remove("global-requirement-picker--open");
+  elements.globalRequirementTrigger.setAttribute("aria-expanded", "false");
+  if (restoreFocus) {
+    elements.globalRequirementTrigger.focus();
+  }
+}
+
+function openGlobalRequirementMenu() {
+  if (elements.globalRequirementTrigger.disabled) {
+    return;
+  }
+  elements.globalRequirementMenu.hidden = false;
+  elements.globalRequirementPicker.classList.add("global-requirement-picker--open");
+  elements.globalRequirementTrigger.setAttribute("aria-expanded", "true");
+}
+
 function renderGlobalRequirementSelect() {
   const requirements = leaderboardData?.requirements ?? [];
-  elements.globalRequirementSelect.replaceChildren();
+  elements.globalRequirementMenu.replaceChildren();
+  closeGlobalRequirementMenu();
   if (requirements.length === 0) {
-    const option = document.createElement("option");
-    option.value = "";
-    option.textContent = leaderboardLoadError ? "需求加载失败" : "正在加载需求……";
-    elements.globalRequirementSelect.append(option);
-    elements.globalRequirementSelect.disabled = true;
+    elements.globalRequirementCurrentIndex.textContent = "#–";
+    elements.globalRequirementCurrentTitle.textContent = leaderboardLoadError ? "需求加载失败" : "正在加载需求……";
+    elements.globalRequirementTrigger.disabled = true;
     return;
   }
 
-  for (const requirement of requirements) {
-    const option = document.createElement("option");
-    option.value = requirement.id;
-    option.textContent = requirement.title;
-    elements.globalRequirementSelect.append(option);
-  }
-  elements.globalRequirementSelect.value = state.requirementId ?? requirements[0].id;
-  elements.globalRequirementSelect.disabled = false;
+  const selectedId = requirements.some((requirement) => requirement.id === state.requirementId)
+    ? state.requirementId
+    : requirements[0].id;
+  requirements.forEach((requirement, index) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "global-requirement-option";
+    option.dataset.requirementId = requirement.id;
+    option.setAttribute("role", "option");
+    option.setAttribute("aria-selected", String(requirement.id === selectedId));
+
+    const sequence = document.createElement("span");
+    sequence.className = "global-requirement-index";
+    sequence.textContent = `#${index + 1}`;
+
+    const title = document.createElement("span");
+    title.className = "global-requirement-option__title";
+    title.textContent = requirement.title;
+    option.append(sequence, title);
+    option.addEventListener("click", () => {
+      state.requirementId = requirement.id;
+      state.requirementsTab = "requirement";
+      renderGlobalRequirementSelect();
+      setView(state.view);
+    });
+    elements.globalRequirementMenu.append(option);
+  });
+
+  const selectedIndex = Math.max(0, requirements.findIndex((requirement) => requirement.id === selectedId));
+  const selectedRequirement = requirements[selectedIndex] ?? requirements[0];
+  elements.globalRequirementCurrentIndex.textContent = `#${selectedIndex + 1}`;
+  elements.globalRequirementCurrentTitle.textContent = selectedRequirement.title;
+  elements.globalRequirementTrigger.disabled = false;
+  elements.globalRequirementTrigger.title = selectedRequirement.title;
 }
 
 function renderRequirementTabs(requirements) {
@@ -4031,10 +4078,55 @@ elements.homeTestMethodEntry.addEventListener("click", () => {
   state.requirementsTab = "method";
   setView("requirements");
 });
-elements.globalRequirementSelect.addEventListener("change", (event) => {
-  state.requirementId = event.target.value;
-  state.requirementsTab = "requirement";
-  setView(state.view);
+elements.globalRequirementTrigger.addEventListener("click", () => {
+  if (elements.globalRequirementMenu.hidden) {
+    openGlobalRequirementMenu();
+    elements.globalRequirementMenu.querySelector('[aria-selected="true"]')?.focus();
+  } else {
+    closeGlobalRequirementMenu();
+  }
+});
+elements.globalRequirementTrigger.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+    return;
+  }
+  event.preventDefault();
+  openGlobalRequirementMenu();
+  const options = [...elements.globalRequirementMenu.querySelectorAll(".global-requirement-option")];
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.getAttribute("aria-selected") === "true"));
+  const targetIndex = event.key === "ArrowUp" ? Math.max(0, selectedIndex - 1) : selectedIndex;
+  options[targetIndex]?.focus();
+});
+elements.globalRequirementMenu.addEventListener("keydown", (event) => {
+  const options = [...elements.globalRequirementMenu.querySelectorAll(".global-requirement-option")];
+  const currentIndex = options.indexOf(document.activeElement);
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeGlobalRequirementMenu(true);
+    return;
+  }
+  if ((event.key === "Enter" || event.key === " ") && currentIndex >= 0) {
+    event.preventDefault();
+    options[currentIndex].click();
+    return;
+  }
+  if (event.key === "Home" || event.key === "End" || event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    const targetIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? options.length - 1
+        : event.key === "ArrowDown"
+          ? Math.min(options.length - 1, currentIndex + 1)
+          : Math.max(0, currentIndex - 1);
+    options[targetIndex]?.focus();
+  }
+});
+document.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target?.closest("#global-requirement-picker")) {
+    closeGlobalRequirementMenu();
+  }
 });
 elements.backHome.addEventListener("click", () => {
   state.requirementId = null;
