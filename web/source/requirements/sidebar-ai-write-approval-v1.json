@@ -266,6 +266,7 @@
       "testedAt": "2026-08-15T09:45:12+08:00",
       "durationSeconds": 4690,
       "tokenUsage": 121171000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/ai-write/deepseek-v4-pro-0813-dsh",
       "agent": {
         "software": "dsh 极简模式",
         "version": "0.1.0-rc.6",
@@ -290,6 +291,7 @@
       "testedAt": "2026-08-15T10:26:09+08:00",
       "durationSeconds": 828,
       "tokenUsage": 13038600,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/ai-write/deepseek-v4-flash-0731-dsh",
       "agent": {
         "software": "dsh 极简模式",
         "version": "0.1.0-rc.6",

@@ -570,6 +570,7 @@
       "modelId": 20,
       "durationSeconds": 2460,
       "tokenUsage": 51219000,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-pro-0813-dsh",
       "agent": {
         "software": "dsh 极简模式",
         "version": "0.1.0-rc.6",
@@ -588,6 +589,7 @@
       "modelId": 21,
       "durationSeconds": 1470,
       "tokenUsage": 24789037,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/deepseek-v4-flash-0731-dsh",
       "agent": {
         "software": "dsh 极简模式",
         "version": "0.1.0-rc.6",
