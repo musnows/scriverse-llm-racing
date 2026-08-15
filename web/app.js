@@ -1866,7 +1866,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   const target = event.target instanceof Element ? event.target : null;
-  if (!target || elements.toast.contains(target) || target.closest(".leaderboard-final-adopted-banner")) {
+  if (!target || elements.toast.contains(target) || target.closest(".leaderboard-final-adopted-banner, .leaderboard-performance-badge")) {
     return;
   }
   hideToast();
@@ -2643,6 +2643,45 @@ function createFinalAdoptedBanner(modelName, pullRequestUrl = "") {
   return banner;
 }
 
+function getPerformanceAssessment(entry) {
+  const exceptionalNote = typeof entry.exceptionalPerformanceNote === "string"
+    ? entry.exceptionalPerformanceNote.trim()
+    : "";
+  if (exceptionalNote) {
+    return { type: "exceptional", label: "超常发挥", note: exceptionalNote };
+  }
+  const underperformanceNote = typeof entry.underperformanceNote === "string"
+    ? entry.underperformanceNote.trim()
+    : "";
+  return underperformanceNote
+    ? { type: "underperformance", label: "不及预期", note: underperformanceNote }
+    : null;
+}
+
+function createPerformanceBadge(entry) {
+  const assessment = getPerformanceAssessment(entry);
+  if (!assessment) {
+    return null;
+  }
+  const modelName = entry.model?.name ?? entry.modelId;
+  const badge = document.createElement("button");
+  badge.type = "button";
+  badge.className = `leaderboard-performance-badge leaderboard-performance-badge--${assessment.type}`;
+  badge.title = `查看“${assessment.label}”备注`;
+  badge.setAttribute("aria-label", `${modelName}：${assessment.label}，查看备注`);
+  badge.innerHTML = assessment.type === "exceptional"
+    ? `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.2 7.1 4.9 10.8 6 7.1 7.1 6 10.8 4.9 7.1 1.2 6 4.9 4.9Z"></path></svg><span>${assessment.label}</span>`
+    : `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="m1.5 3 3 3 2-2 4 4"></path><path d="M7.8 8h2.7V5.3"></path></svg><span>${assessment.label}</span>`;
+  badge.addEventListener("click", () => {
+    if (!elements.toast.hidden && elements.toast.classList.contains("toast--anchored")) {
+      hideToast();
+      return;
+    }
+    showToast(`${assessment.label}：${assessment.note}`, "info", { anchor: badge });
+  });
+  return badge;
+}
+
 function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAdoptedPrUrl = "") {
   const card = document.createElement("article");
   card.className = "leaderboard-card";
@@ -2657,6 +2696,10 @@ function createLeaderboardSummaryCard(entry, finalAdoptedModelId = null, finalAd
   appendModelName(name, entry.model, entry.modelId);
   if (entry.modelId === finalAdoptedModelId) {
     name.append(createFinalAdoptedBanner(entry.model?.name ?? entry.modelId, finalAdoptedPrUrl));
+  }
+  const performanceBadge = createPerformanceBadge(entry);
+  if (performanceBadge) {
+    name.append(performanceBadge);
   }
   const branchCell = document.createElement("div");
   branchCell.className = "leaderboard-card__branch";
@@ -3556,6 +3599,17 @@ function hasValidScoring(scoring) {
     && !Array.isArray(scoring.deductionByPriority);
 }
 
+function hasValidPerformanceAssessment(entry) {
+  const exceptionalNote = entry?.exceptionalPerformanceNote;
+  const underperformanceNote = entry?.underperformanceNote;
+  const hasExceptional = typeof exceptionalNote === "string";
+  const hasUnderperformance = typeof underperformanceNote === "string";
+  return (!hasExceptional || Boolean(exceptionalNote.trim()))
+    && (!hasUnderperformance || Boolean(underperformanceNote.trim()))
+    && !((exceptionalNote !== undefined && !hasExceptional) || (underperformanceNote !== undefined && !hasUnderperformance))
+    && !(hasExceptional && hasUnderperformance);
+}
+
 function hasValidRequirementData(payload, expectedId) {
   const testCases = payload?.testCases;
   const screenshots = payload?.screenshots;
@@ -3571,6 +3625,7 @@ function hasValidRequirementData(payload, expectedId) {
     && Array.isArray(payload.models)
     && payload.models.every((entry) => (
       Number.isSafeInteger(entry?.modelId)
+      && hasValidPerformanceAssessment(entry)
       && (entry.unexpectedCases === undefined
         || (Array.isArray(entry.unexpectedCases)
           && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim())))

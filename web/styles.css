@@ -1642,6 +1642,62 @@ a.requirement-meta-card__value:hover {
   outline-offset: 2px;
 }
 
+.leaderboard-performance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding: 3px 6px;
+  border: 1px solid;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.leaderboard-performance-badge svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.leaderboard-performance-badge--exceptional {
+  border-color: #397f74;
+  color: #78d6c4;
+  background: rgba(74, 170, 151, .12);
+}
+
+.leaderboard-performance-badge--exceptional:hover {
+  border-color: #61b5a5;
+  color: #b6f2e6;
+  background: rgba(74, 170, 151, .2);
+}
+
+.leaderboard-performance-badge--underperformance {
+  border-color: #744a62;
+  color: #dca3c4;
+  background: rgba(198, 111, 159, .12);
+}
+
+.leaderboard-performance-badge--underperformance:hover {
+  border-color: #a66a8b;
+  color: #f0c3dc;
+  background: rgba(198, 111, 159, .2);
+}
+
+.leaderboard-performance-badge:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .model-multimodal-icon {
   display: inline-flex;
   flex: 0 0 auto;

@@ -14,6 +14,7 @@
       "durationSeconds": 6491,
       "tokenUsage": 271222111,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/1daa48d9",
+      "underperformanceNote": "DeepSeek V4 Pro Preview 在侧边栏 AI 可写工具需求中的完成度低于测试前预期。",
       "failures": {
         "TC-02": "write_character 的 raceId 和 organizationIds 会改变种族或组织关联，但工具启用和计划执行只检查 characters 写权限，缺少跨模块权限校验。",
         "TC-04": "拒绝审批路由只校验计划属于当前作品，Store.rejectAiWritePlan 也不校验发起用户或对话归属用户；同作品协作者可通过已知 plan ID 拒绝他人审批。",
@@ -207,6 +208,7 @@
       "durationSeconds": 3033,
       "tokenUsage": 277679988,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/6e916f00",
+      "exceptionalPerformanceNote": "Claude Code 下的 DeepSeek V4 Flash 0731 在侧边栏 AI 可写工具需求中的完成度明显高于测试前预期。",
       "failures": {
         "TC-07": "可写工具还要求开启未在设置页明确展示的工具级白名单；所有对话（包括尚无消息的空白对话）在创建时锁定该白名单，之后开启能力不会将函数加入 tools。",
         "TC-09": "通用词条工具没有按具体能力开关过滤；关闭某一词条类别后，AI 仍可为该类别生成待确认计划。",

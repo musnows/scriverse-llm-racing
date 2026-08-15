@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "modelsUrl": "/source/models.json?v=4",
   "requirements": [
     {
@@ -17,7 +17,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/s3-backup-v1.json?v=5"
+      "dataUrl": "/source/requirements/s3-backup-v1.json?v=6"
     },
     {
       "id": "sidebar-ai-write-approval-v1",
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=5"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=6"
     }
   ]
 }
