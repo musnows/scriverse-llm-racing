@@ -257,6 +257,33 @@
         "TC-18": "AskUserQuestions 成功后仍会执行同批后续工具并发起无工具的下一轮模型收尾回复；挂起仅存在于单次请求局部变量，回答依赖当前页面重新发起聊天，无法持久化并一次性恢复对应 Agent 工作流。",
         "TC-22": "每次聊天都会从当前 agentWriteTools 构造 agentWriteContext 并追加交互写工具；没有按会话消息状态冻结，开启后会改变已交互对话的 tools。"
       }
+    },
+    {
+      "modelId": 20,
+      "testedAt": "2026-08-15T09:45:12+08:00",
+      "durationSeconds": 4690,
+      "tokenUsage": 121171000,
+      "agent": {
+        "software": "dsh 极简模式",
+        "version": "0.1.0-rc.6",
+        "context": "1M"
+      },
+      "deductionExemptFailures": [
+        "TC-14"
+      ],
+      "failures": {
+        "TC-02": "种族或组织的 memberIds 会实际改写角色，角色的 raceId、organizationIds 也会改写关联模块，但计划只校验单一主体模块权限；已复现仅有 races 写权限时仍可改变角色种族。",
+        "TC-04": "审批和提问接口只有作品级访问校验，没有按发起用户或对话归属隔离；已复现同作品另一成员可读取、拒绝他人审批，并读取、回答他人问题。",
+        "TC-06": "分析资料版本快照只保存序列化 sourceVersions 的字符长度；已复现章节从 v1 更新到等长的 v2 后，旧计划仍执行成功并创建分析任务。",
+        "TC-12": "系统详情遗漏种族和组织 settingsMarkdown 等可执行字段，新建详情也只展示输入字段而非最终完整字段，用户可能确认未完整展示的修改。",
+        "TC-13": "工具返回 questionId，但前端提交预置选项时读取 question.id，真实工具触发的问题无法从 UI 提交选择。",
+        "TC-14": "前端自定义回答同样使用错误的 question.id，真实工具触发的问题无法提交自定义回答；与 TC-13 为同一根因，本项不重复扣分。",
+        "TC-18": "AskUserQuestions 立即返回 completed，Agent loop 仍会执行同轮其他工具并继续请求模型；回答接口只更新问题记录，没有持久化阻塞和仅一次 continuation。",
+        "TC-19": "审批中心只请求审批列表，提问对话框依赖当前流式 tool_call；刷新、重登或重启后没有查看和处理持久化问题的入口。",
+        "TC-21": "审批中心只展示执行状态和版本号，后端返回的 events、操作者及审计信息均未渲染。",
+        "TC-22": "只读 Agent 工具使用对话快照，可写工具却在每次请求时按当前设置重新计算；之后开关工具会改变已有对话的 tools。",
+        "TC-24": "git diff --check 未通过：src/ai-write.ts 文件末尾存在新增空行；其余测试与 12 个 Angular 提交均通过。"
+      }
     }
   ],
   "screenshotFeatures": [
@@ -474,6 +501,15 @@
       "software": "WorkBuddy",
       "version": "5.3.8",
       "context": "512K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 20,
+      "modelName": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "1M",
       "status": "已测试"
     }
   ],

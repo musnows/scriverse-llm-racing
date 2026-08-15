@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -133,7 +133,8 @@
         16,
         17,
         18,
-        19
+        19,
+        20
       ],
       "testCases": [
         { "id": "TC-01", "content": "没有 AI 设置权限的用户不能开启、关闭或修改任一 AI 工具的可用性配置。" },
