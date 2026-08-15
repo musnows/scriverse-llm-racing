@@ -2723,6 +2723,28 @@ function getRequirementFirstTestAt(requirement) {
   return dates[0] ?? null;
 }
 
+function getLeaderboardExportModelTextLayout(modelName, maxWidth = 340) {
+  const maxFontSize = 26;
+  const minFontSize = 16;
+  const text = String(modelName);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const measuredWidth = context
+    ? (() => {
+      context.font = `650 ${maxFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif`;
+      return context.measureText(text).width;
+    })()
+    : getChartLabelWidth(text, maxFontSize);
+  const fontSize = measuredWidth <= maxWidth
+    ? maxFontSize
+    : Math.max(minFontSize, Math.floor(maxFontSize * maxWidth / measuredWidth));
+  const renderedWidth = measuredWidth * fontSize / maxFontSize;
+  return {
+    fontSize,
+    textLength: renderedWidth > maxWidth ? maxWidth : null,
+  };
+}
+
 function createLeaderboardExportSvg() {
   const requirement = getCurrentRequirement();
   if (!requirement) {
@@ -2842,10 +2864,16 @@ function createLeaderboardExportSvg() {
     const isFinalAdopted = entry.modelId === finalAdoptedModelId;
     const modelTool = `${entry.agent?.software ?? "软件版本未记录"} · ${entry.agent?.version ?? "版本未记录"}`;
     const contextValue = String(entry.agent?.context ?? "未记录").split(/[（(]/, 1)[0].trim() || "未记录";
+    const modelTextLayout = getLeaderboardExportModelTextLayout(modelName);
     const modelTextElement = createChartSvgElement("text", {
       class: `leaderboard-export__model${isFinalAdopted ? " leaderboard-export__model--adopted" : isMultimodal ? " leaderboard-export__model--multimodal" : ""}`,
       x: modelX,
       y: textY,
+      style: `font-size: ${modelTextLayout.fontSize}px`,
+      ...(modelTextLayout.textLength === null ? {} : {
+        textLength: modelTextLayout.textLength,
+        lengthAdjust: "spacingAndGlyphs",
+      }),
     }, modelName);
 
     exportSvg.append(
