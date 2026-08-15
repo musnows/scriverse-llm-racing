@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "models": [
     {
       "id": 1,
@@ -118,6 +118,12 @@
     {
       "id": 20,
       "name": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "tool": "dsh 极简模式",
+      "supportsMultimodal": false
+    },
+    {
+      "id": 21,
+      "name": "DeepSeek V4 Flash 0731 (dsh 极简模式)",
       "tool": "dsh 极简模式",
       "supportsMultimodal": false
     }

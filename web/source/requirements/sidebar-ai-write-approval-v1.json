@@ -284,6 +284,33 @@
         "TC-22": "只读 Agent 工具使用对话快照，可写工具却在每次请求时按当前设置重新计算；之后开关工具会改变已有对话的 tools。",
         "TC-24": "git diff --check 未通过：src/ai-write.ts 文件末尾存在新增空行；其余测试与 12 个 Angular 提交均通过。"
       }
+    },
+    {
+      "modelId": 21,
+      "testedAt": "2026-08-15T10:26:09+08:00",
+      "durationSeconds": 828,
+      "tokenUsage": 13038600,
+      "agent": {
+        "software": "dsh 极简模式",
+        "version": "0.1.0-rc.6",
+        "context": "1M"
+      },
+      "deductionExemptFailures": [
+        "TC-14"
+      ],
+      "failures": {
+        "TC-02": "关联操作只校验单一主体模块权限；已复现仅有 races 写权限、characters 只读的成员仍能通过 race.create 改写角色 raceId。",
+        "TC-04": "审批和提问接口只有作品访问校验，没有按发起用户或对话归属隔离；同作品另一成员可读取、拒绝他人审批，并读取、回答他人问题。",
+        "TC-06": "分析范围版本快照只保存 sourceVersions 序列化后的字符长度；已复现章节从 v1 更新到等长的 v2 后，旧审批仍成功并创建分析任务。",
+        "TC-12": "种族和组织详情遗漏实际执行的 settingsMarkdown 等字段，新建详情也只展示显式输入而非最终完整字段。",
+        "TC-13": "工具结果返回 questionId，但前端提交预置选项时读取 question.id，真实工具创建的问题无法从 UI 提交选择。",
+        "TC-14": "自定义回答和拒绝同样使用错误的 question.id，真实工具创建的问题无法提交；与 TC-13 为同一根因，本项不重复扣分。",
+        "TC-18": "AskUserQuestions 后仍会执行同批后续写工具，并额外发起模型请求生成普通回复；回答接口没有持久化 Agent loop 或仅一次 continuation。",
+        "TC-19": "审批中心只恢复审批列表，问题对话框依赖当前 SSE 工具事件；刷新、重登或重启后没有查看和处理持久化问题的入口。",
+        "TC-21": "审批中心只展示状态和版本号，未渲染后端返回的 events、操作者或审计记录。",
+        "TC-22": "只读工具使用对话快照，可写工具却在每轮按作品当前设置重新计算，已交互对话的 tools 会随后续设置变化。",
+        "TC-24": "git diff --check 未通过：src/ai-write.ts 文件末尾存在新增空行；13 个提交信息均符合 Angular 规范。"
+      }
     }
   ],
   "screenshotFeatures": [
@@ -506,6 +533,15 @@
     {
       "modelId": 20,
       "modelName": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 21,
+      "modelName": "DeepSeek V4 Flash 0731 (dsh 极简模式)",
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",

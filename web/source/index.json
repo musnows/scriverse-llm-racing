@@ -1,6 +1,6 @@
 {
-  "version": 4,
-  "modelsUrl": "/source/models.json?v=2",
+  "version": 5,
+  "modelsUrl": "/source/models.json?v=3",
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=2"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=3"
     }
   ]
 }
