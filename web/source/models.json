@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "models": [
     {
       "id": 1,
@@ -113,6 +113,12 @@
       "id": 19,
       "name": "DeepSeek V4 Pro 0813",
       "tool": "Claude Code",
+      "supportsMultimodal": false
+    },
+    {
+      "id": 20,
+      "name": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "tool": "dsh 极简模式",
       "supportsMultimodal": false
     }
   ]

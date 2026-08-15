@@ -22,7 +22,7 @@ const features = [
   ["review", "AICR 与评分", "汇总代码审查命中项、最终评分和主要问题。"],
 ].map(([id, name, description]) => ({ id, name, description }));
 
-const leaderboardManifestUrl = "/source/index.json?v=1";
+const leaderboardManifestUrl = "/source/index.json?v=2";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;

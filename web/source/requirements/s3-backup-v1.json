@@ -562,6 +562,24 @@
         "TC-21": "S3 备份流程只上传数据库和图片，没有上传 master.key 或等价恢复密钥，异机恢复无法解密凭证。"
       },
       "testedAt": "2026-08-05T00:01:31+08:00"
+    },
+    {
+      "modelId": 20,
+      "durationSeconds": 2460,
+      "tokenUsage": 51219000,
+      "agent": {
+        "software": "dsh 极简模式",
+        "version": "0.1.0-rc.6",
+        "context": "未记录"
+      },
+      "failures": {
+        "TC-07": "备份计划只有一个全局触发时间和单个定时器，目标本身没有独立触发时间，所有启用目标只能共享同一次每日任务。",
+        "TC-08": "对象列举将 ListObjectsV2 响应强制按 JSON 解析；标准 Amazon S3 XML 响应会触发 INVALID_JSON，导致实际 S3 留存清理失败并把已上传任务判为失败。",
+        "TC-18": "S3 服务端错误正文未经当前目标 AK/SK 值级脱敏即进入日志、result_json、API 和 Toast；已复现回显 Authorization 时 AK 原样泄漏。",
+        "TC-20": "全量测试 640/641 通过；唯一失败是共同基线已有的 package.json 0.6.6 与 src/version.ts 0.6.5 不一致，候选的 3 个提交均符合 Angular 规范。",
+        "TC-21": "快照只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥，新环境无法解密数据库中保存的凭据。"
+      },
+      "testedAt": "2026-08-15T09:04:58+08:00"
     }
   ],
   "participants": [
@@ -742,6 +760,15 @@
       "software": "WorkBuddy",
       "version": "5.3.8",
       "context": "512K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 20,
+      "modelName": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "未记录",
       "status": "已测试"
     }
   ],
