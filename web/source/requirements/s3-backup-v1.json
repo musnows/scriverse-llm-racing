@@ -580,6 +580,25 @@
         "TC-21": "快照只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥，新环境无法解密数据库中保存的凭据。"
       },
       "testedAt": "2026-08-15T09:04:58+08:00"
+    },
+    {
+      "modelId": 21,
+      "durationSeconds": 1470,
+      "tokenUsage": 24789037,
+      "agent": {
+        "software": "dsh 极简模式",
+        "version": "0.1.0-rc.6",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "备份设置只有一个全局触发时间和单个定时器，目标本身没有独立定时配置；所有启用目标只能共享同一次每日任务。",
+        "TC-08": "留存清理只校验对象位于 db/ 前缀且以 .db 结尾，没有限制 database-时间戳.db 快照命名；已复现会删除 aaa-important.db 等非快照数据库对象。",
+        "TC-15": "新增并修改了 app.js、styles.css 和 index.html，但 index.html 中 app.js 与 styles.css 的缓存版本参数均未更新。",
+        "TC-18": "S3 错误正文未经目标 AK 值级脱敏即进入错误日志、API 结果和 last_error；已复现服务端回显 Authorization 时 AK 原样泄漏。",
+        "TC-20": "全量测试 629/630 通过，唯一失败是 package.json 0.6.6 与 src/version.ts 0.6.5 不一致；唯一提交 feat: add S3-compatible database and image backup 缺少项目要求的 scope。",
+        "TC-21": "快照只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥，新环境无法解密数据库中保存的凭据。"
+      },
+      "testedAt": "2026-08-15T10:53:33+08:00"
     }
   ],
   "participants": [
@@ -765,6 +784,15 @@
     {
       "modelId": 20,
       "modelName": "DeepSeek V4 Pro 0813 (dsh 极简模式)",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 21,
+      "modelName": "DeepSeek V4 Flash 0731 (dsh 极简模式)",
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
