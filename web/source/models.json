@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "models": [
     {
       "id": 1,
@@ -145,6 +145,13 @@
       "id": 21,
       "name": "DeepSeek V4 Flash 0731 (dsh 极简模式)",
       "tool": "dsh 极简模式",
+      "reasoningEffort": "max",
+      "supportsMultimodal": false
+    },
+    {
+      "id": 22,
+      "name": "GLM-5.3",
+      "tool": "Qoder",
       "reasoningEffort": "max",
       "supportsMultimodal": false
     }

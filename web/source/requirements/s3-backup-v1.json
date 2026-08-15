@@ -605,6 +605,29 @@
         "TC-21": "快照只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥，新环境无法解密数据库中保存的凭据。"
       },
       "testedAt": "2026-08-15T10:53:33+08:00"
+    },
+    {
+      "modelId": 22,
+      "durationSeconds": 1994,
+      "tokenUsage": 860,
+      "tokenUsageUnit": "credit",
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/llm/s3/glm-5.3-max-qoder",
+      "underperformanceNote": "GLM-5.3 在 S3 备份需求中的完成度低于测试前预期。",
+      "agent": {
+        "software": "Qoder",
+        "version": "1.24.2",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-06": "保存并查询 secretHint，导致 SK 首尾片段以明文落库并返回前端。",
+        "TC-07": "所有目标共享单个全局定时器，且 S3 请求没有超时；单目标挂起会永久阻断后续目标。",
+        "TC-09": "Virtual Hosted Style 仍把 bucket 放入对象路径并覆盖 endpoint 基础路径，连接配置无法正确生效。",
+        "TC-15": "修改了 styles.css，但 index.html 仍引用旧缓存版本；候选测试也没有覆盖该资源 URL。",
+        "TC-18": "S3 服务端回显 Authorization 时，完整 AK 会进入错误日志、运行结果、last_error 和 Toast。",
+        "TC-20": "全量测试 648/650；version.test.ts 因基线版本不一致失败，product-footer.test.ts 在全量批次中出现缓存头污染失败。",
+        "TC-21": "备份只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥。"
+      },
+      "testedAt": "2026-08-15T13:13:14+08:00"
     }
   ],
   "participants": [
@@ -802,6 +825,15 @@
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 22,
+      "modelName": "GLM-5.3",
+      "supportsMultimodal": false,
+      "software": "Qoder",
+      "version": "1.24.2",
       "context": "1M",
       "status": "已测试"
     }
