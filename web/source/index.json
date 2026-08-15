@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "modelsUrl": "/source/models.json?v=2",
   "requirements": [
     {
@@ -17,7 +17,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/s3-backup-v1.json?v=2"
+      "dataUrl": "/source/requirements/s3-backup-v1.json?v=3"
     },
     {
       "id": "sidebar-ai-write-approval-v1",

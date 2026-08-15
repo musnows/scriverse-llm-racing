@@ -570,7 +570,7 @@
       "agent": {
         "software": "dsh 极简模式",
         "version": "0.1.0-rc.6",
-        "context": "未记录"
+        "context": "1M"
       },
       "failures": {
         "TC-07": "备份计划只有一个全局触发时间和单个定时器，目标本身没有独立触发时间，所有启用目标只能共享同一次每日任务。",
@@ -768,7 +768,7 @@
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
-      "context": "未记录",
+      "context": "1M",
       "status": "已测试"
     }
   ],
