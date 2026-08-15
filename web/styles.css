@@ -1154,6 +1154,33 @@ h2 {
   margin-top: 0;
 }
 
+.requirement-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+}
+
+.requirement-launched-at {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 5px 9px;
+  border: 1px solid #3f3934;
+  border-radius: 6px;
+  color: #b7b8b2;
+  background: #171816;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.requirement-launched-at span {
+  color: #d77855;
+}
+
 .test-method-view {
   min-width: 0;
 }

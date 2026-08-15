@@ -319,6 +319,25 @@ function formatTestedAt(value) {
   }).format(date).replaceAll("/", "-");
 }
 
+function setRequirementLaunchedAt(value, fallbackText = "未记录") {
+  const date = typeof value === "string" ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    elements.requirementLaunchedAt.textContent = fallbackText;
+    elements.requirementLaunchedAt.removeAttribute("datetime");
+    return;
+  }
+  elements.requirementLaunchedAt.textContent = new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date).replaceAll("/", "-");
+  elements.requirementLaunchedAt.dateTime = value;
+}
+
 function renderBuildUpdatedAt() {
   const source = window.__WEB_UPDATED_AT__ || document.lastModified;
   elements.buildUpdatedAt.textContent = `最近更新时间：${formatBuildUpdatedAt(source)}`;
@@ -1773,6 +1792,7 @@ const elements = {
   testMethodFirstPrompt: document.getElementById("test-method-first-prompt"),
   copyTestMethodFirstPrompt: document.getElementById("copy-test-method-first-prompt"),
   requirementTitle: document.getElementById("requirement-title"),
+  requirementLaunchedAt: document.getElementById("requirement-launched-at"),
   requirementRepository: document.getElementById("requirement-repository"),
   requirementCommit: document.getElementById("requirement-commit"),
   copyRequirementCommit: document.getElementById("copy-requirement-commit"),
@@ -3507,6 +3527,7 @@ function renderRequirementsView() {
     elements.requirementTabs.replaceChildren();
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "正在加载测试需求……";
+    setRequirementLaunchedAt(null, "读取中");
     elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
@@ -3518,6 +3539,7 @@ function renderRequirementsView() {
     elements.requirementTabs.replaceChildren();
     elements.testMethodTab.setAttribute("aria-selected", String(showMethod));
     elements.requirementTitle.textContent = "暂无测试需求";
+    setRequirementLaunchedAt(null);
     elements.requirementWeight.textContent = "未记录";
     elements.agentRosterBody.replaceChildren();
     return;
@@ -3530,6 +3552,7 @@ function renderRequirementsView() {
   }
   elements.requirementTitle.textContent = requirement.title;
   if (!isRequirementDataLoaded(requirement)) {
+    setRequirementLaunchedAt(null, requirementDataErrors.has(requirement.id) ? "未记录" : "读取中");
     elements.requirementRepository.removeAttribute("href");
     elements.requirementRepository.textContent = requirement.baseRepository ?? "读取中";
     elements.requirementCommit.textContent = "读取中";
@@ -3543,6 +3566,7 @@ function renderRequirementsView() {
     elements.agentRosterBody.replaceChildren();
     return;
   }
+  setRequirementLaunchedAt(requirement.launchedAt);
   elements.requirementRepository.href = requirement.baseRepositoryUrl;
   elements.requirementRepository.textContent = requirement.baseRepository;
   elements.requirementCommit.textContent = requirement.baseCommit;
@@ -3615,6 +3639,8 @@ function hasValidRequirementData(payload, expectedId) {
   const screenshots = payload?.screenshots;
   return payload?.id === expectedId
     && typeof payload.title === "string"
+    && typeof payload.launchedAt === "string"
+    && !Number.isNaN(new Date(payload.launchedAt).getTime())
     && hasValidScoring(payload.scoring)
     && Array.isArray(testCases)
     && testCases.every((testCase) => (
