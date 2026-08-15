@@ -22,7 +22,7 @@ const features = [
   ["review", "AICR 与评分", "汇总代码审查命中项、最终评分和主要问题。"],
 ].map(([id, name, description]) => ({ id, name, description }));
 
-const leaderboardManifestUrl = "/source/index.json?v=5";
+const leaderboardManifestUrl = "/source/index.json?v=6";
 const earliestRecordedTestAt = Date.parse("2026-01-01T00:00:00+08:00");
 let leaderboardData = null;
 let leaderboardLoadError = false;
@@ -174,15 +174,8 @@ function getRankingData() {
   rankingDataCache = entries
     .map((entry) => {
       const failedIds = new Set(Object.keys(entry.failures ?? {}).filter((testCaseId) => testCaseIds.has(testCaseId)));
-      const deductionExemptFailures = new Set(
-        Array.isArray(entry.deductionExemptFailures) ? entry.deductionExemptFailures : [],
-      );
       const deductions = testCases.reduce(
-        (total, testCase) => total + (
-          failedIds.has(testCase.id) && !deductionExemptFailures.has(testCase.id)
-            ? scoreByPriority[testCase.priority]
-            : 0
-        ),
+        (total, testCase) => total + (failedIds.has(testCase.id) ? scoreByPriority[testCase.priority] : 0),
         0,
       );
       return {
@@ -3500,12 +3493,6 @@ function hasValidRequirementData(payload, expectedId) {
     && Array.isArray(payload.models)
     && payload.models.every((entry) => (
       Number.isSafeInteger(entry?.modelId)
-      && (entry.deductionExemptFailures === undefined
-        || (Array.isArray(entry.deductionExemptFailures)
-          && entry.deductionExemptFailures.every((testCaseId) => (
-            typeof testCaseId === "string"
-            && Object.prototype.hasOwnProperty.call(entry.failures ?? {}, testCaseId)
-          ))))
       && (entry.unexpectedCases === undefined
         || (Array.isArray(entry.unexpectedCases)
           && entry.unexpectedCases.every((item) => typeof item === "string" && item.trim())))
