@@ -1616,6 +1616,7 @@ a.requirement-meta-card__value:hover {
 .leaderboard-final-adopted-banner {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   flex: 0 0 auto;
   margin-left: 8px;
   padding: 3px 6px;
@@ -1629,6 +1630,16 @@ a.requirement-meta-card__value:hover {
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+.leaderboard-final-adopted-banner svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
 }
 
 .leaderboard-final-adopted-banner:hover {

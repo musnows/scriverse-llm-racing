@@ -2620,7 +2620,7 @@ function createFinalAdoptedBanner(modelName, pullRequestUrl = "") {
   const banner = document.createElement("button");
   banner.type = "button";
   banner.className = "leaderboard-final-adopted-banner";
-  banner.textContent = "最终采纳";
+  banner.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.7"></circle><path d="m3.4 6.1 1.6 1.6 3.6-3.6"></path></svg><span>最终采纳</span>`;
   banner.title = "查看“最终采纳”的含义";
   banner.setAttribute("aria-label", `${modelName}：最终采纳`);
   banner.addEventListener("click", () => {
