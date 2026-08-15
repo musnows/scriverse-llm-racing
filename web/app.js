@@ -458,7 +458,7 @@ function createChartBestDirectionIndicator(margin) {
       class: "model-overall-chart__direction-label",
       x: 21,
       y: 10,
-    }, "更优方向"),
+    }, "BEST"),
   );
   return indicator;
 }
@@ -574,8 +574,8 @@ function createModelOverallChartExportSvg(chartType = "duration") {
         .model-overall-chart__labels text { fill: #858880; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 11px; }
         .model-overall-chart__labels .model-overall-chart__axis-title { fill: #b8b9b4; font-size: 10px; }
         .model-overall-chart__direction-indicator { pointer-events: none; }
-        .model-overall-chart__direction-arrow { fill: none; stroke: #e0a084; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.4px; }
-        .model-overall-chart__direction-label { fill: #e0a084; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 9px; font-weight: 700; letter-spacing: .08em; paint-order: stroke; stroke: #111210; stroke-linejoin: round; stroke-width: 2px; }
+        .model-overall-chart__direction-arrow { fill: none; stroke: #f0bda7; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.4px; }
+        .model-overall-chart__direction-label { fill: #f0bda7; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 9px; font-weight: 700; letter-spacing: .08em; paint-order: stroke; stroke: #111210; stroke-linejoin: round; stroke-width: 2px; }
         .model-overall-chart__point { stroke: #fffaf6; stroke-width: 2; }
         .model-overall-chart__point--best { stroke: #f3c76b; filter: drop-shadow(0 0 5px rgba(243, 199, 107, .8)); }
         .model-overall-chart__label-connectors--expanded { display: none; }

@@ -1871,14 +1871,14 @@ a.requirement-meta-card__value:hover {
 
 .model-overall-chart__direction-arrow {
   fill: none;
-  stroke: #e0a084;
+  stroke: #f0bda7;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.4px;
 }
 
 .model-overall-chart__direction-label {
-  fill: #e0a084;
+  fill: #f0bda7;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   font-size: 9px;
   font-weight: 700;
