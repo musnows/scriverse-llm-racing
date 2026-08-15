@@ -1,6 +1,6 @@
 {
-  "version": 9,
-  "modelsUrl": "/source/models.json?v=4",
+  "version": 10,
+  "modelsUrl": "/source/models.json?v=5",
   "requirements": [
     {
       "id": "s3-backup-v1",
