@@ -15,7 +15,6 @@
       "durationSeconds": 6491,
       "tokenUsage": 271222111,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/1daa48d9",
-      "underperformanceNote": "DeepSeek V4 Pro Preview 在侧边栏 AI 可写工具需求中的完成度低于测试前预期。",
       "failures": {
         "TC-02": "write_character 的 raceId 和 organizationIds 会改变种族或组织关联，但工具启用和计划执行只检查 characters 写权限，缺少跨模块权限校验。",
         "TC-04": "拒绝审批路由只校验计划属于当前作品，Store.rejectAiWritePlan 也不校验发起用户或对话归属用户；同作品协作者可通过已知 plan ID 拒绝他人审批。",
@@ -53,6 +52,7 @@
       "durationSeconds": 4146,
       "tokenUsage": 252635420,
       "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/b5c50033",
+      "underperformanceNote": "DeepSeek V4 Pro 0813 在侧边栏 AI 可写工具需求中的完成度低于测试前预期。",
       "failures": {
         "TC-02": "角色种族、角色组织及种族/组织成员等关联写入只校验主体模块权限，未同时校验关联模块权限；已复现 characters=write、races=none 时仍可创建带种族的角色。",
         "TC-04": "审批列表未按用户或对话隔离，作品所有者可处理他人计划；questionId 工具查询也未校验作品、对话或参与者，可泄露其他问题和回答。",
