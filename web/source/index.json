@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "modelsUrl": "/source/models.json?v=7",
   "requirements": [
     {
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=10"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=11"
     }
   ]
 }
