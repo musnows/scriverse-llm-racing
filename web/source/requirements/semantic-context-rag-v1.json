@@ -121,6 +121,204 @@
     }
   ],
   "models": [],
-  "participants": [],
+  "participants": [
+    {
+      "modelId": 3,
+      "modelName": "LongCat-2.0",
+      "supportsMultimodal": false,
+      "software": "CatPaw",
+      "version": "2026.0729.1946",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 4,
+      "modelName": "Hy3",
+      "supportsMultimodal": false,
+      "software": "WorkBuddy",
+      "version": "5.3.8",
+      "context": "192K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 2,
+      "modelName": "Qwen3.8 Preview",
+      "supportsMultimodal": true,
+      "software": "QoderCN IDE Quest",
+      "version": "1.9.1",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 10,
+      "modelName": "Qwen3.8",
+      "supportsMultimodal": true,
+      "software": "QoderCN IDE Quest",
+      "version": "1.10.0",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 1,
+      "modelName": "Doubao-Seed-2.1-Turbo",
+      "supportsMultimodal": true,
+      "software": "TRAE SOLO",
+      "version": "3.3.83",
+      "context": "200K",
+      "status": "待测试"
+    },
+    {
+      "modelName": "Doubao-Seed-2.1-Pro",
+      "supportsMultimodal": true,
+      "software": "TRAE SOLO",
+      "version": "3.3.83",
+      "context": "200K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 9,
+      "modelName": "Grok 4.5",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "256K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 18,
+      "modelName": "Grok 4.6",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.15.6",
+      "context": "256K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 8,
+      "modelName": "Composer 2.5",
+      "supportsMultimodal": true,
+      "software": "Cursor IDE",
+      "version": "3.14.7",
+      "context": "256K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 13,
+      "modelName": "GPT-5.6 Sol",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 7,
+      "modelName": "GPT-5.6 Luna",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 15,
+      "modelName": "GPT-5.6 Terra",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "373K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 14,
+      "modelName": "GPT-5.5",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.146.0",
+      "context": "272K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 16,
+      "modelName": "Claude Opus 5",
+      "supportsMultimodal": true,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 5,
+      "modelName": "DeepSeek V4 Flash 0731",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.220",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 6,
+      "modelName": "DeepSeek V4 Pro Preview",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.226",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 19,
+      "modelName": "DeepSeek V4 Pro 0813",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.226",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 11,
+      "modelName": "GLM-5.2",
+      "supportsMultimodal": false,
+      "software": "Cursor Agent View",
+      "version": "3.14.7",
+      "context": "200K（Cursor 不支持 1M）",
+      "status": "待测试"
+    },
+    {
+      "modelId": 12,
+      "modelName": "Kimi K3",
+      "supportsMultimodal": true,
+      "software": "Kimi Code",
+      "version": "0.31.1",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 17,
+      "modelName": "MiniMax-M3",
+      "supportsMultimodal": true,
+      "software": "WorkBuddy",
+      "version": "5.3.8",
+      "context": "512K",
+      "status": "待测试"
+    },
+    {
+      "modelId": 20,
+      "modelName": "DeepSeek V4 Pro 0813 DSH",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "待测试"
+    },
+    {
+      "modelId": 21,
+      "modelName": "DeepSeek V4 Flash 0731 DSH",
+      "supportsMultimodal": false,
+      "software": "dsh 极简模式",
+      "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "待测试"
+    }
+  ],
   "screenshots": {}
 }
