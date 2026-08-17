@@ -35,6 +35,23 @@
         }
       },
       "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=11"
+    },
+    {
+      "id": "semantic-context-rag-v1",
+      "title": "叙界主动语义检索与 AI 上下文装配",
+      "summary": "为叙界增加按需触发的嵌入语义检索与 AI 上下文装配能力，并通过独立语义工具向 AI 暴露自然语言检索。",
+      "weight": 1.6,
+      "baseRepository": "musnows/Scriverse",
+      "scoring": {
+        "initial": 200,
+        "deductionByPriority": {
+          "P00": 18,
+          "P0": 6,
+          "P1": 3,
+          "P2": 0
+        }
+      },
+      "dataUrl": "/source/requirements/semantic-context-rag-v1.json?v=1"
     }
   ]
 }
