@@ -1,0 +1,4 @@
+interface:
+  display_name: "Claude Code Vision Read Guard"
+  short_description: "Guard image reads for non-vision Claude Code models"
+  default_prompt: "Review or update the Claude Code vision Read guard, preserving its built-in allowlist, blacklist priority, and read-image fallback."
