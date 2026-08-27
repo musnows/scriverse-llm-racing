@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "models": [
     {
       "id": 1,
@@ -153,6 +153,13 @@
       "name": "GLM-5.3",
       "tool": "Qoder",
       "reasoningEffort": "max",
+      "supportsMultimodal": false
+    },
+    {
+      "id": 23,
+      "name": "GLM-5.3 Flash",
+      "tool": "Claude Code",
+      "reasoningEffort": "none",
       "supportsMultimodal": false
     }
   ]

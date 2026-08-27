@@ -1,5 +1,5 @@
 {
-  "version": 26,
+  "version": 27,
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -25,7 +25,8 @@
         19,
         20,
         21,
-        22
+        22,
+        23
       ],
       "testCases": [
         {

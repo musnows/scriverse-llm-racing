@@ -628,6 +628,24 @@
         "TC-21": "备份只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥。"
       },
       "testedAt": "2026-08-15T13:13:14+08:00"
+    },
+    {
+      "modelId": 23,
+      "durationSeconds": 5158,
+      "tokenUsage": 28200530,
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.233",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-07": "定时任务失败只写服务端日志和运行记录，前端没有轮询、SSE 或其他主动通知通道；S3 客户端构造也位于单目标失败收敛之外，非法 endpoint 可中断后续目标。",
+        "TC-08": "留存逻辑只从任意对象 basename 中搜索时间戳，未严格限定快照或主密钥文件名及直属 db/ 层级；已复现会选中无关文件和嵌套目录中的快照对象。",
+        "TC-13": "快照对象名只精确到秒，同一秒内连续备份会生成相同的数据库和主密钥对象键并覆盖历史快照。",
+        "TC-14": "1280×720 桌面视口下，目标表单三列 label 实宽 144px，但文本输入框固有宽度为 180.5px，接口地址、Region 等相邻控件发生重叠。",
+        "TC-18": "S3 原始错误响应正文未经当前目标 AK/SK 值级脱敏即进入失败日志、运行记录、API 和 Toast；端点反射凭证时会造成泄漏。"
+      },
+      "testedAt": "2026-08-27T12:52:58+08:00"
     }
   ],
   "participants": [
@@ -834,6 +852,15 @@
       "supportsMultimodal": false,
       "software": "Qoder",
       "version": "1.24.2",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 23,
+      "modelName": "GLM-5.3 Flash",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.233",
       "context": "1M",
       "status": "已测试"
     }
