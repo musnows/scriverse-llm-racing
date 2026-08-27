@@ -2,7 +2,7 @@
 
 这个仓库用于归档“叙界赛博斗蛐蛐”系列的公开复现材料，包含评测前端、用户评分后端和经过清理的数据归档。
 
-测试基于 [musnows/Scriverse](https://github.com/musnows/Scriverse) `v0.6.6`，基准 commit 为 `91f9189e5bb34e1bbf6bcaa8442e6a1ac61be5c2`。
+测试基于 [musnows/Scriverse](https://github.com/musnows/Scriverse) 项目
 
 ## 目录结构
 
