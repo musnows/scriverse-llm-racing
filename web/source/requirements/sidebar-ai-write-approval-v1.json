@@ -313,6 +313,31 @@
         "TC-22": "只读工具使用对话快照，可写工具却在每轮按作品当前设置重新计算，已交互对话的 tools 会随后续设置变化。",
         "TC-24": "git diff --check 未通过：src/ai-write.ts 文件末尾存在新增空行；13 个提交信息均符合 Angular 规范。"
       }
+    },
+    {
+      "modelId": 23,
+      "testedAt": "2026-08-27T14:40:54+08:00",
+      "durationSeconds": 12969,
+      "tokenUsage": 88483469,
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.2.2",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "角色的 raceId、organizationIds 会改变种族或组织关联，但计划创建与执行只校验 characters 主模块权限，缺少跨模块权限交集校验。",
+        "TC-04": "审批和提问接口只校验作品级 ai-chat 权限；列表返回整部作品记录，详情和处理接口不校验发起用户、对话归属用户，也不核对 URL workId 与记录 workId。",
+        "TC-06": "执行前只复检 update_entry 主体版本；正文批注未保存或复检章节正文版本，分析范围引用、创建型章节大纲及关联对象版本也未完整固化。",
+        "TC-09": "任一写开关开启后都会暴露统一 propose_write_plan，工具 schema 始终声明全部实体、批注和任务能力，关闭类别仍对模型可见。",
+        "TC-11": "确认 Toast 仅显示通用的审批提交提示，没有展示操作对象和 AI 简述；初始消息卡片也只有操作数量。",
+        "TC-12": "新建词条详情只展示 AI 显式输入字段，不包含系统最终默认字段；分析任务省略 modelId 时详情保存 null，范围也只有摘要。",
+        "TC-14": "存在待回答问题时，服务端仍允许创建写计划并执行同批后续工具；未回答、拒绝或过期不构成写操作状态门禁。",
+        "TC-16": "分析任务未指定模型时计划保存 modelId=null，执行阶段才读取当时的默认模型；默认配置变化会使实际任务与确认内容不一致。",
+        "TC-18": "AskUserQuestions 被记为普通 completed 工具，同批剩余工具和下一模型轮次仍会继续；没有持久化 tool_call continuation，回答也不能作为原工具结果仅恢复一次。",
+        "TC-19": "审批中心只加载写入计划，不加载或展示提问记录；刷新、重登或重启后无法在审批中心查看和处理提问历史状态。",
+        "TC-21": "审批详情只有计划级操作者 ID 和操作结果摘要，未查询、返回或展示操作者名称及逐项审计记录。",
+        "TC-22": "可写工具绕开 ai_conversations.agent_tools_json，每轮按当前作品开关动态追加；已有消息的对话会随后续设置改变 tools。"
+      }
     }
   ],
   "screenshotFeatures": [
@@ -322,9 +347,29 @@
       "description": "展示侧边栏 AI 可写工具与提问能力的配置开关。"
     },
     {
+      "id": "ai-chat-interactions",
+      "name": "对话内交互",
+      "description": "展示侧边栏 AI 对话中的写入计划、提问卡片和执行过程。"
+    },
+    {
+      "id": "write-plan-details",
+      "name": "审批详情与撤销",
+      "description": "展示待确认计划、系统字段 diff、执行结果和撤销入口。"
+    },
+    {
       "id": "ask-user-questions",
       "name": "AI 提问",
       "description": "展示 AskUserQuestions 的待回答交互与已回答记录。"
+    },
+    {
+      "id": "approval-center",
+      "name": "审批中心",
+      "description": "展示 AI 操作审批中心的状态筛选与审批记录。"
+    },
+    {
+      "id": "mobile-layout",
+      "name": "移动端适配",
+      "description": "展示 AI 工具设置和侧边栏对话在窄屏视口下的布局。"
     }
   ],
   "screenshots": {
@@ -348,6 +393,68 @@
         "AskUserQuestions 已回答记录",
         [
           "ask-user-questions"
+        ]
+      ]
+    ],
+    "23": [
+      [
+        "image-20260827-glm53flash-ai-tools-settings-compressed-15pct.webp",
+        "AI 工具设置：桌面端全部可写工具与提问开关",
+        [
+          "ai-tools-settings"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-chat-interactions-compressed-15pct.webp",
+        "侧边栏对话：待回答问题卡片与 AI 计划说明",
+        [
+          "ai-chat-interactions",
+          "ask-user-questions"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-write-plan-pending-compressed-15pct.webp",
+        "写入审批详情：待确认计划与系统字段 diff",
+        [
+          "write-plan-details"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-question-answered-compressed-15pct.webp",
+        "AI 提问：推荐选项、自定义回答与已回答状态",
+        [
+          "ask-user-questions"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-approval-center-compressed-15pct.webp",
+        "AI 操作审批中心：多状态筛选与审批列表",
+        [
+          "approval-center"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-write-plan-executed-undo-compressed-15pct.webp",
+        "写入审批详情：执行结果与撤销入口",
+        [
+          "write-plan-details",
+          "approval-center"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-mobile-ai-tools-settings-compressed-15pct.webp",
+        "移动端 AI 工具设置",
+        [
+          "ai-tools-settings",
+          "mobile-layout"
+        ]
+      ],
+      [
+        "image-20260827-glm53flash-mobile-chat-interactions-compressed-15pct.webp",
+        "移动端侧边栏 AI 对话与执行过程",
+        [
+          "ai-chat-interactions",
+          "mobile-layout"
         ]
       ]
     ]
@@ -547,6 +654,15 @@
       "supportsMultimodal": false,
       "software": "dsh 极简模式",
       "version": "0.1.0-rc.6",
+      "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 23,
+      "modelName": "GLM-5.3 Flash",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.2.2",
       "context": "1M",
       "status": "已测试"
     }
