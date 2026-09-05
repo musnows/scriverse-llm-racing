@@ -73,7 +73,6 @@
       "testedAt": "2026-08-07T13:01:28+08:00",
       "durationSeconds": 5412,
       "tokenUsage": 22600000,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d064c99f",
       "failures": {
         "TC-02": "组织等操作只校验主模块权限，却可通过成员 ID 改写角色成员关系，未同时校验角色权限。",
         "TC-04": "计划、提问列表按整部作品查询；确认、拒绝、回答接口未校验发起用户或对话归属，协作者可处理他人记录。",
@@ -95,7 +94,6 @@
       "durationSeconds": 2311,
       "tokenUsage": 1145.73,
       "tokenUsageUnit": "credit",
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/12b533b9",
       "failures": {
         "TC-02": "分析任务范围只校验对话归属用户，且误用写权限；当前操作用户缺少范围所需读取权限时仍可借对话归属用户权限创建任务。",
         "TC-04": "计划和提问按作品全量查询；拥有任一 AI 模块读取权限的协作者可查看、确认、拒绝或回答其他用户、对话的记录。",
@@ -117,7 +115,6 @@
       "testedAt": "2026-08-07T08:43:47+08:00",
       "durationSeconds": 3010,
       "tokenUsage": 25362000,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/d66ba8f6",
       "unexpectedCases": [
         "Grok 4.5 High 在进行首次测试时，直接越权读取了 ~/.worktree 下其他 Agent 的已实现代码，并将其拷贝至自己的目录视作任务已完成。本平台上传的是封堵越权后的二次测试结果。"
       ],
@@ -137,7 +134,6 @@
       "durationSeconds": 4543,
       "tokenUsage": 955.3,
       "tokenUsageUnit": "credit",
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/bd5fb9b4",
       "failures": {
         "TC-02": "权限交集错误地使用作品 owner，而非 AI 对话归属用户。",
         "TC-03": "伪造审批确认接口只校验登录态，未校验审批归属或作品权限。",
@@ -163,7 +159,6 @@
       "durationSeconds": 4680,
       "tokenUsage": 0,
       "tokenUsageUnit": "credit",
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/5268bc1b",
       "failures": {
         "TC-02": "审批执行未校验当前用户与对话归属用户的权限交集。",
         "TC-04": "同作品具备 AI 设置权限的协作者可查看、确认、拒绝其他用户或对话的审批与提问。",
@@ -189,7 +184,6 @@
       "durationSeconds": 4920,
       "tokenUsage": 0,
       "tokenUsageUnit": "credit",
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/9e4cddf8",
       "failures": {
         "TC-04": "审批和提问接口未按发起用户或对话归属隔离；同作品协作者可查看、处理甚至确认他人记录。",
         "TC-06": "确认前未复核正文批注对应章节内容版本，也未复核分析任务范围所需的读取权限。",
@@ -209,7 +203,6 @@
       "testedAt": "2026-08-06T08:40:45+08:00",
       "durationSeconds": 3033,
       "tokenUsage": 277679988,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/6e916f00",
       "exceptionalPerformanceNote": "Claude Code 下的 DeepSeek V4 Flash 0731 在侧边栏 AI 可写工具需求中的完成度明显高于测试前预期。",
       "failures": {
         "TC-07": "可写工具还要求开启未在设置页明确展示的工具级白名单；所有对话（包括尚无消息的空白对话）在创建时锁定该白名单，之后开启能力不会将函数加入 tools。",
@@ -226,7 +219,6 @@
       "testedAt": "2026-08-06T08:40:45+08:00",
       "durationSeconds": 4812,
       "tokenUsage": 98917859,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/e0a915d3",
       "failures": {
         "TC-02": "分析任务计划的读取权限遗漏 reviews；时间线关联章节或参与者 ID 也可跨作品写入。",
         "TC-04": "审批和提问接口未按发起用户或对话归属隔离；同作品协作者可查看、处理甚至确认他人记录。",
@@ -239,7 +231,6 @@
       "testedAt": "2026-08-06T08:40:45+08:00",
       "durationSeconds": 6411,
       "tokenUsage": 82574343,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/e5b3d019",
       "failures": {
         "TC-02": "清空角色种族、组织成员或种族/组织成员关系时，没有要求相应跨模块写权限。",
         "TC-13": "同一对话可同时创建多个待回答问题。",
@@ -253,7 +244,6 @@
       "testedAt": "2026-08-06T08:40:45+08:00",
       "durationSeconds": 11198,
       "tokenUsage": 108739982,
-      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/922ec4c1",
       "failures": {
         "TC-04": "审批和提问记录没有按创建用户或对话归属隔离；同作品协作者可查看、拒绝、确认或回答他人记录。",
         "TC-13": "同一次模型响应可创建并展示多个待回答问题。",

@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "modelsUrl": "/source/models.json?v=9",
   "requirements": [
     {
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=14"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=15"
     },
     {
       "id": "semantic-context-rag-v1",
