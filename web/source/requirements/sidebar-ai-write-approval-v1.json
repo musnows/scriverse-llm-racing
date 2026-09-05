@@ -144,6 +144,24 @@
         "TC-21": "审批详情只有计划级操作者 ID 和操作结果摘要，未查询、返回或展示操作者名称及逐项审计记录。",
         "TC-22": "可写工具绕开 ai_conversations.agent_tools_json，每轮按当前作品开关动态追加；已有消息的对话会随后续设置改变 tools。"
       }
+    },
+    {
+      "modelId": 24,
+      "testedAt": "2026-09-05T09:41:20+08:00",
+      "durationSeconds": 5298,
+      "tokenUsage": 32803310,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/688c3263",
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.153.4",
+        "context": "543K"
+      },
+      "failures": {
+        "TC-07": "只开启世界设定与只开启角色时，提供给模型的 ProposeWritePlan 定义完全相同且同时声明全部实体；实际开关范围未告知模型，只能通过失败试探能力。",
+        "TC-18": "AskUserQuestions 将 awaitingUser 转换为普通助手消息并完成 ai_call；待回答期间仍可发起新模型轮次，回答后也没有通过原 tool_call_id 仅恢复一次。",
+        "TC-21": "敏感内容检查未识别原始 scriverse_session 会话令牌；令牌可作为计划简述写入 content_json 并由审批详情返回。",
+        "TC-22": "只读工具使用对话快照，可写工具每轮动态读取当前作品设置；已有消息后更改开关会加入或移除写工具并破坏 prompt cache。"
+      }
     }
   ],
   "screenshotFeatures": [
@@ -447,6 +465,15 @@
       "software": "Claude Code",
       "version": "2.2.2",
       "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 24,
+      "modelName": "GPT-6 Astra",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.153.4",
+      "context": "543K",
       "status": "已测试"
     }
   ],

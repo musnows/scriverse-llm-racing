@@ -1,6 +1,6 @@
 {
-  "version": 19,
-  "modelsUrl": "/source/models.json?v=8",
+  "version": 20,
+  "modelsUrl": "/source/models.json?v=9",
   "requirements": [
     {
       "id": "s3-backup-v1",
@@ -34,7 +34,7 @@
           "P2": 0
         }
       },
-      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=12"
+      "dataUrl": "/source/requirements/sidebar-ai-write-approval-v1.json?v=13"
     },
     {
       "id": "semantic-context-rag-v1",

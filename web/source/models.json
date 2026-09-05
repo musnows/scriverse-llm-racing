@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "models": [
     {
       "id": 1,
@@ -161,6 +161,13 @@
       "tool": "Claude Code",
       "reasoningEffort": "none",
       "supportsMultimodal": false
+    },
+    {
+      "id": 24,
+      "name": "GPT-6 Astra",
+      "tool": "Codex CLI",
+      "reasoningEffort": "max",
+      "supportsMultimodal": true
     }
   ]
 }
