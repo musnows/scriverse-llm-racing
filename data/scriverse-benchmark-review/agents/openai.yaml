@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scriverse Benchmark Review"
+  short_description: "逐项验收并记录 Scriverse LLM worktree 结果"
+  default_prompt: "使用 $scriverse-benchmark-review 审查指定的 Scriverse worktree，并按排行榜需求逐项给出可复现的验收结论。"
