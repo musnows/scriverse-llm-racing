@@ -628,6 +628,28 @@
         "TC-18": "S3 原始错误响应正文未经当前目标 AK/SK 值级脱敏即进入失败日志、运行记录、API 和 Toast；端点反射凭证时会造成泄漏。"
       },
       "testedAt": "2026-08-27T12:52:58+08:00"
+    },
+    {
+      "modelId": 24,
+      "testedAt": "2026-09-06T07:45:09+08:00",
+      "durationSeconds": 2273,
+      "tokenUsage": 9988849,
+      "resultBranchUrl": "https://github.com/musnows/Scriverse/tree/worktree/6bc115ba",
+      "underperformanceNote": "GPT-6 Astra 在 S3 备份需求中的完成度低于测试前预期。",
+      "agent": {
+        "software": "Codex CLI",
+        "version": "0.153.4",
+        "context": "543K"
+      },
+      "failures": {
+        "TC-02": "公开演示库生成 3039232 字节快照；AWS SDK 添加 Expect: 100-continue 后，传输层将其原样交给 Node fetch，Undici 在请求到达 S3 前报 UND_ERR_NOT_SUPPORTED，无法完成可下载的数据库备份。",
+        "TC-08": "留存过滤虽能分页，但快照正则不校验真实日期和规范 UUID；已复现非法日期及非规范 UUID 对象进入删除列表，可能误删非本功能生成的数据库对象。",
+        "TC-11": "两分钟定时任务在服务重启后准时触发，但数据库上传因 Expect: 100-continue 不受 Node fetch 支持而以 fetch failed 结束，没有完成 S3 同步。",
+        "TC-13": "图片增量跳过逻辑本身有效，但公开演示库的数据库上传失败，远端没有为该次运行生成带时间戳的数据库快照。",
+        "TC-18": "动态脱敏遗漏 XML &apos; 实体，服务端以该形式回显凭证时完整 SK 会进入响应正文日志；目标名称或前缀与凭证相同时，也会经运行事件、普通日志或 Toast 泄漏。",
+        "TC-20": "提交拆分与 Angular 信息合格，但新增测试使用固定 .data 目录且没有清理，运行后会残留数据库和备份快照，未满足 AGENTS.md 的临时测试数据清理要求。",
+        "TC-21": "S3 恢复集只上传数据库和可选图片，没有包含 master.key 或等价恢复密钥，新环境无法解密数据库中已保存的 CredentialVault 凭证。"
+      }
     }
   ],
   "participants": [
@@ -835,6 +857,15 @@
       "software": "Claude Code",
       "version": "2.1.233",
       "context": "1M",
+      "status": "已测试"
+    },
+    {
+      "modelId": 24,
+      "modelName": "GPT-6 Astra",
+      "supportsMultimodal": true,
+      "software": "Codex CLI",
+      "version": "0.153.4",
+      "context": "543K",
       "status": "已测试"
     }
   ],
