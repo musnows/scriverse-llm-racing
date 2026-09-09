@@ -346,6 +346,34 @@
         "TC-21": "敏感内容检查未识别原始 scriverse_session 会话令牌；令牌可作为计划简述写入 content_json 并由审批详情返回。",
         "TC-22": "只读工具使用对话快照，可写工具每轮动态读取当前作品设置；已有消息后更改开关会加入或移除写工具并破坏 prompt cache。"
       }
+    },
+    {
+      "modelId": 25,
+      "testedAt": "2026-09-08T17:25:00+08:00",
+      "durationSeconds": 1386.155,
+      "tokenUsage": 78970364,
+      "underperformanceNote": "DeepSeek V4 Flash 0910 在侧边栏 AI 可写工具需求中的完成度低于测试前预期。",
+      "agent": {
+        "software": "Claude Code",
+        "version": "2.1.223",
+        "context": "1M"
+      },
+      "failures": {
+        "TC-02": "propose_character 只校验 characters 权限；修改 raceId 或 species 还应校验 races 权限，实测 characters=write、races=none 时仍可修改角色种族。",
+        "TC-04": "审批和提问没有按用户或对话隔离；同作品协作者可以列出、读取并拒绝其他用户的审批记录。",
+        "TC-06": "分析计划没有完整固化章节资料版本；章节从 v1 更新到 v2 后旧计划仍可执行，混合计划也只复核首个工具开关。",
+        "TC-11": "多操作计划首次弹出 toast 后，后续相同 plan ID 被 Set 忽略，toast 只展示首项却能确认整个计划。",
+        "TC-12": "新增设定详情只展示 title、category、content，未展示实际落库的 tags、status、locked、evidence、scope、authorNote 等字段。",
+        "TC-13": "没有 conversation 级 pending 问题唯一约束，同一对话可以同时存在多个待回答问题。",
+        "TC-14": "AskUserQuestions 被记录为普通 completed 工具，未回答时仍会继续同批工具和后续模型请求；回答接口只更新记录，没有恢复原 Agent loop。",
+        "TC-15": "工具 schema 和 builder 只要求 title，但 Store.createSetting 还要求 category、content；仅提供标题的合法计划在确认时因 SQLite 绑定 undefined 失败。",
+        "TC-16": "未指定模型时计划保存 modelId=null，执行器绕过默认模型解析、平台归属和可用性校验，分析任务模型未冻结。",
+        "TC-18": "AskUserQuestions 不是阻塞工具；提问后仍继续执行同批写工具并发起模型请求，回答不能作为原 tool_call 的一次性恢复结果。",
+        "TC-19": "审批中心只保留 pending 问题，已回答、拒绝、过期和失效记录不会展示，刷新或重登后无法查看历史状态。",
+        "TC-21": "审批详情未展示操作者和真实审计记录，只展示时间及动作名称。",
+        "TC-22": "已有消息的对话仍动态读取当前可写工具设置；开启工具后，已有对话的 tools 会增加 propose_setting。",
+        "TC-24": "审批中心持续上报 module=ai-approvals，但后端 presence schema 不包含该值，导致 /presence 每 12 秒返回 400。"
+      }
     }
   ],
   "screenshotFeatures": [
@@ -681,6 +709,15 @@
       "software": "Codex CLI",
       "version": "0.153.4",
       "context": "543K",
+      "status": "已测试"
+    },
+    {
+      "modelId": 25,
+      "modelName": "DeepSeek V4 Flash 0910",
+      "supportsMultimodal": false,
+      "software": "Claude Code",
+      "version": "2.1.223",
+      "context": "1M",
       "status": "已测试"
     }
   ],
