@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "models": [
     {
       "id": 1,
@@ -168,6 +168,13 @@
       "tool": "Codex CLI",
       "reasoningEffort": "max",
       "supportsMultimodal": true
+    },
+    {
+      "id": 25,
+      "name": "DeepSeek V4 Flash 0910",
+      "tool": "Claude Code",
+      "reasoningEffort": "max",
+      "supportsMultimodal": false
     }
   ]
 }
